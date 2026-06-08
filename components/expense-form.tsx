@@ -18,24 +18,61 @@ import { useOnline } from "@/lib/use-fetch";
 import { queueExpense } from "@/lib/offline-db";
 import { validateSplits } from "@/lib/settlement";
 import { SplitEditor, buildSplits, type SplitState } from "@/components/split-editor";
-import { CATEGORIES, type SplitType, type ExpenseCategory } from "@/lib/types";
+import { CATEGORIES, type SplitType, type ExpenseCategory, type Expense } from "@/lib/types";
 import { cn, roundMoney } from "@/lib/utils";
 
-export function ExpenseForm({ onDone }: { onDone: () => void }) {
+/** Reconstruct editor split state from an existing expense (for editing). */
+function splitStateFromExpense(expense: Expense): SplitState {
+  const included = new Set(expense.splits.map((s) => s.userId));
+  const values: Record<string, string> = {};
+  if (expense.splitType === "exact") {
+    for (const s of expense.splits) values[s.userId] = s.amount.toFixed(2);
+  } else if (expense.splitType === "percent") {
+    for (const s of expense.splits) {
+      values[s.userId] =
+        expense.amount > 0
+          ? String(Math.round((s.amount / expense.amount) * 100))
+          : "0";
+    }
+  }
+  return { splitType: expense.splitType, included, values };
+}
+
+export function ExpenseForm({
+  onDone,
+  expense,
+}: {
+  onDone: () => void;
+  /** When provided, the form edits this expense instead of creating one. */
+  expense?: Expense;
+}) {
   const { members, currentUserId, household, mutate } = useAppData();
   const { toast } = useToast();
   const online = useOnline();
+  const isEdit = Boolean(expense);
 
-  const [description, setDescription] = React.useState("");
-  const [amount, setAmount] = React.useState("");
-  const [category, setCategory] = React.useState<ExpenseCategory>("groceries");
-  const [paidBy, setPaidBy] = React.useState(currentUserId ?? "");
-  const [split, setSplit] = React.useState<SplitState>({
-    splitType: "equal" as SplitType,
-    included: new Set(members.map((m) => m.id)),
-    values: {},
-  });
-  const [receiptUrl, setReceiptUrl] = React.useState<string | null>(null);
+  const [description, setDescription] = React.useState(expense?.description ?? "");
+  const [amount, setAmount] = React.useState(
+    expense ? String(expense.amount) : "",
+  );
+  const [category, setCategory] = React.useState<ExpenseCategory>(
+    expense?.category ?? "groceries",
+  );
+  const [paidBy, setPaidBy] = React.useState(
+    expense?.paidBy ?? currentUserId ?? "",
+  );
+  const [split, setSplit] = React.useState<SplitState>(
+    expense
+      ? splitStateFromExpense(expense)
+      : {
+          splitType: "equal" as SplitType,
+          included: new Set(members.map((m) => m.id)),
+          values: {},
+        },
+  );
+  const [receiptUrl, setReceiptUrl] = React.useState<string | null>(
+    expense?.receiptUrl ?? null,
+  );
   const [uploading, setUploading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -99,6 +136,28 @@ export function ExpenseForm({ onDone }: { onDone: () => void }) {
 
     setSubmitting(true);
     try {
+      if (isEdit && expense) {
+        // Editing requires connectivity (no offline queue for edits).
+        if (!online) {
+          toast({ title: "You're offline — can't edit right now", variant: "error" });
+          return;
+        }
+        const res = await fetch(`/api/expenses/${expense.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast({ title: data.error || "Could not save changes", variant: "error" });
+          return;
+        }
+        toast({ title: "Changes saved", variant: "success" });
+        mutate();
+        onDone();
+        return;
+      }
+
       if (!online) {
         await queueExpense({ ...payload, householdId: household?.id ?? "" });
         toast({
@@ -125,6 +184,10 @@ export function ExpenseForm({ onDone }: { onDone: () => void }) {
       mutate();
       onDone();
     } catch {
+      if (isEdit) {
+        toast({ title: "Could not save changes", variant: "error" });
+        return;
+      }
       // Network died mid-request — fall back to the offline queue.
       await queueExpense({ ...payload, householdId: household?.id ?? "" });
       toast({ title: "Saved offline", variant: "success" });
@@ -251,7 +314,7 @@ export function ExpenseForm({ onDone }: { onDone: () => void }) {
 
       <Button type="submit" className="w-full" size="lg" disabled={submitting}>
         {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-        Add expense
+        {isEdit ? "Save changes" : "Add expense"}
       </Button>
     </form>
   );

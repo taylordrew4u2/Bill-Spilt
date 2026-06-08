@@ -14,6 +14,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { RecurringForm } from "@/components/recurring-form";
+import { MemberAvatar } from "@/components/member-avatar";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
@@ -41,14 +42,20 @@ export default function StatsPage() {
   );
   const bills = recurringQ.data?.bills ?? [];
 
-  const { total, byCategory } = React.useMemo(() => {
+  const { total, byCategory, byPayer } = React.useMemo(() => {
     let total = 0;
     const byCategory: Record<string, number> = {};
+    const byPayer = new Map<string, { name: string; amount: number }>();
     for (const e of expenses) {
       total += e.amount;
       byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
+      const prev = byPayer.get(e.paidBy);
+      byPayer.set(e.paidBy, {
+        name: e.paidByName,
+        amount: (prev?.amount ?? 0) + e.amount,
+      });
     }
-    return { total, byCategory };
+    return { total, byCategory, byPayer };
   }, [expenses]);
 
   const breakdown = CATEGORIES.map((c) => ({
@@ -56,6 +63,10 @@ export default function StatsPage() {
     amount: byCategory[c.value] ?? 0,
   }))
     .filter((c) => c.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+
+  const payers = Array.from(byPayer.entries())
+    .map(([id, v]) => ({ id, ...v }))
     .sort((a, b) => b.amount - a.amount);
 
   async function deleteBill(id: string) {
@@ -135,6 +146,30 @@ export default function StatsPage() {
           )}
         </CardContent>
       </Card>
+
+      {payers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Who paid</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y">
+              {payers.map((p) => (
+                <li key={p.id} className="flex items-center gap-3 py-2.5">
+                  <MemberAvatar id={p.id} name={p.name} className="h-8 w-8" />
+                  <span className="flex-1 truncate text-sm">{p.name}</span>
+                  <span className="text-sm font-medium">
+                    {formatCurrency(p.amount)}
+                  </span>
+                  <span className="w-12 text-right text-xs text-muted-foreground">
+                    {total > 0 ? Math.round((p.amount / total) * 100) : 0}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">

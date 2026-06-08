@@ -6,6 +6,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExpenseItem } from "@/components/expense-item";
 import { ExpenseDetailSheet } from "@/components/expense-detail-sheet";
+import { ExpenseForm } from "@/components/expense-form";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
@@ -20,10 +28,16 @@ export default function ExpensesPage() {
   );
   const [selected, setSelected] = React.useState<Expense | null>(null);
   const [detailOpen, setDetailOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<Expense | null>(null);
 
   function openDetail(expense: Expense) {
     setSelected(expense);
     setDetailOpen(true);
+  }
+
+  function startEdit(expense: Expense) {
+    setDetailOpen(false);
+    setEditing(expense);
   }
 
   React.useEffect(() => {
@@ -120,7 +134,29 @@ export default function ExpensesPage() {
         currentUserId={currentUserId}
         open={detailOpen}
         onOpenChange={setDetailOpen}
+        onEdit={startEdit}
       />
+
+      <Sheet
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+      >
+        <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
+          <SheetHeader className="mb-4">
+            <SheetTitle>Edit expense</SheetTitle>
+            <SheetDescription>Update the details or how it&apos;s split.</SheetDescription>
+          </SheetHeader>
+          {editing && (
+            <ExpenseForm
+              expense={editing}
+              onDone={() => {
+                setEditing(null);
+                void refetch();
+              }}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -178,3 +178,40 @@ export async function getRecurringBills(
     active: r.active,
   }));
 }
+
+export interface SettlementRecord {
+  id: string;
+  from: string;
+  fromName: string;
+  to: string;
+  toName: string;
+  amount: number;
+  settledAt: string;
+}
+
+/** Recorded "X paid Y" settlements, most recent first. */
+export async function getSettlements(
+  householdId: string,
+): Promise<SettlementRecord[]> {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT s.id, s.from_user, s.to_user, s.amount, s.settled_at,
+           f.name AS from_name, t.name AS to_name
+    FROM settlements s
+    JOIN users f ON f.id = s.from_user
+    JOIN users t ON t.id = s.to_user
+    WHERE s.household_id = ${householdId}
+    ORDER BY s.settled_at DESC
+    LIMIT 50
+  `;
+  return rows.map((r) => ({
+    id: r.id,
+    from: r.from_user,
+    fromName: r.from_name,
+    to: r.to_user,
+    toName: r.to_name,
+    amount: Number(r.amount),
+    settledAt:
+      r.settled_at instanceof Date ? r.settled_at.toISOString() : r.settled_at,
+  }));
+}

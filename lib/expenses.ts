@@ -63,3 +63,56 @@ export async function createExpense(args: CreateExpenseArgs): Promise<string> {
   void invalidatePlan(args.householdId);
   return expenseId;
 }
+
+/**
+ * Update an existing expense (scoped to its household) and replace its splits,
+ * atomically in a single statement: a CTE updates the row, deletes the old
+ * splits, and inserts the recomputed ones. Returns false if no such expense
+ * exists in the household.
+ */
+export async function updateExpense(
+  expenseId: string,
+  args: Omit<CreateExpenseArgs, "createdAt" | "recurringId">,
+): Promise<boolean> {
+  const err = validateSplits(args.amount, args.splitType, args.splits);
+  if (err) throw new Error(err);
+
+  const shares = computeSplits(args.amount, args.splitType, args.splits);
+  const splitRows = Object.entries(shares).map(([user_id, amount]) => ({
+    user_id,
+    amount,
+  }));
+
+  await ensureSchema();
+  const { rows } = await sql`
+    WITH upd AS (
+      UPDATE expenses SET
+        description = ${args.description},
+        amount      = ${args.amount},
+        category    = ${args.category},
+        split_type  = ${args.splitType},
+        paid_by     = ${args.paidBy},
+        receipt_url = ${args.receiptUrl ?? null}
+      WHERE id = ${expenseId} AND household_id = ${args.householdId}
+      RETURNING id
+    ),
+    del AS (
+      DELETE FROM expense_splits
+      WHERE expense_id IN (SELECT id FROM upd)
+      RETURNING 1
+    ),
+    ins AS (
+      INSERT INTO expense_splits (expense_id, user_id, amount)
+      SELECT (SELECT id FROM upd), s.user_id, s.amount
+      FROM jsonb_to_recordset(${JSON.stringify(splitRows)}::jsonb)
+        AS s(user_id uuid, amount numeric)
+      WHERE EXISTS (SELECT 1 FROM upd)
+      RETURNING 1
+    )
+    SELECT id FROM upd
+  `;
+
+  if (rows.length === 0) return false;
+  void invalidatePlan(args.householdId);
+  return true;
+}

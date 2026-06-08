@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Pencil } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MemberAvatar } from "@/components/member-avatar";
 import { CATEGORIES, type Expense } from "@/lib/types";
@@ -23,11 +24,13 @@ export function ExpenseDetailSheet({
   currentUserId,
   open,
   onOpenChange,
+  onEdit,
 }: {
   expense: Expense | null;
   currentUserId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEdit?: (expense: Expense) => void;
 }) {
   const cat = expense
     ? CATEGORIES.find((c) => c.value === expense.category)
@@ -112,6 +115,17 @@ export function ExpenseDetailSheet({
                   </span>
                 </a>
               </>
+            )}
+
+            {onEdit && (
+              <Button
+                variant="outline"
+                className="mt-5 w-full"
+                onClick={() => onEdit(expense)}
+              >
+                <Pencil className="h-4 w-4" />
+                Edit expense
+              </Button>
             )}
           </>
         )}
