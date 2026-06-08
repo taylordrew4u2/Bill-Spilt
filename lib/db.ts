@@ -1,14 +1,21 @@
-import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
+import { Pool } from "pg";
 
 /**
- * Database access via Neon's HTTP driver.
+ * Provider-agnostic database access.
  *
- * We deliberately use `@neondatabase/serverless` directly rather than
- * `@vercel/postgres`'s `sql`/`createPool`, because the latter hard-rejects a
- * connection string unless its host contains `-pooler.` (pooled) — which makes
- * the app brittle to exactly how `POSTGRES_URL` was provisioned. The Neon HTTP
- * driver accepts BOTH pooled and direct connection strings, so the app works
- * regardless. `fullResults` makes queries return pg-style `{ rows, rowCount }`.
+ * The app may be pointed at different managed Postgres providers depending on
+ * what was provisioned in the Vercel marketplace (Neon, Prisma Postgres, etc.).
+ * Rather than depend on a single provider's quirks, we pick a backend from the
+ * connection string's host:
+ *
+ *   - Neon hosts (`*.neon.tech`) → Neon's low-latency HTTP driver.
+ *   - Everything else            → standard `pg` over TCP (works with Prisma
+ *                                  Postgres, Supabase, RDS, plain Postgres…).
+ *
+ * Both are exposed through a single `sql` helper that works as a tagged
+ * template (`sql\`SELECT ${x}\``) and as a function (`sql(text, params)`), and
+ * always resolves to a pg-style `{ rows, rowCount }` result.
  */
 const connectionString =
   process.env.POSTGRES_URL ??
@@ -16,23 +23,71 @@ const connectionString =
   process.env.DATABASE_URL ??
   "";
 
-const client = connectionString
-  ? neon(connectionString, { fullResults: true })
-  : null;
+type QueryResult = { rows: any[]; rowCount: number };
+type Runner = (text: string, params: unknown[]) => Promise<QueryResult>;
 
-// A tagged-template (and `(query, params)`) function with the same surface the
-// rest of the app expects. Throws a clear error if the DB is unconfigured,
-// instead of crashing at import time (so /api/health can still report status).
-export const sql = ((...args: unknown[]) => {
-  if (!client) {
+function makeRunner(conn: string): Runner | null {
+  if (!conn) return null;
+  let host = "";
+  try {
+    host = new URL(conn).hostname;
+  } catch {
+    /* fall through to pg, which has its own parser */
+  }
+
+  if (host.includes("neon.tech")) {
+    const client = neon(conn, { fullResults: true });
+    return async (text, params) => {
+      const r = (await client(text, params as any[])) as any;
+      return { rows: r.rows, rowCount: r.rowCount ?? r.rows.length };
+    };
+  }
+
+  // Standard TCP pool. Small max keeps us within managed-provider connection
+  // limits across warm serverless instances. SSL is required by managed hosts.
+  const isLocal = host === "localhost" || host === "127.0.0.1";
+  const pool = new Pool({
+    connectionString: conn,
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 15_000,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+  });
+  return async (text, params) => {
+    const r = await pool.query(text, params as any[]);
+    return { rows: r.rows, rowCount: r.rowCount ?? r.rows.length };
+  };
+}
+
+const runner = makeRunner(connectionString);
+
+/**
+ * Unified query helper. Usage:
+ *   await sql`SELECT * FROM users WHERE id = ${id}`   // tagged template
+ *   await sql(textWithDollarParams, [a, b])           // function form
+ */
+export const sql = ((
+  strings: TemplateStringsArray | string,
+  ...values: unknown[]
+): Promise<QueryResult> => {
+  if (!runner) {
     throw new Error(
-      "Database is not configured: set the POSTGRES_URL environment variable to a Neon connection string.",
+      "Database is not configured: set POSTGRES_URL to a Postgres connection string.",
     );
   }
-  // Forwards both call forms: sql`...` and sql(queryText, params).
-  // @ts-expect-error - variadic forwarding of overloaded call signatures
-  return client(...args);
-}) as unknown as NeonQueryFunction<false, true>;
+  if (typeof strings === "string") {
+    return runner(strings, (values[0] as unknown[]) ?? []);
+  }
+  // Build a parameterized query ($1, $2, …) from the template literal.
+  let text = strings[0];
+  for (let i = 0; i < values.length; i++) {
+    text += `$${i + 1}${strings[i + 1]}`;
+  }
+  return runner(text, values);
+}) as {
+  (strings: TemplateStringsArray, ...values: unknown[]): Promise<QueryResult>;
+  (text: string, params?: unknown[]): Promise<QueryResult>;
+};
 
 /**
  * Idempotent schema bootstrap. Safe to call on every cold start; all
@@ -55,7 +110,14 @@ export function ensureSchema(): Promise<void> {
 }
 
 async function bootstrap(): Promise<void> {
-  await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`;
+  // gen_random_uuid() is a core function since Postgres 13, so pgcrypto isn't
+  // strictly required. Some managed providers forbid CREATE EXTENSION, so try
+  // it but don't fail the whole bootstrap if it's not permitted.
+  try {
+    await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`;
+  } catch {
+    /* relying on core gen_random_uuid() */
+  }
 
   await sql`
     CREATE TABLE IF NOT EXISTS users (
