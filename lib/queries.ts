@@ -47,13 +47,32 @@ export async function isMember(
 export async function getMembers(householdId: string): Promise<Member[]> {
   await ensureSchema();
   const { rows } = await sql`
-    SELECT u.id, u.name, u.email
+    SELECT u.id, u.name, u.email, m.role
     FROM household_members m
     JOIN users u ON u.id = m.user_id
     WHERE m.household_id = ${householdId}
     ORDER BY m.joined_at ASC
   `;
-  return rows.map((r) => ({ id: r.id, name: r.name, email: r.email }));
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    email: r.email,
+    role: r.role === "owner" ? "owner" : "member",
+  }));
+}
+
+/** Whether a user is the owner (head admin) of a household. */
+export async function isOwner(
+  householdId: string,
+  userId: string,
+): Promise<boolean> {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT 1 FROM household_members
+    WHERE household_id = ${householdId} AND user_id = ${userId} AND role = 'owner'
+    LIMIT 1
+  `;
+  return rows.length > 0;
 }
 
 export async function getExpenses(householdId: string): Promise<Expense[]> {
