@@ -29,6 +29,7 @@ export interface Member {
   id: string;
   name: string;
   email: string;
+  role: "owner" | "member";
 }
 
 export interface SplitInput {

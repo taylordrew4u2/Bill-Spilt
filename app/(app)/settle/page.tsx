@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight, PartyPopper, Loader2, Undo2, History } from "lucide-react";
+import {
+  ArrowRight,
+  PartyPopper,
+  Loader2,
+  Undo2,
+  History,
+  CheckCheck,
+  ShieldCheck,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +31,7 @@ interface SettlementRecord {
 }
 
 export default function SettlePage() {
-  const { version, mutate, currentUserId } = useAppData();
+  const { version, mutate, currentUserId, isAdmin } = useAppData();
   const { toast } = useToast();
   const { data, loading, refetch } = useFetch<{
     balances: Balance[];
@@ -34,6 +42,7 @@ export default function SettlePage() {
   );
   const [settling, setSettling] = React.useState<string | null>(null);
   const [undoing, setUndoing] = React.useState<string | null>(null);
+  const [settlingAll, setSettlingAll] = React.useState(false);
 
   const refetchHistory = history.refetch;
   React.useEffect(() => {
@@ -43,6 +52,29 @@ export default function SettlePage() {
 
   const transfers = data?.transfers ?? [];
   const settlements = history.data?.settlements ?? [];
+
+  async function markAllPaid() {
+    if (!window.confirm("Record every outstanding payment as settled? This clears all balances.")) {
+      return;
+    }
+    setSettlingAll(true);
+    try {
+      const res = await fetch("/api/settle/all", { method: "POST" });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ title: body.error || "Could not settle everyone", variant: "error" });
+        return;
+      }
+      toast({
+        title: `Settled ${body.recorded} payment${body.recorded === 1 ? "" : "s"}`,
+        variant: "success",
+      });
+      mutate();
+      await Promise.all([refetch(), refetchHistory()]);
+    } finally {
+      setSettlingAll(false);
+    }
+  }
 
   async function undoSettlement(id: string) {
     setUndoing(id);
@@ -90,6 +122,29 @@ export default function SettlePage() {
           The fewest payments to clear all debts.
         </p>
       </div>
+
+      {isAdmin && transfers.length > 0 && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="flex items-center gap-3 p-4">
+            <ShieldCheck className="h-5 w-5 flex-shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Admin: settle everyone up</p>
+              <p className="text-xs text-muted-foreground">
+                Record all {transfers.length} payment
+                {transfers.length === 1 ? "" : "s"} at once.
+              </p>
+            </div>
+            <Button size="sm" onClick={markAllPaid} disabled={settlingAll}>
+              {settlingAll ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCheck className="h-4 w-4" />
+              )}
+              Mark all paid
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {loading && !data ? (
         <div className="space-y-3">

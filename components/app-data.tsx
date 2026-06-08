@@ -13,6 +13,8 @@ interface AppData {
   household: Household | null;
   members: Member[];
   currentUserId: string | null;
+  /** True when the current user is the household owner (head admin). */
+  isAdmin: boolean;
   /** Bumped after any mutation so tabs can re-fetch derived data. */
   version: number;
   loading: boolean;
@@ -64,12 +66,17 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
 
   const mutate = React.useCallback(() => setVersion((v) => v + 1), []);
 
+  const isAdmin =
+    !!currentUserId &&
+    members.some((m) => m.id === currentUserId && m.role === "owner");
+
   return (
     <Ctx.Provider
       value={{
         household,
         members,
         currentUserId,
+        isAdmin,
         version,
         loading,
         needsSetup,
