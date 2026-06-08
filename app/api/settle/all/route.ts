@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
 import { getSettlementPlan, isOwner } from "@/lib/queries";
 import { invalidatePlan } from "@/lib/cache";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,12 @@ export async function POST() {
     `;
 
     void invalidatePlan(householdId);
+    await logActivity(
+      householdId,
+      userId,
+      "settled_all",
+      `Settled everyone up (${transfers.length} payment${transfers.length === 1 ? "" : "s"})`,
+    );
     return NextResponse.json({ recorded: transfers.length });
   });
 }

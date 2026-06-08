@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
-import { isOwner, isMember } from "@/lib/queries";
+import { isOwner, isMember, getMembers } from "@/lib/queries";
+import { logActivity } from "@/lib/activity";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -43,6 +44,15 @@ export async function POST(req: Request) {
         AND user_id IN (${userId}, ${toUserId})
     `;
 
+    const newAdmin =
+      (await getMembers(householdId)).find((m) => m.id === toUserId)?.name ??
+      "a member";
+    await logActivity(
+      householdId,
+      userId,
+      "admin_transferred",
+      `Made ${newAdmin} the admin`,
+    );
     return NextResponse.json({ ok: true });
   });
 }

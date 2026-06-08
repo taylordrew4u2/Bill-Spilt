@@ -3,6 +3,8 @@ import { requireHousehold, handle, ApiError } from "@/lib/api";
 import { getExpenses, isMember } from "@/lib/queries";
 import { createExpense } from "@/lib/expenses";
 import { expenseSchema } from "@/lib/validation";
+import { logActivity } from "@/lib/activity";
+import { formatCurrency } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,6 +50,12 @@ export async function POST(req: Request) {
       createdAt: data.createdAt,
     });
 
+    await logActivity(
+      householdId,
+      userId,
+      "expense_added",
+      `Added “${data.description}” (${formatCurrency(data.amount)})`,
+    );
     return NextResponse.json({ id }, { status: 201 });
   });
 }

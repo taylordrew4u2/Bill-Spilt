@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { sql, ensureSchema } from "@/lib/db";
 import { createExpense } from "@/lib/expenses";
+import { logActivity } from "@/lib/activity";
+import { formatCurrency } from "@/lib/utils";
 import type { SplitInput } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -43,6 +45,13 @@ export async function GET(req: Request) {
         splits,
         recurringId: bill.id,
       });
+
+      await logActivity(
+        bill.household_id,
+        null,
+        "recurring_charged",
+        `Auto-logged recurring bill “${bill.description}” (${formatCurrency(Number(bill.amount))})`,
+      );
 
       // Advance the schedule from the previous next_run to avoid drift.
       const base = new Date(bill.next_run);

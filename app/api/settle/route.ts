@@ -4,6 +4,8 @@ import { requireHousehold, handle, ApiError } from "@/lib/api";
 import { getSettlementPlan, isMember } from "@/lib/queries";
 import { getCachedPlan, setCachedPlan, invalidatePlan } from "@/lib/cache";
 import { settleSchema } from "@/lib/validation";
+import { logActivity } from "@/lib/activity";
+import { formatCurrency } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +27,7 @@ export async function GET() {
 // Record that a transfer was paid; this rebalances the ledger.
 export async function POST(req: Request) {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
     const body = await req.json();
     const parsed = settleSchema.safeParse(body);
     if (!parsed.success) throw new ApiError(400, "Invalid settlement");
@@ -41,6 +43,12 @@ export async function POST(req: Request) {
       VALUES (${householdId}, ${from}, ${to}, ${amount})
     `;
     void invalidatePlan(householdId);
+    await logActivity(
+      householdId,
+      userId,
+      "settlement_recorded",
+      `Recorded a ${formatCurrency(amount)} payment`,
+    );
     return NextResponse.json({ ok: true }, { status: 201 });
   });
 }

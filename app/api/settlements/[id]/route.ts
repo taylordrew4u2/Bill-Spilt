@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
 import { invalidatePlan } from "@/lib/cache";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -11,13 +12,14 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
     const { rowCount } = await sql`
       DELETE FROM settlements
       WHERE id = ${params.id} AND household_id = ${householdId}
     `;
     if (!rowCount) throw new ApiError(404, "Settlement not found");
     void invalidatePlan(householdId);
+    await logActivity(householdId, userId, "settlement_undone", "Undid a settlement");
     return NextResponse.json({ ok: true });
   });
 }

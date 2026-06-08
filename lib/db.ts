@@ -201,10 +201,23 @@ async function bootstrap(): Promise<void> {
     )
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+      actor_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+      actor_name   TEXT NOT NULL,
+      action       TEXT NOT NULL,
+      detail       TEXT,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
   await sql`CREATE INDEX IF NOT EXISTS idx_expenses_household ON expenses(household_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_splits_expense ON expense_splits(expense_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_members_user ON household_members(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_settlements_household ON settlements(household_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_activity_household ON activity_log(household_id, created_at DESC)`;
 }
 
 /** Max members per household (the "reasonable cap" of 12). */

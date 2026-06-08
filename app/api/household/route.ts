@@ -4,6 +4,7 @@ import { requireUserId, requireHousehold, handle, ApiError } from "@/lib/api";
 import { getUserHousehold, isOwner } from "@/lib/queries";
 import { createHouseholdSchema, joinHouseholdSchema } from "@/lib/validation";
 import { generateInviteCode } from "@/lib/utils";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,12 @@ export async function PATCH(req: Request) {
     await sql`
       UPDATE households SET name = ${parsed.data.name} WHERE id = ${householdId}
     `;
+    await logActivity(
+      householdId,
+      userId,
+      "household_renamed",
+      `Renamed the household to “${parsed.data.name}”`,
+    );
     return NextResponse.json({ ok: true, name: parsed.data.name });
   });
 }
@@ -64,6 +71,7 @@ export async function POST(req: Request) {
         VALUES (${household.id}, ${userId})
         ON CONFLICT DO NOTHING
       `;
+      await logActivity(household.id, userId, "member_joined", "Joined the household");
       return NextResponse.json({ household }, { status: 200 });
     }
 

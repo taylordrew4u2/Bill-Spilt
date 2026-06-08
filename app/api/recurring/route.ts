@@ -4,6 +4,8 @@ import { requireHousehold, handle, ApiError } from "@/lib/api";
 import { getRecurringBills, isMember } from "@/lib/queries";
 import { recurringSchema } from "@/lib/validation";
 import { validateSplits } from "@/lib/settlement";
+import { logActivity } from "@/lib/activity";
+import { formatCurrency } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +20,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
     const body = await req.json();
     const parsed = recurringSchema.safeParse(body);
     if (!parsed.success) {
@@ -50,6 +52,12 @@ export async function POST(req: Request) {
       )
       RETURNING id
     `;
+    await logActivity(
+      householdId,
+      userId,
+      "recurring_added",
+      `Added recurring bill “${data.description}” (${formatCurrency(data.amount)}/${data.frequency === "weekly" ? "wk" : "mo"})`,
+    );
     return NextResponse.json({ id: rows[0].id }, { status: 201 });
   });
 }
