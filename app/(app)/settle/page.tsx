@@ -1,16 +1,26 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight, PartyPopper, Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, PartyPopper, Loader2, Undo2, History } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Balance, SettlementTransfer } from "@/lib/types";
+
+interface SettlementRecord {
+  id: string;
+  from: string;
+  fromName: string;
+  to: string;
+  toName: string;
+  amount: number;
+  settledAt: string;
+}
 
 export default function SettlePage() {
   const { version, mutate, currentUserId } = useAppData();
@@ -19,13 +29,36 @@ export default function SettlePage() {
     balances: Balance[];
     transfers: SettlementTransfer[];
   }>("/api/settle");
+  const history = useFetch<{ settlements: SettlementRecord[] }>(
+    "/api/settlements",
+  );
   const [settling, setSettling] = React.useState<string | null>(null);
+  const [undoing, setUndoing] = React.useState<string | null>(null);
 
+  const refetchHistory = history.refetch;
   React.useEffect(() => {
     void refetch();
-  }, [version, refetch]);
+    void refetchHistory();
+  }, [version, refetch, refetchHistory]);
 
   const transfers = data?.transfers ?? [];
+  const settlements = history.data?.settlements ?? [];
+
+  async function undoSettlement(id: string) {
+    setUndoing(id);
+    try {
+      const res = await fetch(`/api/settlements/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        toast({ title: "Could not undo", variant: "error" });
+        return;
+      }
+      toast({ title: "Settlement undone", variant: "success" });
+      mutate();
+      await Promise.all([refetch(), refetchHistory()]);
+    } finally {
+      setUndoing(null);
+    }
+  }
 
   async function markPaid(t: SettlementTransfer) {
     const key = `${t.from}-${t.to}-${t.amount}`;
@@ -43,7 +76,7 @@ export default function SettlePage() {
       }
       toast({ title: "Settled up!", variant: "success" });
       mutate();
-      await refetch();
+      await Promise.all([refetch(), refetchHistory()]);
     } finally {
       setSettling(null);
     }
@@ -116,6 +149,50 @@ export default function SettlePage() {
             );
           })}
         </ul>
+      )}
+
+      {settlements.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <History className="h-4 w-4 text-muted-foreground" />
+              Settlement history
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y">
+              {settlements.map((s) => (
+                <li key={s.id} className="flex items-center gap-2 py-2.5">
+                  <div className="min-w-0 flex-1 text-sm">
+                    <span className="font-medium">
+                      {s.from === currentUserId ? "You" : s.fromName}
+                    </span>{" "}
+                    paid{" "}
+                    <span className="font-medium">
+                      {s.to === currentUserId ? "you" : s.toName}
+                    </span>
+                    <span className="ml-1 text-muted-foreground">
+                      · {formatDate(s.settledAt)}
+                    </span>
+                  </div>
+                  <span className="font-semibold">{formatCurrency(s.amount)}</span>
+                  <button
+                    onClick={() => undoSettlement(s.id)}
+                    disabled={undoing === s.id}
+                    aria-label="Undo settlement"
+                    className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                  >
+                    {undoing === s.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Undo2 className="h-4 w-4" />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
