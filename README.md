@@ -1,97 +1,189 @@
-# BillBuddies 💸
+<div align="center">
 
-Track shared expenses with roommates, see instant balances, and settle up with
-the **minimum number of payments** — all from your phone. BillBuddies is an
-installable, touch-first, offline-capable **Progressive Web App** built to run
-entirely on **Vercel's free tier**. Free forever, no premium tiers.
+# 💸 BillBuddies
 
-![icon](public/icons/icon-192.png)
+**Split shared expenses with roommates, see instant balances, and settle up with the fewest possible payments — from your phone.**
+
+An installable, offline-capable Progressive Web App built on Next.js 14, deployed entirely on Vercel's free tier. Free forever, no premium tiers.
+
+[**▶ Live demo**](https://bill-buddies-ochre.vercel.app)
+
+![Next.js](https://img.shields.io/badge/Next.js_14-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+
+</div>
+
+---
+
+## Why it's interesting
+
+BillBuddies isn't a CRUD demo. The hard parts are the parts users never see:
+
+- **A settlement engine** that collapses a tangle of IOUs into the minimum number of payments.
+- **Offline-first writes** that queue in the browser and reconcile when the network returns.
+- **A provider-agnostic data layer** that runs on Neon, Prisma Postgres, or any standard Postgres without code changes.
+- **Money math that always balances to the cent**, even with uneven splits.
+
+It's designed mobile-first (44px touch targets, bottom-sheet forms, swipe-to-delete), installs to the home screen, and works on a plane.
+
+---
 
 ## Features
 
-- **Log expenses in seconds** — pick a category, amount, and split type (equal,
-  exact, or percentage).
-- **Instant balances** — the Home screen shows each person's net position
-  (green = you're owed, red = you owe).
-- **Smart settle-up** — a min-cash-flow algorithm reduces every IOU into the
-  shortest possible list of "A pays B $X".
-- **Recurring bills** — rent, internet, subscriptions auto-logged daily by a
-  Vercel Cron job.
-- **Receipt photos** — attach a photo to any expense (stored in Vercel Blob).
-- **CSV export** — download the full ledger any time.
-- **Full offline support** — add expenses while offline; they queue in
-  IndexedDB (Dexie) and sync automatically when you reconnect.
-- **Installable PWA** — standalone display, app icons, and a service worker
-  that caches the app shell.
+| | |
+|---|---|
+| 🧾 **Log expenses in seconds** | Description, amount, category, and a split type — equal, exact, or percentage. |
+| ⚖️ **Instant balances** | Home screen shows each person's net position (green = owed, red = owes). |
+| 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list. |
+| 🔁 **Recurring bills** | Rent, internet, subscriptions auto-logged daily by a Vercel Cron job. |
+| 📸 **Receipt photos** | Attach a photo to any expense (Vercel Blob). |
+| 📤 **CSV export** | Download the full ledger any time. |
+| 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
+| 📲 **Installable PWA** | Standalone display, app icons, cached app shell, home-screen shortcuts. |
 
-## Tech stack (all zero-cost, Vercel-native)
+---
 
-| Concern         | Choice                                            |
-| --------------- | ------------------------------------------------- |
-| Framework       | Next.js 14 (App Router) + TypeScript              |
-| UI              | Tailwind CSS + shadcn/ui + framer-motion          |
-| Database        | Vercel Postgres (Neon) via `@vercel/postgres`     |
-| File storage    | Vercel Blob (receipt photos)                      |
-| Cache           | Vercel KV (Upstash) — optional, for settle plans  |
-| Auth            | NextAuth.js v5 (Credentials, JWT, bcrypt hashes)  |
-| Cron            | Vercel Cron Jobs (`vercel.json`)                  |
-| Offline / PWA   | `next-pwa` service worker + Dexie.js (IndexedDB)  |
+## Architecture
 
-No Supabase, Stripe, Resend, or Firebase — everything lives inside Vercel.
+```mermaid
+flowchart TD
+    subgraph Client["📱 Client — installable PWA"]
+        UI["Next.js App Router · React · Tailwind + shadcn/ui"]
+        SW["Service worker<br/>(cache-first assets · network-first API)"]
+        IDB["IndexedDB queue (Dexie)<br/>offline expenses"]
+        UI <--> SW
+        UI <--> IDB
+    end
+
+    subgraph Edge["⚡ Edge"]
+        MW["Middleware<br/>JWT auth gate"]
+    end
+
+    subgraph Server["🔧 Server — Route Handlers (Node runtime)"]
+        API["REST API<br/>/expenses /balances /settle /recurring …"]
+        SET["Settlement engine<br/>min-cash-flow"]
+        DB["Provider-agnostic SQL layer"]
+    end
+
+    subgraph Vercel["☁️ Vercel-native services (free tier)"]
+        PG["Postgres<br/>Neon · Prisma · any"]
+        BLOB["Blob<br/>receipts"]
+        KV["KV (optional)<br/>settlement cache"]
+        CRON["Cron<br/>daily recurring bills"]
+    end
+
+    UI -->|fetch| MW --> API
+    IDB -->|sync on reconnect| API
+    API --> SET
+    API --> DB --> PG
+    API --> BLOB
+    API -.-> KV
+    CRON --> API
+```
+
+---
+
+## Engineering highlights
+
+### 1. Settlement as a graph-reduction problem
+Naively, *n* roommates can owe each other up to *n²* ways. `minimizeTransfers` ([`lib/settlement.ts`](lib/settlement.ts)) reduces this to net balances, then greedily matches the largest creditor against the largest debtor each round — guaranteeing **at most _n − 1_ transfers** for _n_ people, and in practice a far shorter list. All arithmetic runs in integer cents to eliminate floating-point drift.
+
+### 2. Money that always reconciles
+Splitting `$40.00` three ways is `13.34 / 13.33 / 13.33`, not `13.333…`. `computeSplits` distributes remainder cents deterministically so the parts **always sum back to the total** — for equal, exact-amount, and percentage splits alike. Inputs are validated server-side before anything is written.
+
+### 3. Offline-first with conflict-free sync
+Expenses created offline are written to **IndexedDB** (Dexie) and flagged unsynced. A `online` listener and focus revalidation flush the queue to the API, removing each record only on a confirmed `2xx`. The UI surfaces an `OfflineBanner` with the pending count, and even a request that dies mid-flight falls back to the local queue ([`lib/sync.ts`](lib/sync.ts), [`lib/offline-db.ts`](lib/offline-db.ts)).
+
+### 4. A data layer that doesn't care who hosts Postgres
+Managed Postgres providers disagree on connection semantics (Neon speaks HTTP, others want TCP; pooled vs. direct strings). Instead of locking to one, the `sql` helper in [`lib/db.ts`](lib/db.ts) **selects a backend from the connection host** — Neon's serverless HTTP driver for `*.neon.tech`, standard `pg` over TCP for everything else — behind one tagged-template interface returning `{ rows, rowCount }`. The same build runs on Neon, Prisma Postgres, Supabase, or RDS unchanged.
+
+### 5. Atomic writes without interactive transactions
+The HTTP SQL path runs one statement per request, so there's no `BEGIN`/`COMMIT`. An expense + its N splits are written **atomically in a single CTE statement** that `INSERT … RETURNING`s the new expense id and fans it out across `jsonb_to_recordset` for the split rows — one round trip, all-or-nothing.
+
+### 6. Auth and security
+NextAuth v5 (Credentials) with **bcrypt-hashed passwords**, stateless **JWT sessions**, and an **Edge middleware** gate that's intentionally scoped to page routes only — API routes self-authorize and return JSON `401`s rather than HTML redirects. Every query is parameterized; the schema **bootstraps itself idempotently** on first request (no migration step to forget). The cron endpoint is protected by a bearer secret.
+
+---
+
+## Tech stack
+
+Every dependency is free and Vercel-native — the whole app runs at $0.
+
+| Concern | Choice |
+| --- | --- |
+| Framework | **Next.js 14** (App Router) · **TypeScript** (strict) |
+| UI | **Tailwind CSS** · **shadcn/ui** · **Framer Motion** (swipe gestures, sheets) |
+| Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected |
+| File storage | **Vercel Blob** (receipt photos) |
+| Cache | **Vercel KV** — optional, degrades gracefully |
+| Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) |
+| Background jobs | **Vercel Cron** (`vercel.json`) |
+| Offline / PWA | **next-pwa** service worker · **Dexie.js** (IndexedDB) |
+
+No Supabase, Stripe, Resend, or Firebase.
+
+---
 
 ## Getting started
 
 ```bash
 npm install
-npm run icons      # (re)generate PWA icons — already committed
-npm run dev
+npm run dev          # http://localhost:3000
 ```
 
-Open http://localhost:3000. Note the service worker is disabled in dev (see
-`next.config.js`); PWA behaviour is active in production builds.
+The service worker is disabled in dev; PWA behaviour is active in production builds.
 
-### Environment variables
+```bash
+npm run build        # production build
+npm run lint         # ESLint (zero warnings)
+npx tsc --noEmit     # type-check (clean)
+npm run icons        # regenerate PWA icons (dependency-free generator)
+```
 
-Copy `.env.example` to `.env.local` and fill in the values. The Postgres, Blob,
-and KV variables are injected automatically when you link those stores to the
-project in the Vercel dashboard. You only need to set by hand:
+### Environment
+
+Copy `.env.example` → `.env.local`. The Postgres / Blob / KV variables are injected automatically when you link those stores in the Vercel dashboard. Set by hand:
 
 - `AUTH_SECRET` — `openssl rand -base64 32`
 - `CRON_SECRET` — any random string; protects the cron endpoint.
 
-The database schema is **created automatically** on first request via
-`ensureSchema()` in `lib/db.ts` (idempotent `CREATE TABLE IF NOT EXISTS`).
+The database **schema creates itself** on first request via `ensureSchema()` — no migrations to run.
+
+---
 
 ## Deploying to Vercel
 
-1. Push to GitHub and import the repo in Vercel.
-2. In the project, add **Storage → Postgres** and **Storage → Blob** (and
-   optionally **KV**). Vercel wires the env vars in automatically.
-3. Add `AUTH_SECRET` and `CRON_SECRET` env vars.
-4. Deploy. The `vercel.json` cron registers a daily run of
-   `/api/cron/recurring` at 06:00 UTC.
+1. Import the repo in Vercel.
+2. **Storage** → add **Postgres** and **Blob** (and optionally **KV**); env vars are wired in automatically.
+3. Add `AUTH_SECRET` and `CRON_SECRET`.
+4. Deploy. `vercel.json` registers a daily run of `/api/cron/recurring`.
 
-## How settle-up works
-
-Each expense records who paid and every participant's exact share (cents are
-distributed deterministically so totals always reconcile). Net balance per
-member = `paid − owed`, adjusted by recorded settlements. The
-`minimizeTransfers` function (`lib/settlement.ts`) then greedily matches the
-largest creditor with the largest debtor, producing at most _N − 1_ transfers
-for _N_ people.
+---
 
 ## Project structure
 
 ```
 app/
-  (auth)/login, (auth)/register     Credentials auth screens
-  (app)/home|expenses|settle|stats  The four bottom-nav tabs
-  api/                              Route handlers (REST)
-components/                         UI + feature components (shadcn/ui in ui/)
-lib/                                Domain logic, db, settlement, offline sync
-public/                             manifest.json, generated icons, service worker
-scripts/generate-icons.mjs         Dependency-free PNG icon generator
+  (auth)/login · (auth)/register        Credentials auth screens
+  (app)/home · expenses · settle · stats  Four bottom-nav tabs
+  api/                                  REST route handlers (Node runtime)
+components/
+  ui/                                   shadcn/ui primitives
+  *                                     Feature components (sheets, swipe rows, charts)
+lib/
+  settlement.ts                         Min-cash-flow + split math
+  db.ts                                 Provider-agnostic SQL layer
+  expenses.ts                           Atomic expense + splits write
+  queries.ts                            Read models & balance aggregation
+  offline-db.ts · sync.ts               IndexedDB queue & sync
+public/                                 manifest.json · generated icons · service worker
+scripts/generate-icons.mjs             Zero-dependency PNG icon generator
 ```
+
+---
 
 ## License
 
