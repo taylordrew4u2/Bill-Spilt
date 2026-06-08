@@ -9,6 +9,7 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { AddExpenseSheet } from "@/components/add-expense-sheet";
 import { AppDataProvider, useAppData } from "@/components/app-data";
 import { HouseholdSetup } from "@/components/household-setup";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 function Header() {
   const { household } = useAppData();
@@ -22,13 +23,16 @@ function Header() {
           </span>
         )}
       </div>
-      <button
-        onClick={() => signOut({ callbackUrl: "/login" })}
-        aria-label="Log out"
-        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
-      >
-        <LogOut className="h-5 w-5" />
-      </button>
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          aria-label="Log out"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
+      </div>
     </header>
   );
 }
