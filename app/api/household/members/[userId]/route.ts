@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
-import { isOwner, isMember, getBalances } from "@/lib/queries";
+import { isOwner, isMember, getBalances, getMembers } from "@/lib/queries";
 import { invalidatePlan } from "@/lib/cache";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -47,11 +48,21 @@ export async function DELETE(
       );
     }
 
+    const targetName =
+      (await getMembers(householdId)).find((m) => m.id === targetId)?.name ??
+      "a member";
+
     await sql`
       DELETE FROM household_members
       WHERE household_id = ${householdId} AND user_id = ${targetId}
     `;
     void invalidatePlan(householdId);
+    await logActivity(
+      householdId,
+      callerId,
+      removingSelf ? "member_left" : "member_removed",
+      removingSelf ? "Left the household" : `Removed ${targetName}`,
+    );
     return NextResponse.json({ ok: true, left: removingSelf });
   });
 }

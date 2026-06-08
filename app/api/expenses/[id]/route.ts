@@ -5,6 +5,8 @@ import { updateExpense } from "@/lib/expenses";
 import { isMember } from "@/lib/queries";
 import { expenseSchema } from "@/lib/validation";
 import { invalidatePlan } from "@/lib/cache";
+import { logActivity } from "@/lib/activity";
+import { formatCurrency } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -13,16 +15,23 @@ export async function DELETE(
   { params }: { params: { id: string } },
 ) {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
 
     // Only delete if the expense belongs to the caller's household.
-    const { rowCount } = await sql`
+    const { rows } = await sql`
       DELETE FROM expenses
       WHERE id = ${params.id} AND household_id = ${householdId}
+      RETURNING description
     `;
-    if (!rowCount) throw new ApiError(404, "Expense not found");
+    if (rows.length === 0) throw new ApiError(404, "Expense not found");
 
     void invalidatePlan(householdId);
+    await logActivity(
+      householdId,
+      userId,
+      "expense_deleted",
+      `Deleted “${rows[0].description}”`,
+    );
     return NextResponse.json({ ok: true });
   });
 }
@@ -32,7 +41,7 @@ export async function PATCH(
   { params }: { params: { id: string } },
 ) {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
     const body = await req.json();
     const parsed = expenseSchema.safeParse(body);
     if (!parsed.success) {
@@ -59,6 +68,12 @@ export async function PATCH(
     });
     if (!ok) throw new ApiError(404, "Expense not found");
 
+    await logActivity(
+      householdId,
+      userId,
+      "expense_edited",
+      `Edited “${data.description}” (${formatCurrency(data.amount)})`,
+    );
     return NextResponse.json({ ok: true });
   });
 }

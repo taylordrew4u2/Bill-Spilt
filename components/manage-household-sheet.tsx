@@ -16,6 +16,16 @@ import { Badge } from "@/components/ui/badge";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useToast } from "@/components/ui/toaster";
 import { useAppData } from "@/components/app-data";
+import { useFetch } from "@/lib/use-fetch";
+import { timeAgo } from "@/lib/utils";
+
+interface ActivityEntry {
+  id: string;
+  actorName: string;
+  action: string;
+  detail: string | null;
+  createdAt: string;
+}
 
 export function ManageHouseholdSheet({
   open,
@@ -24,9 +34,19 @@ export function ManageHouseholdSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { household, members, currentUserId, isAdmin, refresh, mutate } =
+  const { household, members, currentUserId, isAdmin, version, refresh, mutate } =
     useAppData();
   const { toast } = useToast();
+
+  // Only fetch activity while the sheet is open.
+  const activityQ = useFetch<{ activity: ActivityEntry[] }>(
+    open ? "/api/activity" : null,
+  );
+  const refetchActivity = activityQ.refetch;
+  React.useEffect(() => {
+    if (open) void refetchActivity();
+  }, [open, version, refetchActivity]);
+  const activity = activityQ.data?.activity ?? [];
 
   const [editingName, setEditingName] = React.useState(false);
   const [name, setName] = React.useState(household?.name ?? "");
@@ -260,6 +280,31 @@ export function ManageHouseholdSheet({
             );
           })}
         </ul>
+
+        {activity.length > 0 && (
+          <>
+            <Separator className="my-4" />
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Recent activity
+            </p>
+            <ul className="space-y-2.5">
+              {activity.map((a) => (
+                <li key={a.id} className="flex items-start gap-2 text-sm">
+                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary/60" />
+                  <span className="flex-1">
+                    <span className="font-medium">{a.actorName}</span>{" "}
+                    <span className="text-muted-foreground">
+                      {a.detail ?? a.action.replace(/_/g, " ")}
+                    </span>
+                  </span>
+                  <span className="flex-shrink-0 text-xs text-muted-foreground">
+                    {timeAgo(a.createdAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </SheetContent>
     </Sheet>
   );

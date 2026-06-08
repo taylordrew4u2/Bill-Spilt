@@ -28,6 +28,20 @@ export function formatDate(input: string | Date): string {
   }).format(d);
 }
 
+/** Compact relative time, e.g. "just now", "5m", "3h", "2d", else a date. */
+export function timeAgo(input: string | Date): string {
+  const d = typeof input === "string" ? new Date(input) : input;
+  const secs = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (secs < 45) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(d);
+}
+
 /** Generate a short, human-readable invite code for a household. */
 export function generateInviteCode(length = 6): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
