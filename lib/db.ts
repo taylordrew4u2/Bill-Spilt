@@ -1,4 +1,38 @@
-import { sql } from "@vercel/postgres";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
+
+/**
+ * Database access via Neon's HTTP driver.
+ *
+ * We deliberately use `@neondatabase/serverless` directly rather than
+ * `@vercel/postgres`'s `sql`/`createPool`, because the latter hard-rejects a
+ * connection string unless its host contains `-pooler.` (pooled) — which makes
+ * the app brittle to exactly how `POSTGRES_URL` was provisioned. The Neon HTTP
+ * driver accepts BOTH pooled and direct connection strings, so the app works
+ * regardless. `fullResults` makes queries return pg-style `{ rows, rowCount }`.
+ */
+const connectionString =
+  process.env.POSTGRES_URL ??
+  process.env.POSTGRES_URL_NON_POOLING ??
+  process.env.DATABASE_URL ??
+  "";
+
+const client = connectionString
+  ? neon(connectionString, { fullResults: true })
+  : null;
+
+// A tagged-template (and `(query, params)`) function with the same surface the
+// rest of the app expects. Throws a clear error if the DB is unconfigured,
+// instead of crashing at import time (so /api/health can still report status).
+export const sql = ((...args: unknown[]) => {
+  if (!client) {
+    throw new Error(
+      "Database is not configured: set the POSTGRES_URL environment variable to a Neon connection string.",
+    );
+  }
+  // Forwards both call forms: sql`...` and sql(queryText, params).
+  // @ts-expect-error - variadic forwarding of overloaded call signatures
+  return client(...args);
+}) as unknown as NeonQueryFunction<false, true>;
 
 /**
  * Idempotent schema bootstrap. Safe to call on every cold start; all
@@ -113,5 +147,3 @@ async function bootstrap(): Promise<void> {
 
 /** Max members per household (the "reasonable cap" of 12). */
 export const MAX_MEMBERS = 12;
-
-export { sql };
