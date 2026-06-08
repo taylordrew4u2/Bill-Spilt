@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { signOut } from "next-auth/react";
-import { LogOut, Loader2 } from "lucide-react";
+import { LogOut, Loader2, Settings } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { BottomNav, Sidebar } from "@/components/bottom-nav";
 import { OfflineBanner } from "@/components/offline-banner";
@@ -10,21 +10,34 @@ import { AddExpenseSheet } from "@/components/add-expense-sheet";
 import { AppDataProvider, useAppData } from "@/components/app-data";
 import { HouseholdSetup } from "@/components/household-setup";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ManageHouseholdSheet } from "@/components/manage-household-sheet";
 
 function Header() {
   const { household } = useAppData();
+  const [manageOpen, setManageOpen] = React.useState(false);
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
-      <div className="flex flex-col">
+      <button
+        onClick={() => setManageOpen(true)}
+        className="flex flex-col items-start text-left"
+        aria-label="Manage household"
+      >
         <Brand size="sm" />
         {household && (
           <span className="mt-0.5 pl-9 text-xs text-muted-foreground">
             {household.name}
           </span>
         )}
-      </div>
+      </button>
       <div className="flex items-center gap-1">
         <ThemeToggle />
+        <button
+          onClick={() => setManageOpen(true)}
+          aria-label="Manage household"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           aria-label="Log out"
@@ -33,6 +46,7 @@ function Header() {
           <LogOut className="h-5 w-5" />
         </button>
       </div>
+      <ManageHouseholdSheet open={manageOpen} onOpenChange={setManageOpen} />
     </header>
   );
 }
