@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql, ensureSchema, MAX_MEMBERS } from "@/lib/db";
-import { requireUserId, handle, ApiError } from "@/lib/api";
-import { getUserHousehold } from "@/lib/queries";
+import { requireUserId, requireHousehold, handle, ApiError } from "@/lib/api";
+import { getUserHousehold, isOwner } from "@/lib/queries";
 import { createHouseholdSchema, joinHouseholdSchema } from "@/lib/validation";
 import { generateInviteCode } from "@/lib/utils";
 
@@ -13,6 +13,24 @@ export async function GET() {
     const userId = await requireUserId();
     const household = await getUserHousehold(userId);
     return NextResponse.json({ household });
+  });
+}
+
+// Rename the household (head admin only).
+export async function PATCH(req: Request) {
+  return handle(async () => {
+    const { userId, householdId } = await requireHousehold();
+    if (!(await isOwner(householdId, userId))) {
+      throw new ApiError(403, "Only the household admin can rename the household");
+    }
+    const body = await req.json();
+    const parsed = createHouseholdSchema.safeParse(body);
+    if (!parsed.success) throw new ApiError(400, "Household name is required");
+
+    await sql`
+      UPDATE households SET name = ${parsed.data.name} WHERE id = ${householdId}
+    `;
+    return NextResponse.json({ ok: true, name: parsed.data.name });
   });
 }
 
