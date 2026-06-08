@@ -5,9 +5,11 @@ import { authConfig } from "@/auth.config";
 export default NextAuth(authConfig).auth;
 
 export const config = {
-  // Run on all routes except static assets, the service worker, manifest,
-  // icons, and the NextAuth API routes.
+  // Run on page routes only. All `/api/*` routes are excluded — they enforce
+  // their own auth and return JSON 401s (a 307 redirect to /login would break
+  // fetch clients and block public endpoints like /api/register). Also skip
+  // static assets, the service worker, manifest, and icons.
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-.*|icons/.*|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|js|css|woff2?)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox-.*|icons/.*|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|js|css|woff2?)$).*)",
   ],
 };
