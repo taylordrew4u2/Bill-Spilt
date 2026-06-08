@@ -5,6 +5,7 @@ import { Receipt, ArrowDownToLine } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExpenseItem } from "@/components/expense-item";
+import { ExpenseDetailSheet } from "@/components/expense-detail-sheet";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
@@ -17,6 +18,13 @@ export default function ExpensesPage() {
   const { data, loading, refetch } = useFetch<{ expenses: Expense[] }>(
     "/api/expenses",
   );
+  const [selected, setSelected] = React.useState<Expense | null>(null);
+  const [detailOpen, setDetailOpen] = React.useState(false);
+
+  function openDetail(expense: Expense) {
+    setSelected(expense);
+    setDetailOpen(true);
+  }
 
   React.useEffect(() => {
     void refetch();
@@ -97,6 +105,7 @@ export default function ExpensesPage() {
                       expense={e}
                       currentUserId={currentUserId}
                       onDelete={handleDelete}
+                      onOpen={openDetail}
                     />
                   ))}
                 </CardContent>
@@ -105,6 +114,13 @@ export default function ExpensesPage() {
           ))}
         </>
       )}
+
+      <ExpenseDetailSheet
+        expense={selected}
+        currentUserId={currentUserId}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 }

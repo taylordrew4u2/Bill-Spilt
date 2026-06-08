@@ -18,13 +18,17 @@ export function ExpenseItem({
   expense,
   currentUserId,
   onDelete,
+  onOpen,
 }: {
   expense: Expense;
   currentUserId: string | null;
   onDelete: (id: string) => void;
+  onOpen?: (expense: Expense) => void;
 }) {
   const x = useMotionValue(0);
   const [removing, setRemoving] = React.useState(false);
+  // Track whether the pointer moved (a drag) so a swipe doesn't also fire tap.
+  const draggedRef = React.useRef(false);
   const cat = CATEGORIES.find((c) => c.value === expense.category);
 
   // Reveal the red delete affordance as the user drags left.
@@ -66,8 +70,20 @@ export function ExpenseItem({
         style={{ x }}
         dragConstraints={{ left: -160, right: 0 }}
         dragElastic={0.05}
+        onDragStart={() => {
+          draggedRef.current = true;
+        }}
         onDragEnd={handleDragEnd}
-        className="relative flex touch-pan-y items-center gap-3 bg-card py-3"
+        onClick={() => {
+          // Only treat as a tap if it wasn't a drag/swipe.
+          if (draggedRef.current) {
+            draggedRef.current = false;
+            return;
+          }
+          onOpen?.(expense);
+        }}
+        role={onOpen ? "button" : undefined}
+        className="relative flex cursor-pointer touch-pan-y items-center gap-3 bg-card py-3"
       >
         <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-xl">
           {cat?.emoji ?? "📦"}
