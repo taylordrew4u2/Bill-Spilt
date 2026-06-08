@@ -10,8 +10,28 @@ export const dynamic = "force-dynamic";
  * never connection strings or secrets — so it's safe to leave deployed.
  */
 export async function GET() {
+  // Sanitized inspection of the connection string: scheme + host only, never
+  // the username/password/db name. Helps diagnose "wrong provider" issues.
+  let conn: Record<string, unknown> = { present: false };
+  const raw = process.env.POSTGRES_URL ?? process.env.POSTGRES_URL_NON_POOLING;
+  if (raw) {
+    try {
+      const u = new URL(raw);
+      conn = {
+        present: true,
+        scheme: u.protocol.replace(":", ""),
+        host: u.hostname,
+        isNeon: u.hostname.includes("neon.tech"),
+        isPooled: u.hostname.includes("-pooler."),
+      };
+    } catch {
+      conn = { present: true, parseError: true, scheme: raw.split("://")[0] };
+    }
+  }
+
   const result: {
     env: Record<string, boolean>;
+    conn: Record<string, unknown>;
     connect: "ok" | "fail";
     schema: "ok" | "fail" | "skipped";
     error?: string;
@@ -20,9 +40,11 @@ export async function GET() {
       POSTGRES_URL: Boolean(process.env.POSTGRES_URL),
       POSTGRES_PRISMA_URL: Boolean(process.env.POSTGRES_PRISMA_URL),
       POSTGRES_URL_NON_POOLING: Boolean(process.env.POSTGRES_URL_NON_POOLING),
+      DATABASE_URL: Boolean(process.env.DATABASE_URL),
       AUTH_SECRET: Boolean(process.env.AUTH_SECRET),
       BLOB_READ_WRITE_TOKEN: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
     },
+    conn,
     connect: "fail",
     schema: "skipped",
   };
