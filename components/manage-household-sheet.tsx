@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Copy, Check, Crown, UserMinus, LogOut, Pencil } from "lucide-react";
+import { Loader2, Copy, Check, Crown, UserMinus, LogOut, Pencil, ShieldPlus } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -82,6 +82,31 @@ export function ManageHouseholdSheet({
         variant: "success",
       });
       onOpenChange(false);
+      mutate();
+      await refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function makeAdmin(userId: string) {
+    const who = members.find((m) => m.id === userId)?.name ?? "this member";
+    if (!window.confirm(`Make ${who} the admin? You'll become a regular member.`)) {
+      return;
+    }
+    setBusyId(userId);
+    try {
+      const res = await fetch("/api/household/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toUserId: userId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ title: data.error || "Could not transfer admin", variant: "error" });
+        return;
+      }
+      toast({ title: `${who} is now the admin`, variant: "success" });
       mutate();
       await refresh();
     } finally {
@@ -200,22 +225,37 @@ export function ManageHouseholdSheet({
                   <Badge variant="secondary" className="gap-1">
                     <Crown className="h-3 w-3" /> Admin
                   </Badge>
-                ) : canRemove ? (
-                  <button
-                    onClick={() => removeMember(m.id, isSelf)}
-                    disabled={busyId === m.id}
-                    aria-label={isSelf ? "Leave household" : `Remove ${m.name}`}
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-destructive"
-                  >
-                    {busyId === m.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isSelf ? (
-                      <LogOut className="h-4 w-4" />
-                    ) : (
-                      <UserMinus className="h-4 w-4" />
+                ) : (
+                  <div className="flex items-center gap-1">
+                    {isAdmin && !isSelf && (
+                      <button
+                        onClick={() => makeAdmin(m.id)}
+                        disabled={busyId === m.id}
+                        aria-label={`Make ${m.name} admin`}
+                        title="Make admin"
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-primary"
+                      >
+                        <ShieldPlus className="h-4 w-4" />
+                      </button>
                     )}
-                  </button>
-                ) : null}
+                    {canRemove && (
+                      <button
+                        onClick={() => removeMember(m.id, isSelf)}
+                        disabled={busyId === m.id}
+                        aria-label={isSelf ? "Leave household" : `Remove ${m.name}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-destructive"
+                      >
+                        {busyId === m.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : isSelf ? (
+                          <LogOut className="h-4 w-4" />
+                        ) : (
+                          <UserMinus className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
               </li>
             );
           })}
