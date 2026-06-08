@@ -1,5 +1,4 @@
-import { db } from "@vercel/postgres";
-import { ensureSchema } from "@/lib/db";
+import { sql, ensureSchema } from "@/lib/db";
 import { computeSplits, validateSplits } from "@/lib/settlement";
 import { invalidatePlan } from "@/lib/cache";
 import type { SplitInput, SplitType, ExpenseCategory } from "@/lib/types";
@@ -20,18 +19,26 @@ export interface CreateExpenseArgs {
 /**
  * Insert an expense and its per-member splits atomically. Validates that the
  * split amounts reconcile to the total before writing. Returns the new id.
+ *
+ * Because the Neon HTTP driver runs one statement per request (no interactive
+ * BEGIN/COMMIT), we do the whole write as a single atomic statement: a CTE
+ * inserts the expense, and a second data-modifying CTE inserts every split by
+ * expanding a JSON array with `jsonb_to_recordset`. Postgres runs both
+ * data-modifying CTEs to completion within the one implicit transaction.
  */
 export async function createExpense(args: CreateExpenseArgs): Promise<string> {
   const err = validateSplits(args.amount, args.splitType, args.splits);
   if (err) throw new Error(err);
 
   const shares = computeSplits(args.amount, args.splitType, args.splits);
+  const splitRows = Object.entries(shares).map(([user_id, amount]) => ({
+    user_id,
+    amount,
+  }));
 
   await ensureSchema();
-  const client = await db.connect();
-  try {
-    await client.sql`BEGIN`;
-    const { rows } = await client.sql`
+  const { rows } = await sql`
+    WITH new_expense AS (
       INSERT INTO expenses
         (household_id, description, amount, category, split_type, paid_by, receipt_url, recurring_id, created_at)
       VALUES (
@@ -40,22 +47,19 @@ export async function createExpense(args: CreateExpenseArgs): Promise<string> {
         ${args.recurringId ?? null}, ${args.createdAt ?? new Date().toISOString()}
       )
       RETURNING id
-    `;
-    const expenseId = rows[0].id as string;
+    ),
+    inserted_splits AS (
+      INSERT INTO expense_splits (expense_id, user_id, amount)
+      SELECT new_expense.id, s.user_id, s.amount
+      FROM new_expense
+      CROSS JOIN jsonb_to_recordset(${JSON.stringify(splitRows)}::jsonb)
+        AS s(user_id uuid, amount numeric)
+      RETURNING 1
+    )
+    SELECT id FROM new_expense
+  `;
 
-    for (const [userId, amount] of Object.entries(shares)) {
-      await client.sql`
-        INSERT INTO expense_splits (expense_id, user_id, amount)
-        VALUES (${expenseId}, ${userId}, ${amount})
-      `;
-    }
-    await client.sql`COMMIT`;
-    void invalidatePlan(args.householdId);
-    return expenseId;
-  } catch (e) {
-    await client.sql`ROLLBACK`;
-    throw e;
-  } finally {
-    client.release();
-  }
+  const expenseId = rows[0].id as string;
+  void invalidatePlan(args.householdId);
+  return expenseId;
 }

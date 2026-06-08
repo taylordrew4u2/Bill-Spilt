@@ -71,7 +71,7 @@ export async function getExpenses(householdId: string): Promise<Expense[]> {
   if (rows.length === 0) return [];
 
   const ids = rows.map((r) => r.id);
-  const { rows: splitRows } = await sql.query(
+  const { rows: splitRows } = await sql(
     `SELECT s.expense_id, s.user_id, s.amount, u.name
      FROM expense_splits s JOIN users u ON u.id = s.user_id
      WHERE s.expense_id = ANY($1::uuid[])`,
