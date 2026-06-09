@@ -125,9 +125,12 @@ async function bootstrap(): Promise<void> {
       email         TEXT UNIQUE NOT NULL,
       name          TEXT NOT NULL,
       password_hash TEXT NOT NULL,
+      payment_methods JSONB NOT NULL DEFAULT '[]'::jsonb,
       created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  // For databases created before payment methods existed.
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS payment_methods JSONB NOT NULL DEFAULT '[]'::jsonb`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS households (

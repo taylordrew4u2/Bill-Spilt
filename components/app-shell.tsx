@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { signOut } from "next-auth/react";
-import { LogOut, Loader2, Settings } from "lucide-react";
+import { LogOut, Loader2, Settings, UserCircle2 } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { BottomNav, Sidebar } from "@/components/bottom-nav";
 import { OfflineBanner } from "@/components/offline-banner";
@@ -11,10 +11,12 @@ import { AppDataProvider, useAppData } from "@/components/app-data";
 import { HouseholdSetup } from "@/components/household-setup";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ManageHouseholdSheet } from "@/components/manage-household-sheet";
+import { ProfileSheet } from "@/components/profile-sheet";
 
 function Header() {
   const { household } = useAppData();
   const [manageOpen, setManageOpen] = React.useState(false);
+  const [profileOpen, setProfileOpen] = React.useState(false);
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
       <button
@@ -32,6 +34,13 @@ function Header() {
       <div className="flex items-center gap-1">
         <ThemeToggle />
         <button
+          onClick={() => setProfileOpen(true)}
+          aria-label="Your profile"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+        >
+          <UserCircle2 className="h-5 w-5" />
+        </button>
+        <button
           onClick={() => setManageOpen(true)}
           aria-label="Manage household"
           className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
@@ -47,6 +56,7 @@ function Header() {
         </button>
       </div>
       <ManageHouseholdSheet open={manageOpen} onOpenChange={setManageOpen} />
+      <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
     </header>
   );
 }

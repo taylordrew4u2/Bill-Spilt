@@ -5,6 +5,7 @@ import type {
   Expense,
   ExpenseSplit,
   Member,
+  PaymentMethod,
   RecurringBill,
   SettlementTransfer,
 } from "@/lib/types";
@@ -44,10 +45,30 @@ export async function isMember(
   return rows.length > 0;
 }
 
+function parsePaymentMethods(raw: unknown): PaymentMethod[] {
+  // pg returns jsonb as a parsed value; the Neon HTTP driver may hand back a
+  // string. Normalise both, and ignore anything malformed.
+  let val = raw;
+  if (typeof val === "string") {
+    try {
+      val = JSON.parse(val);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(val)) return [];
+  return val
+    .filter(
+      (m): m is PaymentMethod =>
+        !!m && typeof m.type === "string" && typeof m.value === "string",
+    )
+    .map((m) => ({ type: m.type, value: m.value }));
+}
+
 export async function getMembers(householdId: string): Promise<Member[]> {
   await ensureSchema();
   const { rows } = await sql`
-    SELECT u.id, u.name, u.email, m.role
+    SELECT u.id, u.name, u.email, u.payment_methods, m.role
     FROM household_members m
     JOIN users u ON u.id = m.user_id
     WHERE m.household_id = ${householdId}
@@ -58,7 +79,28 @@ export async function getMembers(householdId: string): Promise<Member[]> {
     name: r.name,
     email: r.email,
     role: r.role === "owner" ? "owner" : "member",
+    paymentMethods: parsePaymentMethods(r.payment_methods),
   }));
+}
+
+/** The current user's editable profile. */
+export async function getProfile(userId: string): Promise<{
+  id: string;
+  name: string;
+  email: string;
+  paymentMethods: PaymentMethod[];
+} | null> {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT id, name, email, payment_methods FROM users WHERE id = ${userId} LIMIT 1
+  `;
+  if (rows.length === 0) return null;
+  return {
+    id: rows[0].id,
+    name: rows[0].name,
+    email: rows[0].email,
+    paymentMethods: parsePaymentMethods(rows[0].payment_methods),
+  };
 }
 
 /** Whether a user is the owner (head admin) of a household. */

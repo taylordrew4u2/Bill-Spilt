@@ -18,7 +18,7 @@ import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { Balance, SettlementTransfer } from "@/lib/types";
+import { PAYMENT_METHODS, type Balance, type SettlementTransfer } from "@/lib/types";
 
 interface SettlementRecord {
   id: string;
@@ -31,7 +31,7 @@ interface SettlementRecord {
 }
 
 export default function SettlePage() {
-  const { version, mutate, currentUserId, isAdmin } = useAppData();
+  const { version, mutate, currentUserId, isAdmin, members } = useAppData();
   const { toast } = useToast();
   const { data, loading, refetch } = useFetch<{
     balances: Balance[];
@@ -169,6 +169,9 @@ export default function SettlePage() {
           {transfers.map((t) => {
             const key = `${t.from}-${t.to}-${t.amount}`;
             const involvesYou = t.from === currentUserId || t.to === currentUserId;
+            // When you're the payer, show the payee's ways to pay.
+            const payee = members.find((m) => m.id === t.to);
+            const showPay = t.from === currentUserId && (payee?.paymentMethods?.length ?? 0) > 0;
             return (
               <li key={key}>
                 <Card className={involvesYou ? "border-primary/40" : undefined}>
@@ -187,6 +190,29 @@ export default function SettlePage() {
                         {formatCurrency(t.amount)}
                       </span>
                     </div>
+
+                    {showPay && (
+                      <div className="mt-3 rounded-lg bg-muted/60 p-3">
+                        <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          Pay {t.toName} with
+                        </p>
+                        <ul className="space-y-1">
+                          {payee!.paymentMethods.map((pm, i) => {
+                            const def = PAYMENT_METHODS.find((p) => p.value === pm.type);
+                            return (
+                              <li key={i} className="flex items-center gap-2 text-sm">
+                                <span>{def?.emoji ?? "🔗"}</span>
+                                <span className="text-muted-foreground">
+                                  {def?.label ?? pm.type}:
+                                </span>
+                                <span className="truncate font-medium">{pm.value}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+
                     <Button
                       variant="success"
                       className="mt-3 w-full"
