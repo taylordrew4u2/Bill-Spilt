@@ -39,7 +39,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 duration-500 animate-in fade-in slide-in-from-bottom-3">
       {loading && !data ? (
         <Skeleton className="h-32 w-full rounded-xl" />
       ) : (

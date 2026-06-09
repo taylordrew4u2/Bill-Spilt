@@ -52,7 +52,15 @@ export default function SettlePage() {
     void refetchHistory();
   }, [version, refetch, refetchHistory]);
 
-  const transfers = data?.transfers ?? [];
+  // Surface transfers that involve the current user first.
+  const transfers = React.useMemo(() => {
+    const list = data?.transfers ?? [];
+    const involvesMe = (t: SettlementTransfer) =>
+      t.from === currentUserId || t.to === currentUserId;
+    return [...list].sort(
+      (a, b) => Number(involvesMe(b)) - Number(involvesMe(a)),
+    );
+  }, [data, currentUserId]);
   const settlements = history.data?.settlements ?? [];
 
   async function markAllPaid() {
@@ -142,7 +150,7 @@ export default function SettlePage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 duration-500 animate-in fade-in slide-in-from-bottom-3">
       <div>
         <h1 className="text-lg font-bold">Settle up</h1>
         <p className="text-sm text-muted-foreground">
