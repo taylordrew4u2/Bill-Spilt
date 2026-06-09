@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { MemberAvatar } from "@/components/member-avatar";
+import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { useToast } from "@/components/ui/toaster";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
@@ -226,55 +227,63 @@ export function ManageHouseholdSheet({
             const canRemove =
               m.role !== "owner" && (isAdmin || isSelf) && !busyId;
             return (
-              <li key={m.id} className="flex items-center gap-3 py-2.5">
-                <MemberAvatar id={m.id} name={m.name} className="h-9 w-9" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {m.name}
-                    {isSelf && (
-                      <span className="ml-1 text-xs text-muted-foreground">
-                        (you)
-                      </span>
-                    )}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {m.email}
-                  </p>
-                </div>
-                {m.role === "owner" ? (
-                  <Badge variant="secondary" className="gap-1">
-                    <Crown className="h-3 w-3" /> Admin
-                  </Badge>
-                ) : (
-                  <div className="flex items-center gap-1">
-                    {isAdmin && !isSelf && (
-                      <button
-                        onClick={() => makeAdmin(m.id)}
-                        disabled={busyId === m.id}
-                        aria-label={`Make ${m.name} admin`}
-                        title="Make admin"
-                        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-primary"
-                      >
-                        <ShieldPlus className="h-4 w-4" />
-                      </button>
-                    )}
-                    {canRemove && (
-                      <button
-                        onClick={() => removeMember(m.id, isSelf)}
-                        disabled={busyId === m.id}
-                        aria-label={isSelf ? "Leave household" : `Remove ${m.name}`}
-                        className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-destructive"
-                      >
-                        {busyId === m.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : isSelf ? (
-                          <LogOut className="h-4 w-4" />
-                        ) : (
-                          <UserMinus className="h-4 w-4" />
-                        )}
-                      </button>
-                    )}
+              <li key={m.id} className="py-2.5">
+                <div className="flex items-center gap-3">
+                  <MemberAvatar id={m.id} name={m.name} className="h-9 w-9" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {m.name}
+                      {isSelf && (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          (you)
+                        </span>
+                      )}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {m.email}
+                    </p>
                   </div>
+                  {m.role === "owner" ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <Crown className="h-3 w-3" /> Admin
+                    </Badge>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      {isAdmin && !isSelf && (
+                        <button
+                          onClick={() => makeAdmin(m.id)}
+                          disabled={busyId === m.id}
+                          aria-label={`Make ${m.name} admin`}
+                          title="Make admin"
+                          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-primary"
+                        >
+                          <ShieldPlus className="h-4 w-4" />
+                        </button>
+                      )}
+                      {canRemove && (
+                        <button
+                          onClick={() => removeMember(m.id, isSelf)}
+                          disabled={busyId === m.id}
+                          aria-label={isSelf ? "Leave household" : `Remove ${m.name}`}
+                          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-destructive"
+                        >
+                          {busyId === m.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : isSelf ? (
+                            <LogOut className="h-4 w-4" />
+                          ) : (
+                            <UserMinus className="h-4 w-4" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {m.paymentMethods.length > 0 && (
+                  <PaymentMethodsList
+                    methods={m.paymentMethods}
+                    className="mt-2 pl-12"
+                  />
                 )}
               </li>
             );

@@ -17,8 +17,9 @@ import { MemberAvatar } from "@/components/member-avatar";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
+import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { PAYMENT_METHODS, type Balance, type SettlementTransfer } from "@/lib/types";
+import type { Balance, SettlementTransfer } from "@/lib/types";
 
 interface SettlementRecord {
   id: string;
@@ -196,20 +197,7 @@ export default function SettlePage() {
                         <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                           Pay {t.toName} with
                         </p>
-                        <ul className="space-y-1">
-                          {payee!.paymentMethods.map((pm, i) => {
-                            const def = PAYMENT_METHODS.find((p) => p.value === pm.type);
-                            return (
-                              <li key={i} className="flex items-center gap-2 text-sm">
-                                <span>{def?.emoji ?? "🔗"}</span>
-                                <span className="text-muted-foreground">
-                                  {def?.label ?? pm.type}:
-                                </span>
-                                <span className="truncate font-medium">{pm.value}</span>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                        <PaymentMethodsList methods={payee!.paymentMethods} />
                       </div>
                     )}
 
