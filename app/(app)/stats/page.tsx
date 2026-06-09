@@ -85,7 +85,7 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 duration-500 animate-in fade-in slide-in-from-bottom-3">
       <h1 className="text-lg font-bold">Stats</h1>
 
       <div className="grid grid-cols-2 gap-3">

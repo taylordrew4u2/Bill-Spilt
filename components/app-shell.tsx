@@ -12,6 +12,7 @@ import { HouseholdSetup } from "@/components/household-setup";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ManageHouseholdSheet } from "@/components/manage-household-sheet";
 import { ProfileSheet } from "@/components/profile-sheet";
+import { InstallPrompt } from "@/components/install-prompt";
 
 function Header() {
   const { household } = useAppData();
@@ -89,6 +90,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       <BottomNav />
+      <InstallPrompt />
       <React.Suspense fallback={null}>
         <AddExpenseSheet />
       </React.Suspense>

@@ -71,7 +71,7 @@ export default function ExpensesPage() {
   }, [expenses]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 duration-500 animate-in fade-in slide-in-from-bottom-3">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold">Expenses</h1>
         <a
