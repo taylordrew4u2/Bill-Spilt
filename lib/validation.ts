@@ -56,5 +56,28 @@ export const joinHouseholdSchema = z.object({
   code: z.string().trim().toUpperCase().min(4).max(12),
 });
 
+export const paymentMethodSchema = z.object({
+  type: z.enum(["venmo", "paypal", "cashapp", "zelle", "bank", "other"]),
+  value: z.string().trim().min(1).max(200),
+});
+
+export const profileSchema = z
+  .object({
+    name: z.string().trim().min(1, "Name is required").max(80),
+    email: z.string().trim().toLowerCase().email("Enter a valid email"),
+    paymentMethods: z.array(paymentMethodSchema).max(8).default([]),
+    // Optional password change.
+    currentPassword: z.string().optional(),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters")
+      .max(200)
+      .optional(),
+  })
+  .refine((d) => !d.newPassword || !!d.currentPassword, {
+    message: "Enter your current password to set a new one",
+    path: ["currentPassword"],
+  });
+
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 export type RecurringInput = z.infer<typeof recurringSchema>;

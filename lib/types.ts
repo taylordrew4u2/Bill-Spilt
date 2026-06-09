@@ -25,11 +25,39 @@ export const CATEGORIES: { value: ExpenseCategory; label: string; emoji: string 
 
 export type RecurringFrequency = "weekly" | "monthly";
 
+export type PaymentMethodType =
+  | "venmo"
+  | "paypal"
+  | "cashapp"
+  | "zelle"
+  | "bank"
+  | "other";
+
+export const PAYMENT_METHODS: {
+  value: PaymentMethodType;
+  label: string;
+  emoji: string;
+  placeholder: string;
+}[] = [
+  { value: "venmo", label: "Venmo", emoji: "💸", placeholder: "@username" },
+  { value: "paypal", label: "PayPal", emoji: "🅿️", placeholder: "email or paypal.me link" },
+  { value: "cashapp", label: "Cash App", emoji: "💵", placeholder: "$cashtag" },
+  { value: "zelle", label: "Zelle", emoji: "⚡", placeholder: "email or phone" },
+  { value: "bank", label: "Bank transfer", emoji: "🏦", placeholder: "account / details" },
+  { value: "other", label: "Other", emoji: "🔗", placeholder: "instructions or link" },
+];
+
+export interface PaymentMethod {
+  type: PaymentMethodType;
+  value: string;
+}
+
 export interface Member {
   id: string;
   name: string;
   email: string;
   role: "owner" | "member";
+  paymentMethods: PaymentMethod[];
 }
 
 export interface SplitInput {
