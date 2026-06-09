@@ -9,6 +9,7 @@ import {
   History,
   CheckCheck,
   ShieldCheck,
+  Bell,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { Balance, SettlementTransfer } from "@/lib/types";
+import { PAYMENT_METHODS, type Balance, type SettlementTransfer } from "@/lib/types";
 
 interface SettlementRecord {
   id: string;
@@ -74,6 +75,31 @@ export default function SettlePage() {
       await Promise.all([refetch(), refetchHistory()]);
     } finally {
       setSettlingAll(false);
+    }
+  }
+
+  async function shareReminder(t: SettlementTransfer) {
+    const me = members.find((m) => m.id === t.to);
+    const myMethods = me?.paymentMethods ?? [];
+    const ways = myMethods
+      .map((pm) => {
+        const def = PAYMENT_METHODS.find((p) => p.value === pm.type);
+        return `${def?.label ?? pm.type} ${pm.value}`;
+      })
+      .join(", ");
+    const text =
+      `Hey ${t.fromName}, friendly reminder you owe me ${formatCurrency(t.amount)} on BillBuddies.` +
+      (ways ? ` You can pay me with ${ways}.` : "");
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({ title: "BillBuddies reminder", text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Reminder copied", description: "Paste it to send.", variant: "success" });
+    } catch {
+      /* user dismissed the share sheet, or clipboard unavailable */
     }
   }
 
@@ -174,6 +200,7 @@ export default function SettlePage() {
             const payee = members.find((m) => m.id === t.to);
             const showPay = t.from === currentUserId && (payee?.paymentMethods?.length ?? 0) > 0;
             const payerName = members.find((m) => m.id === t.from)?.name;
+            const owedToYou = t.to === currentUserId;
             return (
               <li key={key}>
                 <Card className={involvesYou ? "border-primary/40" : undefined}>
@@ -210,17 +237,29 @@ export default function SettlePage() {
                       </div>
                     )}
 
-                    <Button
-                      variant="success"
-                      className="mt-3 w-full"
-                      onClick={() => markPaid(t)}
-                      disabled={settling === key}
-                    >
-                      {settling === key && (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                    <div className="mt-3 flex gap-2">
+                      {owedToYou && (
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => shareReminder(t)}
+                        >
+                          <Bell className="h-4 w-4" />
+                          Remind
+                        </Button>
                       )}
-                      Mark as paid
-                    </Button>
+                      <Button
+                        variant="success"
+                        className="flex-1"
+                        onClick={() => markPaid(t)}
+                        disabled={settling === key}
+                      >
+                        {settling === key && (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        )}
+                        Mark as paid
+                      </Button>
+                    </div>
                     <p className="mt-1.5 text-center text-xs text-muted-foreground">
                       Paid in cash or another way? Mark it as paid here too.
                     </p>
