@@ -15,7 +15,9 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { MemberAvatar } from "@/components/member-avatar";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
+import { MemberDetailSheet } from "@/components/member-detail-sheet";
 import { useToast } from "@/components/ui/toaster";
+import type { Member } from "@/lib/types";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { timeAgo } from "@/lib/utils";
@@ -54,6 +56,12 @@ export function ManageHouseholdSheet({
   const [savingName, setSavingName] = React.useState(false);
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
+  const [detailMember, setDetailMember] = React.useState<Member | null>(null);
+
+  function openDetail(m: Member) {
+    setDetailMember(m);
+    onOpenChange(false); // close this sheet; detail opens on top
+  }
 
   React.useEffect(() => {
     setName(household?.name ?? "");
@@ -147,6 +155,7 @@ export function ManageHouseholdSheet({
   }
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
         <SheetHeader className="mb-4">
@@ -229,20 +238,25 @@ export function ManageHouseholdSheet({
             return (
               <li key={m.id} className="py-2.5">
                 <div className="flex items-center gap-3">
-                  <MemberAvatar id={m.id} name={m.name} className="h-9 w-9" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {m.name}
-                      {isSelf && (
-                        <span className="ml-1 text-xs text-muted-foreground">
-                          (you)
-                        </span>
-                      )}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {m.email}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => openDetail(m)}
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-md py-0.5 text-left hover:opacity-80"
+                  >
+                    <MemberAvatar id={m.id} name={m.name} className="h-9 w-9" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {m.name}
+                        {isSelf && (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            (you)
+                          </span>
+                        )}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {m.email}
+                      </p>
+                    </div>
+                  </button>
                   {m.role === "owner" ? (
                     <Badge variant="secondary" className="gap-1">
                       <Crown className="h-3 w-3" /> Admin
@@ -316,5 +330,12 @@ export function ManageHouseholdSheet({
         )}
       </SheetContent>
     </Sheet>
+
+    <MemberDetailSheet
+      member={detailMember}
+      open={detailMember !== null}
+      onOpenChange={(o) => !o && setDetailMember(null)}
+    />
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import { sql, ensureSchema } from "@/lib/db";
 import { computeBalances, minimizeTransfers } from "@/lib/settlement";
+import { roundMoney } from "@/lib/utils";
 import type {
   Balance,
   Expense,
@@ -115,6 +116,41 @@ export async function isOwner(
     LIMIT 1
   `;
   return rows.length > 0;
+}
+
+/**
+ * Net balance strictly between two members. Positive means `otherId` owes
+ * `meId`; negative means `meId` owes `otherId`. Derived from the shares each
+ * covered for the other, adjusted by any settlements directly between them.
+ */
+export async function getPairwiseBalance(
+  householdId: string,
+  meId: string,
+  otherId: string,
+): Promise<number> {
+  await ensureSchema();
+  const { rows } = await sql`
+    WITH a AS (
+      SELECT COALESCE(SUM(s.amount), 0) AS v
+      FROM expense_splits s JOIN expenses e ON e.id = s.expense_id
+      WHERE e.household_id = ${householdId} AND e.paid_by = ${meId} AND s.user_id = ${otherId}
+    ),
+    b AS (
+      SELECT COALESCE(SUM(s.amount), 0) AS v
+      FROM expense_splits s JOIN expenses e ON e.id = s.expense_id
+      WHERE e.household_id = ${householdId} AND e.paid_by = ${otherId} AND s.user_id = ${meId}
+    ),
+    s1 AS (
+      SELECT COALESCE(SUM(amount), 0) AS v FROM settlements
+      WHERE household_id = ${householdId} AND from_user = ${otherId} AND to_user = ${meId}
+    ),
+    s2 AS (
+      SELECT COALESCE(SUM(amount), 0) AS v FROM settlements
+      WHERE household_id = ${householdId} AND from_user = ${meId} AND to_user = ${otherId}
+    )
+    SELECT (a.v - b.v - s1.v + s2.v) AS net FROM a, b, s1, s2
+  `;
+  return roundMoney(Number(rows[0].net));
 }
 
 export async function getExpenses(householdId: string): Promise<Expense[]> {
