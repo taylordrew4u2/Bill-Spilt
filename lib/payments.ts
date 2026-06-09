@@ -1,14 +1,9 @@
 import type { PaymentMethod } from "@/lib/types";
 
 /**
- * Build a tappable payment URL from a payment method, when one can be derived.
- * On mobile these open the corresponding app; on desktop they open the web
- * equivalent. Returns null when there's no reliable deep link (e.g. Zelle, raw
- * bank details, or a PayPal email), in which case the UI falls back to
- * copy-only.
- *
- * When `amount`/`note` are provided (e.g. from the Settle screen), they're
- * prefilled into the payment request where the provider supports it.
+ * Build a tappable payment URL from a payment method (Venmo or Cash App).
+ * On mobile these open the app; on desktop, the web equivalent. The amount and
+ * note are prefilled where supported (e.g. from the Settle screen).
  */
 export function paymentLink(
   pm: PaymentMethod,
@@ -30,19 +25,6 @@ export function paymentLink(
       const tag = v.replace(/^\$/, "");
       return amt ? `https://cash.app/$${tag}/${amt}` : `https://cash.app/$${tag}`;
     }
-    case "paypal": {
-      if (/^https?:\/\//i.test(v)) return v;
-      if (/paypal\.me\//i.test(v)) return `https://${v.replace(/^\/+/, "")}`;
-      // Bare handle → paypal.me/<handle>[/amount]
-      if (/^[a-z0-9_-]+$/i.test(v)) {
-        return `https://paypal.me/${v}${amt ? `/${amt}` : ""}`;
-      }
-      return null; // e.g. an email — no reliable deep link
-    }
-    case "other":
-      return /^https?:\/\//i.test(v) ? v : null;
-    case "zelle":
-    case "bank":
     default:
       return null;
   }

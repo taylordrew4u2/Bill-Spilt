@@ -221,6 +221,9 @@ export default function SettlePage() {
                       )}
                       Mark as paid
                     </Button>
+                    <p className="mt-1.5 text-center text-xs text-muted-foreground">
+                      Paid in cash or another way? Mark it as paid here too.
+                    </p>
                   </CardContent>
                 </Card>
               </li>

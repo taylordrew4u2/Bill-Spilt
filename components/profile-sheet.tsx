@@ -29,6 +29,8 @@ import {
   type PaymentMethodType,
 } from "@/lib/types";
 
+const SUPPORTED = new Set(PAYMENT_METHODS.map((p) => p.value));
+
 interface Profile {
   id: string;
   name: string;
@@ -61,7 +63,8 @@ export function ProfileSheet({
     if (p && !loaded) {
       setName(p.name);
       setEmail(p.email);
-      setMethods(p.paymentMethods);
+      // Only keep currently-supported method types (Venmo / Cash App).
+      setMethods(p.paymentMethods.filter((m) => SUPPORTED.has(m.type)));
       setLoaded(true);
     }
   }, [profileQ.data, loaded]);
