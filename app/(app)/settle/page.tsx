@@ -173,6 +173,7 @@ export default function SettlePage() {
             // When you're the payer, show the payee's ways to pay.
             const payee = members.find((m) => m.id === t.to);
             const showPay = t.from === currentUserId && (payee?.paymentMethods?.length ?? 0) > 0;
+            const payerName = members.find((m) => m.id === t.from)?.name;
             return (
               <li key={key}>
                 <Card className={involvesYou ? "border-primary/40" : undefined}>
@@ -197,7 +198,15 @@ export default function SettlePage() {
                         <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                           Pay {t.toName} with
                         </p>
-                        <PaymentMethodsList methods={payee!.paymentMethods} />
+                        <PaymentMethodsList
+                          methods={payee!.paymentMethods}
+                          linkContext={{
+                            amount: t.amount,
+                            note: payerName
+                              ? `BillBuddies — from ${payerName}`
+                              : "BillBuddies",
+                          }}
+                        />
                       </div>
                     )}
 
