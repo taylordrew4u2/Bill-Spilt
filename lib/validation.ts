@@ -57,7 +57,7 @@ export const joinHouseholdSchema = z.object({
 });
 
 export const paymentMethodSchema = z.object({
-  type: z.enum(["venmo", "paypal", "cashapp", "zelle", "bank", "other"]),
+  type: z.enum(["venmo", "cashapp"]),
   value: z.string().trim().min(1).max(200),
 });
 
