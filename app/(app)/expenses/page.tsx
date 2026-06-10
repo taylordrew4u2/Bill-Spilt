@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Receipt, ArrowDownToLine } from "lucide-react";
+import { Receipt, ArrowDownToLine, Search, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { ExpenseItem } from "@/components/expense-item";
 import { ExpenseDetailSheet } from "@/components/expense-detail-sheet";
 import { ExpenseForm } from "@/components/expense-form";
@@ -17,8 +18,8 @@ import {
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
-import { formatDate } from "@/lib/utils";
-import type { Expense } from "@/lib/types";
+import { formatDate, cn } from "@/lib/utils";
+import { CATEGORIES, type Expense, type ExpenseCategory } from "@/lib/types";
 
 export default function ExpensesPage() {
   const { currentUserId, version, mutate } = useAppData();
@@ -29,6 +30,8 @@ export default function ExpensesPage() {
   const [selected, setSelected] = React.useState<Expense | null>(null);
   const [detailOpen, setDetailOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Expense | null>(null);
+  const [query, setQuery] = React.useState("");
+  const [category, setCategory] = React.useState<ExpenseCategory | "all">("all");
 
   function openDetail(expense: Expense) {
     setSelected(expense);
@@ -58,16 +61,34 @@ export default function ExpensesPage() {
 
   const expenses = React.useMemo(() => data?.expenses ?? [], [data]);
 
+  const filtered = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return expenses.filter((e) => {
+      if (category !== "all" && e.category !== category) return false;
+      if (q && !e.description.toLowerCase().includes(q) && !e.paidByName.toLowerCase().includes(q))
+        return false;
+      return true;
+    });
+  }, [expenses, query, category]);
+
+  const filtering = query.trim() !== "" || category !== "all";
+
   // Group by day for readable history.
   const groups = React.useMemo(() => {
     const map = new Map<string, Expense[]>();
-    for (const e of expenses) {
+    for (const e of filtered) {
       const key = e.createdAt.slice(0, 10);
       const arr = map.get(key) ?? [];
       arr.push(e);
       map.set(key, arr);
     }
     return Array.from(map.entries());
+  }, [filtered]);
+
+  // Categories that actually appear, for the filter chips.
+  const usedCategories = React.useMemo(() => {
+    const present = new Set(expenses.map((e) => e.category));
+    return CATEGORIES.filter((c) => present.has(c.value));
   }, [expenses]);
 
   return (
@@ -82,6 +103,48 @@ export default function ExpensesPage() {
           Export CSV
         </a>
       </div>
+
+      {/* Search + category filters (shown once there are expenses) */}
+      {expenses.length > 0 && (
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search description or who paid"
+              className="pl-9 pr-9"
+              inputMode="search"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          {usedCategories.length > 0 && (
+            <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+              <FilterChip
+                active={category === "all"}
+                onClick={() => setCategory("all")}
+                label="All"
+              />
+              {usedCategories.map((c) => (
+                <FilterChip
+                  key={c.value}
+                  active={category === c.value}
+                  onClick={() => setCategory(c.value)}
+                  label={`${c.emoji} ${c.label}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {loading && !data ? (
         <div className="space-y-3">
@@ -101,10 +164,28 @@ export default function ExpensesPage() {
             </p>
           </CardContent>
         </Card>
+      ) : filtered.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center py-10 text-center">
+            <Search className="mb-2 h-6 w-6 text-muted-foreground" />
+            <p className="font-medium">No matching expenses</p>
+            <button
+              onClick={() => {
+                setQuery("");
+                setCategory("all");
+              }}
+              className="mt-1 text-sm font-medium text-primary"
+            >
+              Clear filters
+            </button>
+          </CardContent>
+        </Card>
       ) : (
         <>
           <p className="text-xs text-muted-foreground">
-            Swipe a row left to delete it.
+            {filtering
+              ? `${filtered.length} of ${expenses.length} expenses`
+              : "Swipe a row left to delete it."}
           </p>
           {groups.map(([day, items]) => (
             <div key={day}>
@@ -158,5 +239,29 @@ export default function ExpensesPage() {
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "h-9 flex-shrink-0 whitespace-nowrap rounded-full border px-3 text-sm font-medium transition-colors",
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "bg-background text-muted-foreground",
+      )}
+    >
+      {label}
+    </button>
   );
 }
