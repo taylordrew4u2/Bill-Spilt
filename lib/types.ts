@@ -105,6 +105,31 @@ export interface RecurringBill {
   active: boolean;
 }
 
+export type AdPlacement = "all" | "home" | "expenses" | "settle" | "stats";
+
+export const AD_PLACEMENTS: { value: AdPlacement; label: string }[] = [
+  { value: "all", label: "Everywhere" },
+  { value: "home", label: "Home" },
+  { value: "expenses", label: "Expenses" },
+  { value: "settle", label: "Settle" },
+  { value: "stats", label: "Stats" },
+];
+
+export interface Ad {
+  id: string;
+  title: string;
+  body: string | null;
+  imageUrl: string | null;
+  linkUrl: string;
+  cta: string | null;
+  placement: AdPlacement;
+  weight: number;
+  active: boolean;
+  impressions: number;
+  clicks: number;
+  createdAt: string;
+}
+
 /** A queued offline expense awaiting sync (mirrors the create payload). */
 export interface QueuedExpense {
   localId?: number;

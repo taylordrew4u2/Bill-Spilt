@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getUserHousehold } from "@/lib/queries";
+import { isSiteAdminEmail } from "@/lib/site-admin";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -14,6 +15,21 @@ export async function requireUserId(): Promise<string> {
   const id = session?.user?.id;
   if (!id) throw new ApiError(401, "Not authenticated");
   return id;
+}
+
+/** Resolve the authenticated user, requiring site-admin (operator) status. */
+export async function requireSiteAdmin(): Promise<{
+  userId: string;
+  email: string;
+}> {
+  const session = await auth();
+  const id = session?.user?.id;
+  const email = session?.user?.email;
+  if (!id) throw new ApiError(401, "Not authenticated");
+  if (!isSiteAdminEmail(email)) {
+    throw new ApiError(403, "Only the app operator can do that");
+  }
+  return { userId: id, email: email as string };
 }
 
 /** Resolve the user's active household or throw. */

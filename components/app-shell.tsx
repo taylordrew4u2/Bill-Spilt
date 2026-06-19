@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { signOut } from "next-auth/react";
-import { LogOut, Loader2, Settings, UserCircle2 } from "lucide-react";
+import { LogOut, Loader2, Settings, UserCircle2, Megaphone } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { BottomNav, Sidebar } from "@/components/bottom-nav";
 import { OfflineBanner } from "@/components/offline-banner";
@@ -12,12 +12,14 @@ import { HouseholdSetup } from "@/components/household-setup";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ManageHouseholdSheet } from "@/components/manage-household-sheet";
 import { ProfileSheet } from "@/components/profile-sheet";
+import { AdsAdminSheet } from "@/components/ads-admin-sheet";
 import { InstallPrompt } from "@/components/install-prompt";
 
 function Header() {
-  const { household } = useAppData();
+  const { household, isSiteAdmin } = useAppData();
   const [manageOpen, setManageOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const [adsOpen, setAdsOpen] = React.useState(false);
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
       <button
@@ -34,6 +36,15 @@ function Header() {
       </button>
       <div className="flex items-center gap-1">
         <ThemeToggle />
+        {isSiteAdmin && (
+          <button
+            onClick={() => setAdsOpen(true)}
+            aria-label="Manage ads"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+          >
+            <Megaphone className="h-5 w-5" />
+          </button>
+        )}
         <button
           onClick={() => setProfileOpen(true)}
           aria-label="Your profile"
@@ -58,6 +69,7 @@ function Header() {
       </div>
       <ManageHouseholdSheet open={manageOpen} onOpenChange={setManageOpen} />
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
+      <AdsAdminSheet open={adsOpen} onOpenChange={setAdsOpen} />
     </header>
   );
 }
