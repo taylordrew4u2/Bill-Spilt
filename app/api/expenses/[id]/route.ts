@@ -12,15 +12,16 @@ export const runtime = "nodejs";
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   return handle(async () => {
+    const { id } = await params;
     const { userId, householdId } = await requireHousehold();
 
     // Only delete if the expense belongs to the caller's household.
     const { rows } = await sql`
       DELETE FROM expenses
-      WHERE id = ${params.id} AND household_id = ${householdId}
+      WHERE id = ${id} AND household_id = ${householdId}
       RETURNING description
     `;
     if (rows.length === 0) throw new ApiError(404, "Expense not found");
@@ -38,9 +39,10 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   return handle(async () => {
+    const { id: expenseId } = await params;
     const { userId, householdId } = await requireHousehold();
     const body = await req.json();
     const parsed = expenseSchema.safeParse(body);
@@ -56,7 +58,7 @@ export async function PATCH(
       }
     }
 
-    const ok = await updateExpense(params.id, {
+    const ok = await updateExpense(expenseId, {
       householdId,
       description: data.description,
       amount: data.amount,

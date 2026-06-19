@@ -7,10 +7,11 @@ export const runtime = "nodejs";
 // works even from a new tab/window.
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const url = await recordClick(params.id);
+    const { id } = await params;
+    const url = await recordClick(id);
     if (url) return NextResponse.redirect(url);
   } catch {
     /* fall through */

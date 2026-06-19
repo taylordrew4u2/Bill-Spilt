@@ -9,13 +9,14 @@ export const runtime = "nodejs";
 // Undo a recorded settlement (re-opens the corresponding balance).
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   return handle(async () => {
+    const { id } = await params;
     const { userId, householdId } = await requireHousehold();
     const { rowCount } = await sql`
       DELETE FROM settlements
-      WHERE id = ${params.id} AND household_id = ${householdId}
+      WHERE id = ${id} AND household_id = ${householdId}
     `;
     if (!rowCount) throw new ApiError(404, "Settlement not found");
     void invalidatePlan(householdId);

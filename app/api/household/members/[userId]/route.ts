@@ -18,11 +18,11 @@ export const runtime = "nodejs";
  */
 export async function DELETE(
   _req: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   return handle(async () => {
+    const { userId: targetId } = await params;
     const { userId: callerId, householdId } = await requireHousehold();
-    const targetId = params.userId;
 
     if (!(await isMember(householdId, targetId))) {
       throw new ApiError(404, "That person isn't in this household");
