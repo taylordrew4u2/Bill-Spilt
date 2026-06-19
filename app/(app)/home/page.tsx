@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { NetSummary, BalanceRow } from "@/components/balance-card";
-import { AdSlot } from "@/components/ad-slot";
+import { AdArea } from "@/components/ad-area";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
@@ -107,7 +107,7 @@ export default function HomePage() {
         </Card>
       )}
 
-      <AdSlot placement="home" />
+      <AdArea placement="home" />
     </div>
   );
 }
