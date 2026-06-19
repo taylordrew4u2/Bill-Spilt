@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-
-const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+import { ADSENSE_CLIENT } from "@/lib/ads-config";
 
 const APP_NAME = "Bill Spilt";
 const APP_DESCRIPTION =
@@ -27,6 +26,8 @@ export const metadata: Metadata = {
     icon: "/icons/icon-192.png",
     apple: "/icons/apple-touch-icon.png",
   },
+  // AdSense account verification.
+  other: { "google-adsense-account": ADSENSE_CLIENT },
 };
 
 export const viewport: Viewport = {
