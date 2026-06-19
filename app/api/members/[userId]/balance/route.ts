@@ -9,17 +9,18 @@ export const dynamic = "force-dynamic";
 // `net` > 0: they owe you. `net` < 0: you owe them.
 export async function GET(
   _req: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   return handle(async () => {
+    const { userId: targetId } = await params;
     const { userId, householdId } = await requireHousehold();
-    if (!(await isMember(householdId, params.userId))) {
+    if (!(await isMember(householdId, targetId))) {
       throw new ApiError(404, "That person isn't in this household");
     }
     const net =
-      params.userId === userId
+      targetId === userId
         ? 0
-        : await getPairwiseBalance(householdId, userId, params.userId);
+        : await getPairwiseBalance(householdId, userId, targetId);
     return NextResponse.json({ net });
   });
 }
