@@ -8,10 +8,12 @@ import type { QueuedExpense } from "@/lib/types";
  * an expense while offline it is written here with `synced = 0`, then flushed
  * to the server by `lib/sync.ts` once connectivity returns.
  */
-class BillBuddiesDB extends Dexie {
+class BillSplitDB extends Dexie {
   queuedExpenses!: Table<QueuedExpense, number>;
 
   constructor() {
+    // Keep the IndexedDB name stable across the rebrand so any expenses queued
+    // offline before the rename aren't orphaned.
     super("billbuddies");
     this.version(1).stores({
       // ++localId = auto-increment PK; index `synced` for fast pending lookups.
@@ -20,12 +22,12 @@ class BillBuddiesDB extends Dexie {
   }
 }
 
-let _db: BillBuddiesDB | null = null;
+let _db: BillSplitDB | null = null;
 
 /** Lazily construct the DB only in the browser. */
-export function getDB(): BillBuddiesDB | null {
+export function getDB(): BillSplitDB | null {
   if (typeof window === "undefined") return null;
-  if (!_db) _db = new BillBuddiesDB();
+  if (!_db) _db = new BillSplitDB();
   return _db;
 }
 
