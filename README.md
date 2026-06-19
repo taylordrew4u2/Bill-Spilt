@@ -1,6 +1,6 @@
 <div align="center">
 
-# 💸 BillBuddies
+# 💸 Bill Split
 
 **Split shared expenses with roommates, see instant balances, and settle up with the fewest possible payments — from your phone.**
 
@@ -20,7 +20,7 @@ An installable, offline-capable Progressive Web App built on Next.js 14, deploye
 
 ## Why it's interesting
 
-BillBuddies isn't a CRUD demo. The hard parts are the parts users never see:
+Bill Split isn't a CRUD demo. The hard parts are the parts users never see:
 
 - **A settlement engine** that collapses a tangle of IOUs into the minimum number of payments.
 - **Offline-first writes** that queue in the browser and reconcile when the network returns.

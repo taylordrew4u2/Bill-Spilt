@@ -1,8 +1,8 @@
 {
-  "name": "billbuddies",
+  "name": "billsplit",
   "version": "1.0.0",
   "private": true,
-  "description": "BillBuddies — track shared expenses, see instant balances, and settle up with the fewest payments. A free, installable, offline-capable PWA.",
+  "description": "Bill Split — track shared expenses, see instant balances, and settle up with the fewest payments. A free, installable, offline-capable PWA.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

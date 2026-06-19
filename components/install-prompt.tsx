@@ -105,7 +105,7 @@ export function InstallPrompt() {
               B
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">Install BillBuddies</p>
+              <p className="text-sm font-medium">Install Bill Split</p>
               {iosHint ? (
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   Tap <Share className="inline h-3 w-3" /> then “Add to Home Screen”
