@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Home, Users } from "lucide-react";
+import { Loader2, Home, Users, Megaphone } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toaster";
 import { useAppData } from "@/components/app-data";
+import { AdsAdminSheet } from "@/components/ads-admin-sheet";
 
 type Mode = "create" | "join";
 
@@ -17,7 +18,8 @@ type Mode = "create" | "join";
  * with an invite code) or joins an existing one via that code.
  */
 export function HouseholdSetup() {
-  const { refresh } = useAppData();
+  const { refresh, isSiteAdmin } = useAppData();
+  const [adsOpen, setAdsOpen] = React.useState(false);
   const { toast } = useToast();
   const [mode, setMode] = React.useState<Mode>("create");
   const [value, setValue] = React.useState("");
@@ -122,7 +124,18 @@ export function HouseholdSetup() {
             </form>
           </CardContent>
         </Card>
+
+        {isSiteAdmin && (
+          <button
+            onClick={() => setAdsOpen(true)}
+            className="mx-auto mt-6 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            <Megaphone className="h-4 w-4" /> Manage ads (operator)
+          </button>
+        )}
       </div>
+
+      <AdsAdminSheet open={adsOpen} onOpenChange={setAdsOpen} />
     </div>
   );
 }
