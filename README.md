@@ -6,7 +6,7 @@
 
 An installable, offline-capable Progressive Web App built on Next.js 14, deployed entirely on Vercel's free tier. Free forever, no premium tiers.
 
-[**▶ Live demo**](https://bill-buddies-ochre.vercel.app)
+[**▶ Live demo**](https://billspilt.com)
 
 ![Next.js](https://img.shields.io/badge/Next.js_14-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
