@@ -5,15 +5,15 @@ import { Providers } from "@/components/providers";
 
 const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 
-const APP_NAME = "Bill Split";
+const APP_NAME = "Bill Spilt";
 const APP_DESCRIPTION =
   "Track shared expenses, see instant balances, and settle up with the fewest payments. Free forever.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: {
-    default: "Bill Split — Split bills with roommates",
-    template: "%s · Bill Split",
+    default: "Bill Spilt — Split bills with roommates",
+    template: "%s · Bill Spilt",
   },
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",

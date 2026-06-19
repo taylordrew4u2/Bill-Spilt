@@ -47,7 +47,7 @@ export async function GET() {
     }
 
     const csv = lines.join("\n");
-    const filename = `billsplit-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    const filename = `billspilt-export-${new Date().toISOString().slice(0, 10)}.csv`;
 
     return new Response(csv, {
       status: 200,
