@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { ADSENSE_CLIENT, ADSENSE_SLOT } from "@/lib/ads-config";
 
 declare global {
   interface Window {
@@ -8,10 +9,7 @@ declare global {
   }
 }
 
-/** Publisher id like "ca-pub-1234567890123456" (set in Vercel env). */
-export const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
-/** Default ad-unit slot id (set in Vercel env). */
-export const ADSENSE_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT;
+export { ADSENSE_CLIENT, ADSENSE_SLOT };
 
 /**
  * A single Google AdSense responsive display unit. Renders nothing unless BOTH
