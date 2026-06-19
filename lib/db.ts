@@ -216,11 +216,29 @@ async function bootstrap(): Promise<void> {
     )
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS ads (
+      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      title       TEXT NOT NULL,
+      body        TEXT,
+      image_url   TEXT,
+      link_url    TEXT NOT NULL,
+      cta         TEXT,
+      placement   TEXT NOT NULL DEFAULT 'all',
+      weight      INT NOT NULL DEFAULT 1,
+      active      BOOLEAN NOT NULL DEFAULT true,
+      impressions BIGINT NOT NULL DEFAULT 0,
+      clicks      BIGINT NOT NULL DEFAULT 0,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
   await sql`CREATE INDEX IF NOT EXISTS idx_expenses_household ON expenses(household_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_splits_expense ON expense_splits(expense_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_members_user ON household_members(user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_settlements_household ON settlements(household_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_activity_household ON activity_log(household_id, created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ads_active ON ads(active, placement)`;
 }
 
 /** Max members per household (the "reasonable cap" of 12). */

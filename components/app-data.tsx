@@ -15,6 +15,8 @@ interface AppData {
   currentUserId: string | null;
   /** True when the current user is the household owner (head admin). */
   isAdmin: boolean;
+  /** True when the current user is a site admin (app operator / ad manager). */
+  isSiteAdmin: boolean;
   /** Bumped after any mutation so tabs can re-fetch derived data. */
   version: number;
   loading: boolean;
@@ -40,6 +42,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = React.useState(true);
   const [needsSetup, setNeedsSetup] = React.useState(false);
   const [version, setVersion] = React.useState(0);
+  const [isSiteAdmin, setIsSiteAdmin] = React.useState(false);
 
   const refresh = React.useCallback(async () => {
     try {
@@ -55,6 +58,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       setMembers(data.members ?? []);
       setHousehold(data.household ?? null);
       setCurrentUserId(data.currentUserId ?? null);
+      setIsSiteAdmin(Boolean(data.isSiteAdmin));
     } finally {
       setLoading(false);
     }
@@ -77,6 +81,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         members,
         currentUserId,
         isAdmin,
+        isSiteAdmin,
         version,
         loading,
         needsSetup,

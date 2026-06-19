@@ -79,5 +79,17 @@ export const profileSchema = z
     path: ["currentPassword"],
   });
 
+export const adSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(120),
+  body: z.string().trim().max(280).optional().nullable(),
+  imageUrl: z.string().trim().url("Enter a valid image URL").optional().nullable().or(z.literal("")),
+  linkUrl: z.string().trim().url("Enter a valid link URL"),
+  cta: z.string().trim().max(40).optional().nullable(),
+  placement: z.enum(["all", "home", "expenses", "settle", "stats"]).default("all"),
+  weight: z.number().int().min(1).max(100).default(1),
+  active: z.boolean().default(true),
+});
+
+export type AdInput = z.infer<typeof adSchema>;
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 export type RecurringInput = z.infer<typeof recurringSchema>;
