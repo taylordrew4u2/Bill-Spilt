@@ -16,6 +16,30 @@ export function emailConfigured(): boolean {
   return Boolean(USER && PASS);
 }
 
+/** Diagnostic: report which SMTP settings are present and whether auth works. */
+export async function verifyEmail(): Promise<{
+  ok: boolean;
+  error?: string;
+  config: Record<string, boolean | number | string>;
+}> {
+  const config = {
+    host: HOST,
+    port: PORT,
+    secure: PORT === 465,
+    hasUser: Boolean(USER),
+    hasPass: Boolean(PASS),
+    from: FROM ? "set" : "unset",
+  };
+  const t = getTransporter();
+  if (!t) return { ok: false, error: "SMTP_USER/SMTP_PASS not set", config };
+  try {
+    await t.verify();
+    return { ok: true, config };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e), config };
+  }
+}
+
 let transporter: nodemailer.Transporter | null = null;
 function getTransporter(): nodemailer.Transporter | null {
   if (!emailConfigured()) return null;
