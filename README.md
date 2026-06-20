@@ -4,11 +4,12 @@
 
 **Bill splitting for roommates — split shared bills, see who owes what, and settle up with the fewest payments, right from your phone.**
 
-An installable, offline-capable Progressive Web App built on Next.js 14, deployed entirely on Vercel's free tier. Free forever, no premium tiers.
+An installable, offline-capable Progressive Web App built on Next.js 16 + React 19, deployed entirely on Vercel's free tier. Free forever, no premium tiers.
 
 [**▶ Live demo**](https://billspilt.com)
 
-![Next.js](https://img.shields.io/badge/Next.js_14-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-149ECA?style=for-the-badge&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
@@ -36,13 +37,16 @@ It's designed mobile-first (44px touch targets, bottom-sheet forms, swipe-to-del
 | | |
 |---|---|
 | 🧾 **Log expenses in seconds** | Description, amount, category, and a split type — equal, exact, or percentage. |
-| ⚖️ **Instant balances** | Home screen shows each person's net position (green = owed, red = owes). |
-| 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list. |
+| ⚖️ **Instant balances** | Home screen shows each person's net position (green = owed, red = owes), plus pairwise "what you owe X". |
+| 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list, with history + undo. |
+| 💳 **Ways to pay** | Each roommate shares Venmo / Cash App handles — shown (with deep links + copy) when you owe them. |
+| 👑 **Household admin** | Owner role can rename, remove members, transfer ownership, and settle everyone in one tap. Activity log included. |
 | 🔁 **Recurring bills** | Rent, internet, subscriptions auto-logged daily by a Vercel Cron job. |
 | 📸 **Receipt photos** | Attach a photo to any expense (Vercel Blob). |
-| 📤 **CSV export** | Download the full ledger any time. |
+| 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; download the full ledger any time. |
+| 🔐 **Auth + password reset** | Credentials auth with a self-serve email reset flow (SMTP). |
 | 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
-| 📲 **Installable PWA** | Standalone display, app icons, cached app shell, home-screen shortcuts. |
+| 📲 **Installable PWA** | Standalone display, app icons, dark mode, install prompt, home-screen shortcuts. |
 
 ---
 
@@ -114,16 +118,17 @@ Every dependency is free and Vercel-native — the whole app runs at $0.
 
 | Concern | Choice |
 | --- | --- |
-| Framework | **Next.js 14** (App Router) · **TypeScript** (strict) |
+| Framework | **Next.js 16** (App Router) · **React 19** · **TypeScript** (strict) |
 | UI | **Tailwind CSS** · **shadcn/ui** · **Framer Motion** (swipe gestures, sheets) |
-| Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected |
+| Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected by host |
 | File storage | **Vercel Blob** (receipt photos) |
 | Cache | **Vercel KV** — optional, degrades gracefully |
-| Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) |
+| Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) + SMTP password reset (**nodemailer**) |
 | Background jobs | **Vercel Cron** (`vercel.json`) |
-| Offline / PWA | **next-pwa** service worker · **Dexie.js** (IndexedDB) |
+| Offline / PWA | **Serwist** service worker · **Dexie.js** (IndexedDB) |
+| Monetization | **Google AdSense** (Auto ads) with a self-served house-ad fallback |
 
-No Supabase, Stripe, Resend, or Firebase.
+No Supabase, Stripe, Resend, or Firebase — email uses your own mailbox over SMTP.
 
 ---
 
