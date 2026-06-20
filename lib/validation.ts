@@ -90,6 +90,15 @@ export const adSchema = z.object({
   active: z.boolean().default(true),
 });
 
+export const forgotSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email"),
+});
+
+export const resetSchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(8, "Password must be at least 8 characters").max(200),
+});
+
 export type AdInput = z.infer<typeof adSchema>;
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 export type RecurringInput = z.infer<typeof recurringSchema>;
