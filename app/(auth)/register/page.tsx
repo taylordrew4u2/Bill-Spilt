@@ -63,13 +63,18 @@ export default function RegisterPage() {
 
   return (
     <>
-      <div className="mb-8 flex justify-center">
+      <div className="mb-8 flex flex-col items-center gap-1.5">
         <Brand size="lg" />
+        <p className="text-sm font-medium text-muted-foreground">
+          Bill splitting for roommates
+        </p>
       </div>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Create your account</CardTitle>
-          <CardDescription>Free forever. No credit card, ever.</CardDescription>
+          <CardDescription>
+            Split bills with your roommates — free forever, no credit card.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">

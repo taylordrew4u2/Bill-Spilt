@@ -2,7 +2,7 @@
 
 # 💸 BILL SPILT
 
-**Split shared expenses with roommates, see instant balances, and settle up with the fewest possible payments — from your phone.**
+**Bill splitting for roommates — split shared bills, see who owes what, and settle up with the fewest payments, right from your phone.**
 
 An installable, offline-capable Progressive Web App built on Next.js 14, deployed entirely on Vercel's free tier. Free forever, no premium tiers.
 
