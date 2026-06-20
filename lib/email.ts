@@ -26,8 +26,10 @@ export async function verifyEmail(): Promise<{
     host: HOST,
     port: PORT,
     secure: PORT === 465,
-    hasUser: Boolean(USER),
+    user: USER || "(unset)",
     hasPass: Boolean(PASS),
+    passLength: PASS ? PASS.length : 0,
+    passHasSpaces: PASS ? /\s/.test(PASS) : false,
     from: FROM ? "set" : "unset",
   };
   const t = getTransporter();
