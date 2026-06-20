@@ -56,8 +56,11 @@ export function HouseholdSetup() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center px-5 safe-top safe-bottom">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex justify-center">
+        <div className="mb-8 flex flex-col items-center gap-1.5">
           <Brand size="lg" />
+          <p className="text-sm font-medium text-muted-foreground">
+            Bill splitting for roommates
+          </p>
         </div>
 
         <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">

@@ -43,13 +43,16 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="mb-8 flex justify-center">
+      <div className="mb-8 flex flex-col items-center gap-1.5">
         <Brand size="lg" />
+        <p className="text-sm font-medium text-muted-foreground">
+          Bill splitting for roommates
+        </p>
       </div>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Log in to settle up with your buddies.</CardDescription>
+          <CardDescription>Log in to split bills with your roommates.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
