@@ -13,17 +13,18 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isAuthPage =
-        nextUrl.pathname.startsWith("/login") ||
-        nextUrl.pathname.startsWith("/register");
+      const p = nextUrl.pathname;
+      const isLoginPage = p.startsWith("/login") || p.startsWith("/register");
+      // Password-recovery pages must be reachable while logged out.
+      const isRecoveryPage = p.startsWith("/forgot") || p.startsWith("/reset");
 
-      // Public assets / API auth routes are handled by the matcher.
-      if (isAuthPage) {
+      if (isLoginPage) {
         if (isLoggedIn) {
           return Response.redirect(new URL("/home", nextUrl));
         }
         return true;
       }
+      if (isRecoveryPage) return true;
       return isLoggedIn;
     },
     jwt({ token, user }) {
