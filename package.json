@@ -8,6 +8,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
     "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
@@ -53,7 +54,8 @@
     "postcss": "^8.4.38",
     "serwist": "^9.0.11",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^2.1.9"
   },
   "overrides": {
     "undici": "^6.27.0"
