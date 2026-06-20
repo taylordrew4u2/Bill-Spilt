@@ -1,76 +1,35 @@
 import nodemailer from "nodemailer";
 
 /**
- * Email sending via SMTP (e.g. Gmail). Configure with env vars:
- *   SMTP_HOST (default smtp.gmail.com), SMTP_PORT (default 465),
- *   SMTP_USER, SMTP_PASS (a Gmail App Password), SMTP_FROM (default SMTP_USER).
- * Zero-cost — uses your own mailbox.
+ * Password-reset email. Two zero-cost paths, in priority order:
+ *
+ *  1. Resend (RESEND_API_KEY) — simple HTTPS API, no SMTP/app-password hassle.
+ *     Free tier covers 3,000 emails/month. Set RESEND_FROM to an address on a
+ *     domain you've verified in Resend (e.g. noreply@billspilt.com).
+ *  2. SMTP (SMTP_USER + SMTP_PASS) via nodemailer — e.g. a Gmail App Password.
  */
-const HOST = process.env.SMTP_HOST || "smtp.gmail.com";
-const PORT = Number(process.env.SMTP_PORT || 465);
-const USER = process.env.SMTP_USER;
-// Gmail App Passwords are 16 chars and never contain spaces — Google just
-// *displays* them grouped (e.g. "abcd efgh ijkl mnop"). Strip whitespace so a
-// pasted-with-spaces value still authenticates.
-const PASS = process.env.SMTP_PASS
+
+// --- Resend (preferred) ---
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM =
+  process.env.RESEND_FROM || "BILL SPILT <onboarding@resend.dev>";
+
+// --- SMTP (fallback) ---
+const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
+const SMTP_USER = process.env.SMTP_USER;
+// Gmail App Passwords are shown with display spaces but contain none — strip.
+const SMTP_PASS = process.env.SMTP_PASS
   ? process.env.SMTP_PASS.replace(/\s+/g, "")
   : undefined;
-const FROM = process.env.SMTP_FROM || USER;
+const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
 
 export function emailConfigured(): boolean {
-  return Boolean(USER && PASS);
+  return Boolean(RESEND_API_KEY) || Boolean(SMTP_USER && SMTP_PASS);
 }
 
-/** Diagnostic: report which SMTP settings are present and whether auth works. */
-export async function verifyEmail(): Promise<{
-  ok: boolean;
-  error?: string;
-  config: Record<string, boolean | number | string>;
-}> {
-  const config = {
-    host: HOST,
-    port: PORT,
-    secure: PORT === 465,
-    user: USER || "(unset)",
-    hasPass: Boolean(PASS),
-    passLength: PASS ? PASS.length : 0,
-    passHasSpaces: PASS ? /\s/.test(PASS) : false,
-    from: FROM ? "set" : "unset",
-  };
-  const t = getTransporter();
-  if (!t) return { ok: false, error: "SMTP_USER/SMTP_PASS not set", config };
-  try {
-    await t.verify();
-    return { ok: true, config };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e), config };
-  }
-}
-
-let transporter: nodemailer.Transporter | null = null;
-function getTransporter(): nodemailer.Transporter | null {
-  if (!emailConfigured()) return null;
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: HOST,
-      port: PORT,
-      secure: PORT === 465,
-      auth: { user: USER, pass: PASS },
-    });
-  }
-  return transporter;
-}
-
-export async function sendPasswordResetEmail(
-  to: string,
-  link: string,
-): Promise<void> {
-  const t = getTransporter();
-  if (!t) throw new Error("Email is not configured");
-
-  await t.sendMail({
-    from: `"BILL SPILT" <${FROM}>`,
-    to,
+function resetContent(link: string) {
+  return {
     subject: "Reset your BILL SPILT password",
     text:
       `You requested a password reset for BILL SPILT.\n\n` +
@@ -90,5 +49,62 @@ export async function sendPasswordResetEmail(
           This link expires in 1 hour. If you didn't request it, ignore this email.
         </p>
       </div>`,
+  };
+}
+
+async function sendViaResend(
+  to: string,
+  c: ReturnType<typeof resetContent>,
+): Promise<void> {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: RESEND_FROM,
+      to,
+      subject: c.subject,
+      text: c.text,
+      html: c.html,
+    }),
   });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Resend error ${res.status}: ${body}`);
+  }
+}
+
+let transporter: nodemailer.Transporter | null = null;
+async function sendViaSmtp(
+  to: string,
+  c: ReturnType<typeof resetContent>,
+): Promise<void> {
+  if (!SMTP_USER || !SMTP_PASS) throw new Error("SMTP is not configured");
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_PORT === 465,
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
+  }
+  await transporter.sendMail({
+    from: `"BILL SPILT" <${SMTP_FROM}>`,
+    to,
+    subject: c.subject,
+    text: c.text,
+    html: c.html,
+  });
+}
+
+export async function sendPasswordResetEmail(
+  to: string,
+  link: string,
+): Promise<void> {
+  const c = resetContent(link);
+  if (RESEND_API_KEY) return sendViaResend(to, c);
+  if (SMTP_USER && SMTP_PASS) return sendViaSmtp(to, c);
+  throw new Error("Email is not configured");
 }
