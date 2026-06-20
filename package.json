@@ -2,7 +2,7 @@
   "name": "billspilt",
   "version": "1.0.0",
   "private": true,
-  "description": "Bill Spilt — track shared expenses, see instant balances, and settle up with the fewest payments. A free, installable, offline-capable PWA.",
+  "description": "BILL SPILT — track shared expenses, see instant balances, and settle up with the fewest payments. A free, installable, offline-capable PWA.",
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
