@@ -1,7 +1,7 @@
 // Generates the PWA PNG icons with zero external dependencies.
 //
 // We hand-encode valid PNGs (signature + IHDR + IDAT + IEND) using Node's
-// built-in zlib. The icon is the Bill Spilt "B" mark: a brand-blue rounded
+// built-in zlib. The icon is the BILL SPILT "B" mark: a brand-blue rounded
 // square with a white "B" rendered from a small bitmap font. This keeps the
 // repo install-free for icon generation while producing real, installable
 // PNG assets.

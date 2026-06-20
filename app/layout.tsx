@@ -4,15 +4,15 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ADSENSE_CLIENT } from "@/lib/ads-config";
 
-const APP_NAME = "Bill Spilt";
+const APP_NAME = "BILL SPILT";
 const APP_DESCRIPTION =
   "Track shared expenses, see instant balances, and settle up with the fewest payments. Free forever.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: {
-    default: "Bill Spilt — Split bills with roommates",
-    template: "%s · Bill Spilt",
+    default: "BILL SPILT — Split bills with roommates",
+    template: "%s · BILL SPILT",
   },
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",

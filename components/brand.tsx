@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** The Bill Spilt wordmark + "B" badge, used on auth screens and the header. */
+/** The BILL SPILT wordmark + "B" badge, used on auth screens and the header. */
 export function Brand({
   size = "md",
   className,
@@ -24,7 +24,7 @@ export function Brand({
         B
       </div>
       <span className={cn("font-extrabold tracking-tight", text)}>
-        Bill<span className="text-primary">Spilt</span>
+        BILL <span className="text-primary">SPILT</span>
       </span>
     </div>
   );
