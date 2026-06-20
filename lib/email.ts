@@ -9,7 +9,12 @@ import nodemailer from "nodemailer";
 const HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const PORT = Number(process.env.SMTP_PORT || 465);
 const USER = process.env.SMTP_USER;
-const PASS = process.env.SMTP_PASS;
+// Gmail App Passwords are 16 chars and never contain spaces — Google just
+// *displays* them grouped (e.g. "abcd efgh ijkl mnop"). Strip whitespace so a
+// pasted-with-spaces value still authenticates.
+const PASS = process.env.SMTP_PASS
+  ? process.env.SMTP_PASS.replace(/\s+/g, "")
+  : undefined;
 const FROM = process.env.SMTP_FROM || USER;
 
 export function emailConfigured(): boolean {
