@@ -1,7 +1,7 @@
 {
-  "name": "BILL SPILT — Bill splitting for roommates",
+  "name": "BILL SPILT — Split bills with your roommates",
   "short_name": "BILL SPILT",
-  "description": "Bill splitting for roommates. Split shared bills, see who owes what, and settle up with the fewest payments. Free forever.",
+  "description": "Split shared bills with your roommates, see who owes what, and settle up with the fewest payments. Free forever.",
   "start_url": "/home",
   "scope": "/",
   "display": "standalone",

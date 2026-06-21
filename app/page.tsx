@@ -19,7 +19,7 @@ import { Brand } from "@/components/brand";
 import { CATEGORIES } from "@/lib/types";
 
 export const metadata = {
-  title: "BILL SPILT — Bill splitting for roommates",
+  title: "BILL SPILT — Split bills with your roommates",
   description:
     "BILL SPILT is a free app for roommates to split shared bills, see who owes what instantly, and settle up with the fewest payments. Installable, works offline.",
 };
@@ -115,7 +115,7 @@ export default async function LandingPage() {
       {/* Hero */}
       <section className="mx-auto max-w-3xl px-5 pb-16 pt-10 text-center sm:pt-20">
         <span className="inline-block rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-          💸 Bill splitting for roommates
+          💸 Split bills with your roommates
         </span>
         <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">
           Split shared bills,
