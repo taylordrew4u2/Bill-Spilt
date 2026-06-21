@@ -8,7 +8,7 @@ import type { QueuedExpense } from "@/lib/types";
  * an expense while offline it is written here with `synced = 0`, then flushed
  * to the server by `lib/sync.ts` once connectivity returns.
  */
-class BillSplitDB extends Dexie {
+class BillSpiltDB extends Dexie {
   queuedExpenses!: Table<QueuedExpense, number>;
 
   constructor() {
@@ -22,12 +22,12 @@ class BillSplitDB extends Dexie {
   }
 }
 
-let _db: BillSplitDB | null = null;
+let _db: BillSpiltDB | null = null;
 
 /** Lazily construct the DB only in the browser. */
-export function getDB(): BillSplitDB | null {
+export function getDB(): BillSpiltDB | null {
   if (typeof window === "undefined") return null;
-  if (!_db) _db = new BillSplitDB();
+  if (!_db) _db = new BillSpiltDB();
   return _db;
 }
 

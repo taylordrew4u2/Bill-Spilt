@@ -6,12 +6,12 @@ import { ADSENSE_CLIENT } from "@/lib/ads-config";
 
 const APP_NAME = "BILL SPILT";
 const APP_DESCRIPTION =
-  "Bill splitting for roommates. Split shared bills, see who owes what instantly, and settle up with the fewest payments. Free forever.";
+  "Split shared bills with your roommates, see who owes what instantly, and settle up with the fewest payments. Free forever.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: {
-    default: "BILL SPILT — Bill splitting for roommates",
+    default: "BILL SPILT — Split bills with your roommates",
     template: "%s · BILL SPILT",
   },
   description: APP_DESCRIPTION,

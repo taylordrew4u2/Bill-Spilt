@@ -46,7 +46,7 @@ export default function LoginPage() {
       <div className="mb-8 flex flex-col items-center gap-1.5">
         <Brand size="lg" />
         <p className="text-sm font-medium text-muted-foreground">
-          Bill splitting for roommates
+          Split bills with your roommates
         </p>
       </div>
       <Card>
