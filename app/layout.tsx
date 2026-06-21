@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { CookieConsent } from "@/components/cookie-consent";
 import { ADSENSE_CLIENT } from "@/lib/ads-config";
 
 const APP_NAME = "BILL SPILT";
@@ -52,17 +53,13 @@ export default function RootLayout({
             __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`,
           }}
         />
-        {/* Google AdSense (Auto ads) — loaded in <head> on every page. */}
-        {ADSENSE_CLIENT && (
-          <script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-            crossOrigin="anonymous"
-          />
-        )}
+        {/* AdSense site verification (meta tag). The ad *script* loads only on
+            authenticated content pages — see components/app-shell.tsx — so ads
+            never appear on the login/empty screens (AdSense inventory policy). */}
       </head>
       <body className="min-h-[100dvh] antialiased">
         <Providers>{children}</Providers>
+        <CookieConsent />
       </body>
     </html>
   );

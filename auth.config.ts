@@ -15,8 +15,12 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const p = nextUrl.pathname;
       const isLoginPage = p.startsWith("/login") || p.startsWith("/register");
-      // Password-recovery pages must be reachable while logged out.
-      const isRecoveryPage = p.startsWith("/forgot") || p.startsWith("/reset");
+      // Password-recovery and public legal pages must be reachable logged out.
+      const isPublicPage =
+        p.startsWith("/forgot") ||
+        p.startsWith("/reset") ||
+        p.startsWith("/privacy") ||
+        p.startsWith("/terms");
 
       if (isLoginPage) {
         if (isLoggedIn) {
@@ -24,7 +28,7 @@ export const authConfig = {
         }
         return true;
       }
-      if (isRecoveryPage) return true;
+      if (isPublicPage) return true;
       return isLoggedIn;
     },
     jwt({ token, user }) {

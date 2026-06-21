@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Script from "next/script";
 import { signOut } from "next-auth/react";
+import { ADSENSE_CLIENT } from "@/lib/ads-config";
 import { LogOut, Loader2, Settings, UserCircle2, Megaphone } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { BottomNav, Sidebar } from "@/components/bottom-nav";
@@ -106,6 +108,17 @@ function Shell({ children }: { children: React.ReactNode }) {
       <React.Suspense fallback={null}>
         <AddExpenseSheet />
       </React.Suspense>
+      {/* AdSense loads only here — inside the authenticated, content-bearing app
+          — so ads never run on login/empty screens (AdSense inventory policy). */}
+      {ADSENSE_CLIENT && (
+        <Script
+          id="adsbygoogle-init"
+          async
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+        />
+      )}
     </div>
   );
 }
