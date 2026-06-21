@@ -15,8 +15,10 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const p = nextUrl.pathname;
       const isLoginPage = p.startsWith("/login") || p.startsWith("/register");
-      // Password-recovery and public legal pages must be reachable logged out.
+      // Public, logged-out-reachable pages: the marketing home, password
+      // recovery, and legal pages.
       const isPublicPage =
+        p === "/" ||
         p.startsWith("/forgot") ||
         p.startsWith("/reset") ||
         p.startsWith("/privacy") ||
