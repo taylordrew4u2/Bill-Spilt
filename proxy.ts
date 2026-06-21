@@ -10,6 +10,6 @@ export const config = {
   // fetch clients and block public endpoints like /api/register). Also skip
   // static assets, the service worker, manifest, and icons.
   matcher: [
-    "/((?!api/|_next/static|_next/image|favicon.ico|manifest.json|ads.txt|sw.js|workbox-.*|icons/.*|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|js|css|woff2?)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|manifest.json|ads.txt|robots.txt|sitemap.xml|sw.js|workbox-.*|icons/.*|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|js|css|woff2?)$).*)",
   ],
 };
