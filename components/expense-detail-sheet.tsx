@@ -73,7 +73,7 @@ export function ExpenseDetailSheet({
 
             <Separator className="my-4" />
 
-            {expense.createdBy === currentUserId ? (
+            {expense.createdBy !== null && expense.createdBy === currentUserId ? (
               <>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Split between
