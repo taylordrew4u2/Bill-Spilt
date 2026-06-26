@@ -10,6 +10,7 @@ export interface CreateExpenseArgs {
   category: ExpenseCategory;
   splitType: SplitType;
   paidBy: string;
+  createdBy?: string | null;
   splits: SplitInput[];
   receiptUrl?: string | null;
   recurringId?: string | null;
@@ -40,10 +41,10 @@ export async function createExpense(args: CreateExpenseArgs): Promise<string> {
   const { rows } = await sql`
     WITH new_expense AS (
       INSERT INTO expenses
-        (household_id, description, amount, category, split_type, paid_by, receipt_url, recurring_id, created_at)
+        (household_id, description, amount, category, split_type, paid_by, created_by, receipt_url, recurring_id, created_at)
       VALUES (
         ${args.householdId}, ${args.description}, ${args.amount}, ${args.category},
-        ${args.splitType}, ${args.paidBy}, ${args.receiptUrl ?? null},
+        ${args.splitType}, ${args.paidBy}, ${args.createdBy ?? null}, ${args.receiptUrl ?? null},
         ${args.recurringId ?? null}, ${args.createdAt ?? new Date().toISOString()}
       )
       RETURNING id

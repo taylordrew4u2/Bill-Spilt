@@ -158,7 +158,7 @@ export async function getExpenses(householdId: string): Promise<Expense[]> {
   const { rows } = await sql`
     SELECT
       e.id, e.household_id, e.description, e.amount, e.category,
-      e.split_type, e.paid_by, e.receipt_url, e.created_at,
+      e.split_type, e.paid_by, e.created_by, e.receipt_url, e.created_at,
       payer.name AS paid_by_name
     FROM expenses e
     JOIN users payer ON payer.id = e.paid_by
@@ -191,6 +191,7 @@ export async function getExpenses(householdId: string): Promise<Expense[]> {
     splitType: r.split_type,
     paidBy: r.paid_by,
     paidByName: r.paid_by_name,
+    createdBy: r.created_by ?? null,
     receiptUrl: r.receipt_url,
     createdAt:
       r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at,

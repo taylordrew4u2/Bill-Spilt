@@ -71,6 +71,7 @@ export interface Expense {
   splitType: SplitType;
   paidBy: string;
   paidByName: string;
+  createdBy: string | null;
   receiptUrl: string | null;
   createdAt: string;
   splits: ExpenseSplit[];
