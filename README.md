@@ -40,7 +40,9 @@ It's designed mobile-first (44px touch targets, bottom-sheet forms, swipe-to-del
 | ⚖️ **Instant balances** | Home screen shows each person's net position (green = owed, red = owes), plus pairwise "what you owe X". |
 | 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list, with history + undo. |
 | 💳 **Ways to pay** | Each roommate shares Venmo / Cash App handles — shown (with deep links + copy) when you owe them. |
-| 👑 **Household admin** | Owner role can rename, remove members, transfer ownership, and settle everyone in one tap. Activity log included. |
+| 👑 **Multiple admins** | Any leaseholder can be an admin. Admins can rename the household, manage members, promote others, and settle everyone in one tap. Activity log included. |
+| 🔑 **Invite code (admin-only)** | Only admins can see and share the invite code. Admins can regenerate it at any time, invalidating the old one. |
+| 🔒 **Private split breakdown** | The person who added an expense sees the full per-person breakdown. Everyone else sees just the total and their own share. |
 | 🔁 **Recurring bills** | Rent, internet, subscriptions auto-logged daily by a Vercel Cron job. |
 | 📸 **Receipt photos** | Attach a photo to any expense (Vercel Blob). |
 | 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; download the full ledger any time. |
