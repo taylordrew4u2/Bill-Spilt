@@ -34,10 +34,6 @@ export async function POST(req: Request) {
         throw new ApiError(403, "All participants must be household members");
       }
     }
-    // The creator must be a member too (covered by requireHousehold, but keep
-    // userId referenced for audit clarity).
-    void userId;
-
     const id = await createExpense({
       householdId,
       description: data.description,
@@ -45,6 +41,7 @@ export async function POST(req: Request) {
       category: data.category,
       splitType: data.splitType,
       paidBy: data.paidBy,
+      createdBy: userId,
       splits: data.splits,
       receiptUrl: data.receiptUrl ?? null,
       createdAt: data.createdAt,

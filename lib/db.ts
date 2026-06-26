@@ -161,11 +161,13 @@ async function bootstrap(): Promise<void> {
       category     TEXT NOT NULL DEFAULT 'other',
       split_type   TEXT NOT NULL DEFAULT 'equal',
       paid_by      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_by   UUID REFERENCES users(id) ON DELETE SET NULL,
       receipt_url  TEXT,
       recurring_id UUID,
       created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  await sql`ALTER TABLE expenses ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES users(id) ON DELETE SET NULL`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS expense_splits (
