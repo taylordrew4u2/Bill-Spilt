@@ -73,22 +73,40 @@ export function ExpenseDetailSheet({
 
             <Separator className="my-4" />
 
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Split between
-            </p>
-            <ul className="space-y-1">
-              {expense.splits.map((s) => (
-                <li key={s.userId} className="flex items-center gap-3 py-1.5">
-                  <MemberAvatar id={s.userId} name={s.name} className="h-8 w-8" />
-                  <span className="flex-1 truncate text-sm">
-                    {s.userId === currentUserId ? `${s.name} (you)` : s.name}
-                  </span>
-                  <span className="text-sm font-medium">
-                    {formatCurrency(s.amount)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {expense.createdBy === currentUserId ? (
+              <>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Split between
+                </p>
+                <ul className="space-y-1">
+                  {expense.splits.map((s) => (
+                    <li key={s.userId} className="flex items-center gap-3 py-1.5">
+                      <MemberAvatar id={s.userId} name={s.name} className="h-8 w-8" />
+                      <span className="flex-1 truncate text-sm">
+                        {s.userId === currentUserId ? `${s.name} (you)` : s.name}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {formatCurrency(s.amount)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Your share
+                </p>
+                {(() => {
+                  const myShare = expense.splits.find((s) => s.userId === currentUserId);
+                  return myShare ? (
+                    <p className="text-lg font-semibold">{formatCurrency(myShare.amount)}</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">You&apos;re not in this split</p>
+                  );
+                })()}
+              </>
+            )}
 
             {expense.receiptUrl && (
               <>
