@@ -10,16 +10,15 @@ export const runtime = "nodejs";
 const transferSchema = z.object({ toUserId: z.string().uuid() });
 
 /**
- * Transfer the head-admin (owner) role to another member. Only the current
- * owner may do this. Demotes the current owner to member and promotes the
- * target — atomically in a single statement.
+ * Promote a member to admin (owner). Any existing admin may do this.
+ * Multiple admins are allowed — the caller keeps their own admin role.
  */
 export async function POST(req: Request) {
   return handle(async () => {
     const { userId, householdId } = await requireHousehold();
 
     if (!(await isOwner(householdId, userId))) {
-      throw new ApiError(403, "Only the current admin can transfer admin");
+      throw new ApiError(403, "Only an admin can promote members");
     }
 
     const parsed = transferSchema.safeParse(await req.json());
@@ -27,21 +26,19 @@ export async function POST(req: Request) {
     const { toUserId } = parsed.data;
 
     if (toUserId === userId) {
-      throw new ApiError(400, "You're already the admin");
+      throw new ApiError(400, "You're already an admin");
     }
     if (!(await isMember(householdId, toUserId))) {
       throw new ApiError(404, "That person isn't in this household");
     }
+    if (await isOwner(householdId, toUserId)) {
+      throw new ApiError(400, "That person is already an admin");
+    }
 
     await sql`
       UPDATE household_members
-      SET role = CASE
-        WHEN user_id = ${userId}   THEN 'member'
-        WHEN user_id = ${toUserId} THEN 'owner'
-        ELSE role
-      END
-      WHERE household_id = ${householdId}
-        AND user_id IN (${userId}, ${toUserId})
+      SET role = 'owner'
+      WHERE household_id = ${householdId} AND user_id = ${toUserId}
     `;
 
     const newAdmin =
@@ -51,7 +48,7 @@ export async function POST(req: Request) {
       householdId,
       userId,
       "admin_transferred",
-      `Made ${newAdmin} the admin`,
+      `Made ${newAdmin} an admin`,
     );
     return NextResponse.json({ ok: true });
   });

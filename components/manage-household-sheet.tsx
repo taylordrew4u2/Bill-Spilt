@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Copy, Check, Crown, UserMinus, LogOut, Pencil, ShieldPlus } from "lucide-react";
+import { Loader2, Copy, Check, Crown, UserMinus, LogOut, Pencil, ShieldPlus, RefreshCw } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -56,6 +56,7 @@ export function ManageHouseholdSheet({
   const [savingName, setSavingName] = React.useState(false);
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
+  const [regenBusy, setRegenBusy] = React.useState(false);
   const [detailMember, setDetailMember] = React.useState<Member | null>(null);
 
   function openDetail(m: Member) {
@@ -118,9 +119,26 @@ export function ManageHouseholdSheet({
     }
   }
 
+  async function regenCode() {
+    if (!window.confirm("Generate a new invite code? The old code will stop working.")) return;
+    setRegenBusy(true);
+    try {
+      const res = await fetch("/api/household/invite", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ title: data.error || "Could not regenerate code", variant: "error" });
+        return;
+      }
+      toast({ title: "New invite code generated", variant: "success" });
+      await refresh();
+    } finally {
+      setRegenBusy(false);
+    }
+  }
+
   async function makeAdmin(userId: string) {
     const who = members.find((m) => m.id === userId)?.name ?? "this member";
-    if (!window.confirm(`Make ${who} the admin? You'll become a regular member.`)) {
+    if (!window.confirm(`Make ${who} an admin?`)) {
       return;
     }
     setBusyId(userId);
@@ -135,7 +153,7 @@ export function ManageHouseholdSheet({
         toast({ title: data.error || "Could not transfer admin", variant: "error" });
         return;
       }
-      toast({ title: `${who} is now the admin`, variant: "success" });
+      toast({ title: `${who} is now an admin`, variant: "success" });
       mutate();
       await refresh();
     } finally {
@@ -162,8 +180,8 @@ export function ManageHouseholdSheet({
           <SheetTitle>Manage household</SheetTitle>
           <SheetDescription>
             {isAdmin
-              ? "You're the admin — rename the household or manage members."
-              : "View members and your invite code."}
+              ? "You're an admin — rename the household, share the invite code, or manage members."
+              : "View household members."}
           </SheetDescription>
         </SheetHeader>
 
@@ -204,27 +222,40 @@ export function ManageHouseholdSheet({
 
         <Separator className="my-4" />
 
-        {/* Invite code */}
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Invite code
-            </p>
-            <p className="text-xl font-bold tracking-[0.25em]">
-              {household?.inviteCode}
-            </p>
-          </div>
-          <Button variant="outline" onClick={copyCode}>
-            {copied ? (
-              <Check className="h-4 w-4 text-emerald-600" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-            {copied ? "Copied" : "Copy"}
-          </Button>
-        </div>
+        {/* Invite code — admin only */}
+        {isAdmin && (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Invite code
+                </p>
+                <p className="text-xl font-bold tracking-[0.25em]">
+                  {household?.inviteCode}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={copyCode}>
+                  {copied ? (
+                    <Check className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                  {copied ? "Copied" : "Copy"}
+                </Button>
+                <Button variant="outline" onClick={regenCode} disabled={regenBusy} aria-label="Regenerate invite code">
+                  {regenBusy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
 
-        <Separator className="my-4" />
+            <Separator className="my-4" />
+          </>
+        )}
 
         {/* Members */}
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -233,8 +264,7 @@ export function ManageHouseholdSheet({
         <ul className="divide-y">
           {members.map((m) => {
             const isSelf = m.id === currentUserId;
-            const canRemove =
-              m.role !== "owner" && (isAdmin || isSelf) && !busyId;
+            const canRemove = (isAdmin || isSelf) && !busyId;
             return (
               <li key={m.id} className="py-2.5">
                 <div className="flex items-center gap-3">
