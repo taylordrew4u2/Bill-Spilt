@@ -13,7 +13,8 @@ export type ActivityAction =
   | "household_renamed"
   | "admin_transferred"
   | "recurring_added"
-  | "recurring_charged";
+  | "recurring_charged"
+  | "invite_regenerated";
 
 export interface ActivityEntry {
   id: string;

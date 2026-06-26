@@ -27,13 +27,33 @@ export async function DELETE(
     if (!(await isMember(householdId, targetId))) {
       throw new ApiError(404, "That person isn't in this household");
     }
-    if (await isOwner(householdId, targetId)) {
-      throw new ApiError(403, "The household admin can't be removed");
+    const removingSelf = targetId === callerId;
+
+    if (!removingSelf && !(await isOwner(householdId, callerId))) {
+      throw new ApiError(403, "Only a household admin can remove members");
     }
 
-    const removingSelf = targetId === callerId;
-    if (!removingSelf && !(await isOwner(householdId, callerId))) {
-      throw new ApiError(403, "Only the household admin can remove members");
+    // An admin can only be removed by another admin (not themselves, to prevent lockout).
+    if (!removingSelf && (await isOwner(householdId, targetId))) {
+      // Ensure at least one admin remains after removal.
+      const { rows } = await sql`
+        SELECT COUNT(*)::int AS n FROM household_members
+        WHERE household_id = ${householdId} AND role = 'owner'
+      `;
+      if (rows[0].n <= 1) {
+        throw new ApiError(403, "Can't remove the last admin — promote someone else first");
+      }
+    }
+
+    // Admins cannot leave while they are the last admin.
+    if (removingSelf && (await isOwner(householdId, targetId))) {
+      const { rows } = await sql`
+        SELECT COUNT(*)::int AS n FROM household_members
+        WHERE household_id = ${householdId} AND role = 'owner'
+      `;
+      if (rows[0].n <= 1) {
+        throw new ApiError(403, "Promote another member to admin before leaving");
+      }
     }
 
     // Must be settled up before leaving/removal.
