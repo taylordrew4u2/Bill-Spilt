@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="purpleBtn" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <clipPath id="phone2">
+      <rect x="0" y="0" width="390" height="844" rx="40" ry="40"/>
+    </clipPath>
+  </defs>
+
+  <rect x="0" y="0" width="390" height="844" rx="40" ry="40" fill="url(#bg2)"/>
+
+  <!-- Status bar -->
+  <text x="30" y="48" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" fill="white">9:41</text>
+  <rect x="280" y="34" width="42" height="14" rx="7" fill="none" stroke="white" stroke-width="1.5" opacity="0.8"/>
+  <rect x="282" y="36" width="30" height="10" rx="5" fill="white" opacity="0.8"/>
+  <rect x="325" y="38" width="16" height="10" rx="2" fill="white" opacity="0.6"/>
+  <rect x="350" y="36" width="20" height="14" rx="3" fill="white" opacity="0.6"/>
+
+  <!-- Dimmed background -->
+  <rect x="0" y="0" width="390" height="844" fill="rgba(0,0,0,0.5)"/>
+
+  <!-- Bottom sheet -->
+  <rect x="0" y="160" width="390" height="684" rx="28" fill="#1e293b"/>
+  <!-- Sheet handle -->
+  <rect x="170" y="180" width="50" height="4" rx="2" fill="#475569"/>
+
+  <!-- Sheet header -->
+  <text x="30" y="230" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="800" fill="white">Add Expense</text>
+  <circle cx="354" cy="222" r="16" fill="#334155"/>
+  <text x="354" y="228" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="#94a3b8" text-anchor="middle">✕</text>
+
+  <!-- Description field -->
+  <text x="30" y="268" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="0.5">DESCRIPTION</text>
+  <rect x="20" y="278" width="350" height="52" rx="12" fill="#0f172a" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="38" y="310" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="white">Trader Joe's groceries</text>
+
+  <!-- Amount field -->
+  <text x="30" y="360" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="0.5">AMOUNT</text>
+  <rect x="20" y="370" width="350" height="64" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+  <text x="38" y="393" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#64748b">$</text>
+  <text x="54" y="412" font-family="system-ui,-apple-system,sans-serif" font-size="32" fill="white" font-weight="700">84.50</text>
+  <rect x="192" y="405" width="2" height="24" fill="#6366f1" opacity="0.8">
+    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Category -->
+  <text x="30" y="462" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="0.5">CATEGORY</text>
+  <rect x="20" y="472" width="350" height="52" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1"/>
+  <text x="38" y="503" font-family="system-ui,-apple-system,sans-serif" font-size="20">🛒</text>
+  <text x="66" y="503" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="white">Groceries</text>
+  <text x="355" y="503" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#64748b" text-anchor="end">▾</text>
+
+  <!-- Split type -->
+  <text x="30" y="554" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="0.5">SPLIT TYPE</text>
+  <rect x="20" y="564" width="350" height="52" rx="26" fill="#0f172a"/>
+  <!-- Equal (selected) -->
+  <rect x="24" y="568" width="110" height="44" rx="22" fill="#6366f1"/>
+  <text x="79" y="595" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="white" text-anchor="middle" font-weight="600">Equal</text>
+  <!-- Exact -->
+  <text x="195" y="595" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Exact</text>
+  <!-- Percent -->
+  <text x="310" y="595" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#64748b" text-anchor="middle">Percent</text>
+
+  <!-- Split preview -->
+  <text x="30" y="644" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="600" fill="#94a3b8" letter-spacing="0.5">SPLIT PREVIEW — EQUAL ÷ 4</text>
+
+  <rect x="20" y="654" width="350" height="96" rx="14" fill="#0f172a"/>
+  <!-- Member splits -->
+  <circle cx="42" cy="678" r="12" fill="#7c3aed"/>
+  <text x="42" y="683" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="700">J</text>
+  <text x="62" y="679" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">Jordan</text>
+  <text x="362" y="679" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$21.13</text>
+
+  <circle cx="42" cy="704" r="12" fill="#0891b2"/>
+  <text x="42" y="709" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="700">S</text>
+  <text x="62" y="705" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">Sam</text>
+  <text x="362" y="705" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$21.13</text>
+
+  <circle cx="42" cy="730" r="12" fill="#ea580c"/>
+  <text x="42" y="735" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="white" text-anchor="middle" font-weight="700">A</text>
+  <text x="62" y="731" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">Alex</text>
+  <text x="362" y="731" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$21.12</text>
+
+  <!-- Add button -->
+  <rect x="20" y="768" width="350" height="56" rx="28" fill="url(#purpleBtn)"/>
+  <text x="195" y="801" font-family="system-ui,-apple-system,sans-serif" font-size="17" fill="white" text-anchor="middle" font-weight="700">Add Expense</text>
+
+  <!-- Home indicator -->
+  <rect x="145" y="830" width="100" height="4" rx="2" fill="white" opacity="0.3"/>
+</svg>

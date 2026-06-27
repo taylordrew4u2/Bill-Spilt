@@ -1,12 +1,16 @@
 <div align="center">
 
-# 💸 BILL SPILT
+<img src="public/icons/icon-512.png" width="96" height="96" alt="Bill Spilt icon" />
 
-**Split shared bills with your roommates — see who owes what and settle up with the fewest payments, right from your phone.**
+# BILL SPILT
 
-An installable, offline-capable Progressive Web App built on Next.js 16 + React 19, deployed entirely on Vercel's free tier. Free forever, no premium tiers.
+**The roommate bill splitter that lives on your phone — no app store required.**
 
-[**▶ Live demo**](https://billspilt.com)
+Split shared expenses, see who owes what, and settle up with the fewest payments possible. Free forever, works offline, installs to your home screen in one tap.
+
+[**▶ Try the live demo →**](https://billspilt.com)
+
+<br/>
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-149ECA?style=for-the-badge&logo=react&logoColor=white)
@@ -14,7 +18,39 @@ An installable, offline-capable Progressive Web App built on Next.js 16 + React 
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed_on_Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
+</div>
+
+---
+
+## Screenshots
+
+<div align="center">
+<table>
+<tr>
+<td align="center">
+<img src="docs/screenshots/home-balances.svg" width="220" alt="Home — Balances" />
+<br/><sub><b>Home — Balances</b></sub>
+<br/><sub>Net position + pairwise debts at a glance</sub>
+</td>
+<td align="center">
+<img src="docs/screenshots/add-expense.svg" width="220" alt="Add Expense" />
+<br/><sub><b>Add Expense</b></sub>
+<br/><sub>Equal, exact, or percentage splits</sub>
+</td>
+<td align="center">
+<img src="docs/screenshots/settle-up.svg" width="220" alt="Settle Up" />
+<br/><sub><b>Settle Up</b></sub>
+<br/><sub>Minimum-payment plan with deep links</sub>
+</td>
+<td align="center">
+<img src="docs/screenshots/stats.svg" width="220" alt="Stats" />
+<br/><sub><b>Stats</b></sub>
+<br/><sub>Spending by category & per person</sub>
+</td>
+</tr>
+</table>
 </div>
 
 ---
@@ -28,7 +64,7 @@ BILL SPILT isn't a CRUD demo. The hard parts are the parts users never see:
 - **A provider-agnostic data layer** that runs on Neon, Prisma Postgres, or any standard Postgres without code changes.
 - **Money math that always balances to the cent**, even with uneven splits.
 
-It's designed mobile-first (44px touch targets, bottom-sheet forms, swipe-to-delete), installs to the home screen, and works on a plane.
+It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-delete), installs to the home screen, and works on a plane.
 
 ---
 
