@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="card1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#065f46"/>
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+    <clipPath id="phone">
+      <rect x="0" y="0" width="390" height="844" rx="40" ry="40"/>
+    </clipPath>
+  </defs>
+
+  <!-- Phone body -->
+  <rect x="0" y="0" width="390" height="844" rx="40" ry="40" fill="url(#bg)" clip-path="url(#phone)"/>
+
+  <!-- Status bar -->
+  <text x="30" y="48" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" fill="white">9:41</text>
+  <rect x="280" y="34" width="42" height="14" rx="7" fill="none" stroke="white" stroke-width="1.5" opacity="0.8"/>
+  <rect x="282" y="36" width="30" height="10" rx="5" fill="white" opacity="0.8"/>
+  <rect x="325" y="38" width="16" height="10" rx="2" fill="white" opacity="0.6"/>
+  <rect x="350" y="36" width="20" height="14" rx="3" fill="white" opacity="0.6"/>
+
+  <!-- Header -->
+  <rect x="0" y="60" width="390" height="100" fill="#1e293b"/>
+  <text x="20" y="100" font-family="system-ui,-apple-system,sans-serif" font-size="26" font-weight="800" fill="white" letter-spacing="-0.5">BILL SPILT</text>
+  <text x="20" y="125" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#94a3b8">The Apartment · 4 members</text>
+
+  <!-- Notification bell -->
+  <circle cx="355" cy="100" r="18" fill="#334155"/>
+  <text x="355" y="107" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="white" text-anchor="middle">🔔</text>
+
+  <!-- Net Balance Card -->
+  <rect x="20" y="175" width="350" height="110" rx="20" fill="url(#card1)"/>
+  <text x="40" y="205" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="rgba(255,255,255,0.75)" font-weight="500" letter-spacing="0.5">YOUR NET BALANCE</text>
+  <text x="40" y="252" font-family="system-ui,-apple-system,sans-serif" font-size="42" font-weight="800" fill="white">+$47.50</text>
+  <text x="40" y="275" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="rgba(255,255,255,0.7)">You are owed overall</text>
+  <rect x="270" y="215" width="80" height="32" rx="16" fill="rgba(255,255,255,0.15)"/>
+  <text x="310" y="236" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="600">Settle up ›</text>
+
+  <!-- Section title -->
+  <text x="20" y="320" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="white">Who owes who</text>
+
+  <!-- Balance rows -->
+  <!-- Jordan owes you -->
+  <rect x="20" y="335" width="350" height="68" rx="16" fill="#1e293b"/>
+  <circle cx="54" cy="369" r="20" fill="#7c3aed"/>
+  <text x="54" y="375" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="white" text-anchor="middle" font-weight="700">J</text>
+  <text x="84" y="362" font-family="system-ui,-apple-system,sans-serif" font-size="15" font-weight="600" fill="white">Jordan</text>
+  <text x="84" y="381" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#94a3b8">owes you</text>
+  <rect x="270" y="352" width="82" height="32" rx="10" fill="url(#greenGrad)"/>
+  <text x="311" y="372" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#4ade80" text-anchor="middle" font-weight="700">+$62.00</text>
+
+  <!-- You owe Alex -->
+  <rect x="20" y="413" width="350" height="68" rx="16" fill="#1e293b"/>
+  <circle cx="54" cy="447" r="20" fill="#ea580c"/>
+  <text x="54" y="453" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="white" text-anchor="middle" font-weight="700">A</text>
+  <text x="84" y="440" font-family="system-ui,-apple-system,sans-serif" font-size="15" font-weight="600" fill="white">Alex</text>
+  <text x="84" y="459" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#94a3b8">you owe</text>
+  <rect x="270" y="430" width="82" height="32" rx="10" fill="url(#redGrad)"/>
+  <text x="311" y="450" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#f87171" text-anchor="middle" font-weight="700">-$14.50</text>
+
+  <!-- Sam settled -->
+  <rect x="20" y="491" width="350" height="68" rx="16" fill="#1e293b"/>
+  <circle cx="54" cy="525" r="20" fill="#0891b2"/>
+  <text x="54" y="531" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="white" text-anchor="middle" font-weight="700">S</text>
+  <text x="84" y="518" font-family="system-ui,-apple-system,sans-serif" font-size="15" font-weight="600" fill="white">Sam</text>
+  <text x="84" y="537" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#94a3b8">all settled up</text>
+  <text x="311" y="528" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#64748b" text-anchor="middle" font-weight="700">$0.00</text>
+
+  <!-- Recent Activity -->
+  <text x="20" y="598" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="white">Recent</text>
+
+  <!-- Expense items -->
+  <rect x="20" y="613" width="350" height="58" rx="14" fill="#1e293b"/>
+  <text x="42" y="638" font-family="system-ui,-apple-system,sans-serif" font-size="20">🛒</text>
+  <text x="70" y="636" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" fill="white">Trader Joe's groceries</text>
+  <text x="70" y="654" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#94a3b8">Added by Jordan · today</text>
+  <text x="348" y="638" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="white" text-anchor="end" font-weight="600">$84.50</text>
+  <text x="348" y="657" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#f87171" text-anchor="end">your share: $21.13</text>
+
+  <rect x="20" y="681" width="350" height="58" rx="14" fill="#1e293b"/>
+  <text x="42" y="706" font-family="system-ui,-apple-system,sans-serif" font-size="20">⚡</text>
+  <text x="70" y="704" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" fill="white">Electric bill</text>
+  <text x="70" y="722" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#94a3b8">Added by you · yesterday</text>
+  <text x="348" y="704" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="white" text-anchor="end" font-weight="600">$128.00</text>
+  <text x="348" y="723" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#4ade80" text-anchor="end">you paid</text>
+
+  <!-- Bottom Nav -->
+  <rect x="0" y="764" width="390" height="80" fill="#0f172a"/>
+  <rect x="0" y="764" width="390" height="1" fill="#334155"/>
+
+  <!-- Nav items -->
+  <!-- Home (active) -->
+  <g>
+    <text x="49" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">🏠</text>
+    <text x="49" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#6366f1" text-anchor="middle" font-weight="700">Home</text>
+    <rect x="34" y="820" width="30" height="3" rx="2" fill="#6366f1"/>
+  </g>
+  <!-- Expenses -->
+  <g opacity="0.5">
+    <text x="146" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">🧾</text>
+    <text x="146" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Expenses</text>
+  </g>
+  <!-- Settle -->
+  <g opacity="0.5">
+    <text x="244" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">🤝</text>
+    <text x="244" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Settle</text>
+  </g>
+  <!-- Stats -->
+  <g opacity="0.5">
+    <text x="341" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">📊</text>
+    <text x="341" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Stats</text>
+  </g>
+
+  <!-- FAB -->
+  <circle cx="340" cy="740" r="28" fill="#6366f1"/>
+  <text x="340" y="748" font-family="system-ui,-apple-system,sans-serif" font-size="28" fill="white" text-anchor="middle" font-weight="300">+</text>
+
+  <!-- Home indicator -->
+  <rect x="145" y="828" width="100" height="4" rx="2" fill="white" opacity="0.3"/>
+</svg>
