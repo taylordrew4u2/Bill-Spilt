@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="grocBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="rentBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="utilBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="dineBar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="pieGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="390" height="844" rx="40" ry="40" fill="url(#bg4)"/>
+
+  <!-- Status bar -->
+  <text x="30" y="48" font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="600" fill="white">9:41</text>
+  <rect x="280" y="34" width="42" height="14" rx="7" fill="none" stroke="white" stroke-width="1.5" opacity="0.8"/>
+  <rect x="282" y="36" width="30" height="10" rx="5" fill="white" opacity="0.8"/>
+  <rect x="325" y="38" width="16" height="10" rx="2" fill="white" opacity="0.6"/>
+  <rect x="350" y="36" width="20" height="14" rx="3" fill="white" opacity="0.6"/>
+
+  <!-- Header -->
+  <rect x="0" y="60" width="390" height="80" fill="#1e293b"/>
+  <text x="195" y="108" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="800" fill="white" text-anchor="middle">Stats</text>
+
+  <!-- Period selector -->
+  <rect x="20" y="158" width="350" height="44" rx="22" fill="#0f172a"/>
+  <rect x="24" y="162" width="110" height="36" rx="18" fill="#6366f1"/>
+  <text x="79" y="185" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="600">This Month</text>
+  <text x="195" y="185" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#64748b" text-anchor="middle">3 Months</text>
+  <text x="310" y="185" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#64748b" text-anchor="middle">All Time</text>
+
+  <!-- Total spent card -->
+  <rect x="20" y="220" width="170" height="90" rx="16" fill="#1e293b"/>
+  <text x="36" y="244" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#64748b" font-weight="600" letter-spacing="0.5">TOTAL SPENT</text>
+  <text x="36" y="276" font-family="system-ui,-apple-system,sans-serif" font-size="28" fill="white" font-weight="800">$842</text>
+  <text x="36" y="298" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#4ade80">↑ 12% vs last month</text>
+
+  <!-- Your share card -->
+  <rect x="200" y="220" width="170" height="90" rx="16" fill="#1e293b"/>
+  <text x="216" y="244" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#64748b" font-weight="600" letter-spacing="0.5">YOUR SHARE</text>
+  <text x="216" y="276" font-family="system-ui,-apple-system,sans-serif" font-size="28" fill="white" font-weight="800">$218</text>
+  <text x="216" y="298" font-family="system-ui,-apple-system,sans-serif" font-size="11" fill="#94a3b8">26% of total</text>
+
+  <!-- Spending by Category -->
+  <text x="20" y="342" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="white">Spending by Category</text>
+
+  <rect x="20" y="356" width="350" height="240" rx="16" fill="#1e293b"/>
+
+  <!-- Bar chart -->
+  <!-- Groceries -->
+  <text x="36" y="388" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">🛒 Groceries</text>
+  <text x="354" y="388" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$312</text>
+  <rect x="36" y="394" width="268" height="10" rx="5" fill="#0f172a"/>
+  <rect x="36" y="394" width="220" height="10" rx="5" fill="url(#grocBar)"/>
+
+  <!-- Rent -->
+  <text x="36" y="428" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">🏠 Rent</text>
+  <text x="354" y="428" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$250</text>
+  <rect x="36" y="434" width="268" height="10" rx="5" fill="#0f172a"/>
+  <rect x="36" y="434" width="176" height="10" rx="5" fill="url(#rentBar)"/>
+
+  <!-- Utilities -->
+  <text x="36" y="468" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">⚡ Utilities</text>
+  <text x="354" y="468" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$128</text>
+  <rect x="36" y="474" width="268" height="10" rx="5" fill="#0f172a"/>
+  <rect x="36" y="474" width="110" height="10" rx="5" fill="url(#utilBar)"/>
+
+  <!-- Dining -->
+  <text x="36" y="508" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">🍕 Dining</text>
+  <text x="354" y="508" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$95</text>
+  <rect x="36" y="514" width="268" height="10" rx="5" fill="#0f172a"/>
+  <rect x="36" y="514" width="82" height="10" rx="5" fill="url(#dineBar)"/>
+
+  <!-- Other -->
+  <text x="36" y="548" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white">📦 Other</text>
+  <text x="354" y="548" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$57</text>
+  <rect x="36" y="554" width="268" height="10" rx="5" fill="#0f172a"/>
+  <rect x="36" y="554" width="52" height="10" rx="5" fill="#475569"/>
+
+  <!-- Per-person breakdown -->
+  <text x="20" y="628" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="white">Per Person</text>
+
+  <rect x="20" y="643" width="350" height="96" rx="16" fill="#1e293b"/>
+
+  <circle cx="54" cy="669" r="16" fill="#7c3aed"/>
+  <text x="54" y="675" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="700">J</text>
+  <text x="80" y="667" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white" font-weight="500">Jordan</text>
+  <rect x="150" y="662" width="140" height="8" rx="4" fill="#0f172a"/>
+  <rect x="150" y="662" width="98" height="8" rx="4" fill="#7c3aed"/>
+  <text x="354" y="672" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$228</text>
+
+  <circle cx="54" cy="703" r="16" fill="#0891b2"/>
+  <text x="54" y="709" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="700">S</text>
+  <text x="80" y="701" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white" font-weight="500">Sam</text>
+  <rect x="150" y="696" width="140" height="8" rx="4" fill="#0f172a"/>
+  <rect x="150" y="696" width="118" height="8" rx="4" fill="#0891b2"/>
+  <text x="354" y="706" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$196</text>
+
+  <circle cx="54" cy="729" r="16" fill="#ea580c"/>
+  <text x="54" y="735" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="white" text-anchor="middle" font-weight="700">A</text>
+  <text x="80" y="727" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="white" font-weight="500">Alex</text>
+  <rect x="150" y="722" width="140" height="8" rx="4" fill="#0f172a"/>
+  <rect x="150" y="722" width="85" height="8" rx="4" fill="#ea580c"/>
+  <text x="354" y="732" font-family="system-ui,-apple-system,sans-serif" font-size="13" fill="#94a3b8" text-anchor="end">$200</text>
+
+  <!-- Bottom Nav -->
+  <rect x="0" y="764" width="390" height="80" fill="#0f172a"/>
+  <rect x="0" y="764" width="390" height="1" fill="#334155"/>
+
+  <g opacity="0.5">
+    <text x="49" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">🏠</text>
+    <text x="49" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Home</text>
+  </g>
+  <g opacity="0.5">
+    <text x="146" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">🧾</text>
+    <text x="146" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Expenses</text>
+  </g>
+  <g opacity="0.5">
+    <text x="244" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">🤝</text>
+    <text x="244" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Settle</text>
+  </g>
+  <g>
+    <text x="341" y="793" font-family="system-ui,-apple-system,sans-serif" font-size="22" text-anchor="middle">📊</text>
+    <text x="341" y="812" font-family="system-ui,-apple-system,sans-serif" font-size="10" fill="#6366f1" text-anchor="middle" font-weight="700">Stats</text>
+    <rect x="326" y="820" width="30" height="3" rx="2" fill="#6366f1"/>
+  </g>
+
+  <rect x="145" y="828" width="100" height="4" rx="2" fill="white" opacity="0.3"/>
+</svg>
