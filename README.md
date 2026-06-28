@@ -224,6 +224,7 @@ lib/
   offline-db.ts · sync.ts               IndexedDB queue & sync
 public/                                 manifest.json · generated icons · service worker
 scripts/generate-icons.mjs             Zero-dependency PNG icon generator
+scripts/test_utils.py                  Python bill-splitting utility (split_bill helper)
 ```
 
 ---
