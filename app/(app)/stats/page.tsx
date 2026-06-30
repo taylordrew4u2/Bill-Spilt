@@ -124,8 +124,9 @@ export default function StatsPage() {
                 return (
                   <li key={c.value}>
                     <div className="mb-1 flex items-center justify-between text-sm">
-                      <span>
-                        {c.emoji} {c.label}
+                      <span className="flex items-center gap-1.5">
+                        <c.icon className="h-4 w-4 text-muted-foreground" aria-hidden />
+                        {c.label}
                       </span>
                       <span className="font-medium">
                         {money(c.amount)}

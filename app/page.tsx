@@ -13,6 +13,7 @@ import {
   Bell,
   Crown,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
@@ -191,8 +192,9 @@ export default async function LandingPage() {
 
       {/* Hero */}
       <section className="mx-auto max-w-3xl px-5 pb-16 pt-10 text-center sm:pt-20">
-        <span className="inline-block rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-          🎉 Free forever — every feature, no paywall
+        <span className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
+          Free forever — every feature, no paywall
         </span>
         <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">
           The free roommate bill splitter.
@@ -275,9 +277,10 @@ export default async function LandingPage() {
             {CATEGORIES.map((c) => (
               <span
                 key={c.value}
-                className="rounded-full border bg-card px-4 py-2 text-sm font-medium"
+                className="inline-flex items-center gap-1.5 rounded-full border bg-card px-4 py-2 text-sm font-medium"
               >
-                {c.emoji} {c.label}
+                <c.icon className="h-4 w-4 text-primary" aria-hidden />
+                {c.label}
               </span>
             ))}
           </div>

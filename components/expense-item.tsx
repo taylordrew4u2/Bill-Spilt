@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { Trash2, Paperclip } from "lucide-react";
+import { Trash2, Paperclip, Package } from "lucide-react";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
@@ -32,6 +32,7 @@ export function ExpenseItem({
   // Track whether the pointer moved (a drag) so a swipe doesn't also fire tap.
   const draggedRef = React.useRef(false);
   const cat = CATEGORIES.find((c) => c.value === expense.category);
+  const CatIcon = cat?.icon ?? Package;
 
   // Reveal the red delete affordance as the user drags left.
   const bgOpacity = useTransform(x, [DELETE_THRESHOLD, 0], [1, 0]);
@@ -101,8 +102,8 @@ export function ExpenseItem({
         tabIndex={onOpen ? 0 : undefined}
         className="relative flex cursor-pointer touch-pan-y items-center gap-3 bg-card py-3"
       >
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-xl">
-          {cat?.emoji ?? "📦"}
+        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+          <CatIcon className="h-5 w-5" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">

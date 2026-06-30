@@ -1,5 +1,17 @@
 // Shared domain types used across server and client.
 
+import {
+  ShoppingCart,
+  Home,
+  Zap,
+  Utensils,
+  Car,
+  Film,
+  Sparkles,
+  Package,
+  type LucideIcon,
+} from "lucide-react";
+
 export type SplitType = "equal" | "exact" | "percent";
 
 export type ExpenseCategory =
@@ -12,15 +24,19 @@ export type ExpenseCategory =
   | "household"
   | "other";
 
-export const CATEGORIES: { value: ExpenseCategory; label: string; emoji: string }[] = [
-  { value: "groceries", label: "Groceries", emoji: "🛒" },
-  { value: "rent", label: "Rent", emoji: "🏠" },
-  { value: "utilities", label: "Utilities", emoji: "💡" },
-  { value: "dining", label: "Dining", emoji: "🍽️" },
-  { value: "transport", label: "Transport", emoji: "🚗" },
-  { value: "entertainment", label: "Entertainment", emoji: "🎬" },
-  { value: "household", label: "Household", emoji: "🧽" },
-  { value: "other", label: "Other", emoji: "📦" },
+export const CATEGORIES: {
+  value: ExpenseCategory;
+  label: string;
+  icon: LucideIcon;
+}[] = [
+  { value: "groceries", label: "Groceries", icon: ShoppingCart },
+  { value: "rent", label: "Rent", icon: Home },
+  { value: "utilities", label: "Utilities", icon: Zap },
+  { value: "dining", label: "Dining", icon: Utensils },
+  { value: "transport", label: "Transport", icon: Car },
+  { value: "entertainment", label: "Entertainment", icon: Film },
+  { value: "household", label: "Household", icon: Sparkles },
+  { value: "other", label: "Other", icon: Package },
 ];
 
 export type RecurringFrequency = "weekly" | "monthly";
@@ -36,15 +52,14 @@ export type PaymentMethodType =
 export const PAYMENT_METHODS: {
   value: PaymentMethodType;
   label: string;
-  emoji: string;
   placeholder: string;
 }[] = [
-  { value: "venmo", label: "Venmo", emoji: "💸", placeholder: "@username" },
-  { value: "cashapp", label: "Cash App", emoji: "💵", placeholder: "$cashtag" },
-  { value: "paypal", label: "PayPal", emoji: "🅿️", placeholder: "paypal.me/you or email" },
-  { value: "zelle", label: "Zelle", emoji: "🏦", placeholder: "email or phone" },
-  { value: "applecash", label: "Apple Cash", emoji: "🍎", placeholder: "phone or email" },
-  { value: "revolut", label: "Revolut", emoji: "💳", placeholder: "@revtag" },
+  { value: "venmo", label: "Venmo", placeholder: "@username" },
+  { value: "cashapp", label: "Cash App", placeholder: "$cashtag" },
+  { value: "paypal", label: "PayPal", placeholder: "paypal.me/you or email" },
+  { value: "zelle", label: "Zelle", placeholder: "email or phone" },
+  { value: "applecash", label: "Apple Cash", placeholder: "phone or email" },
+  { value: "revolut", label: "Revolut", placeholder: "@revtag" },
 ];
 
 export interface PaymentMethod {

@@ -246,7 +246,10 @@ export function ExpenseForm({
             <SelectContent>
               {CATEGORIES.map((c) => (
                 <SelectItem key={c.value} value={c.value}>
-                  {c.emoji} {c.label}
+                  <span className="flex items-center gap-2">
+                    <c.icon className="h-4 w-4 text-muted-foreground" aria-hidden />
+                    {c.label}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

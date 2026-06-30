@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Copy, Check, ExternalLink } from "lucide-react";
+import { Copy, Check, ExternalLink, Wallet } from "lucide-react";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/types";
 import { paymentLink } from "@/lib/payments";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export function PaymentMethodsList({
         const href = paymentLink(pm, linkContext);
         return (
           <li key={i} className="flex items-center gap-2 text-sm">
-            <span aria-hidden>{def?.emoji ?? "🔗"}</span>
+            <Wallet className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden />
             <span className="text-muted-foreground">{def?.label ?? pm.type}:</span>
             {href ? (
               <a
