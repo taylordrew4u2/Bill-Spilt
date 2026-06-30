@@ -45,7 +45,9 @@ const DOLLAR_PTS = [
 function segDist(px, py, ax, ay, bx, by) {
   const dx = bx - ax;
   const dy = by - ay;
-  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(px - ax, py - ay); // degenerate segment
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2));
   return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 
@@ -89,18 +91,10 @@ function sdRoundRect(px, py, cx, cy, hw, hh, r) {
   return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
 }
 
-// Rotate (px,py) by `ang` around (cx,cy).
-function rot(px, py, cx, cy, ang) {
-  const s = Math.sin(ang);
-  const c = Math.cos(ang);
-  const dx = px - cx;
-  const dy = py - cy;
-  return [cx + dx * c - dy * s, cy + dx * s + dy * c];
-}
-
-function drawIcon(size, maskable) {
+function drawIcon(size, { maskable = false, contentScale = 1 } = {}) {
   const U = size;
   const radius = Math.floor(size * 0.22);
+  const center = size / 2;
 
   // Knocked-over mason jar, axis tilted so the mouth pours to the lower-right.
   const jar = {
@@ -110,9 +104,11 @@ function drawIcon(size, maskable) {
     bodyHalf: 0.18 * U, // half-length along the axis
     bodyR: 0.135 * U, // half-height (glass radius)
     corner: 0.06 * U,
-    mouthU: 0.18 * U, // +u face = the open mouth
     threads: [0.085 * U, 0.115 * U, 0.145 * U], // neck rings near the mouth
   };
+  // Jar rotation is constant per icon — hoist the trig out of the per-sample path.
+  const cosA = Math.cos(-jar.ang);
+  const sinA = Math.sin(-jar.ang);
 
   // Coins pouring along a diagonal from the jar mouth toward the corner.
   const start = [0.52 * U, 0.49 * U];
@@ -151,12 +147,18 @@ function drawIcon(size, maskable) {
 
   function sampleAt(x, y) {
     if (!inRounded(x, y)) return null;
+    // Background spans the full canvas; only the artwork is scaled into the
+    // maskable safe zone, so evaluate shapes in scaled "content space".
     let color = mix(BG_TOP, BG_BOT, y / size);
+    const sx = center + (x - center) / contentScale;
+    const sy = center + (y - center) / contentScale;
 
-    // Mason jar (drawn first; coins pour over the mouth).
-    const rp = rot(x, y, jar.cx, jar.cy, -jar.ang);
-    const u = rp[0] - jar.cx; // along axis (+ = toward mouth)
-    const v = rp[1] - jar.cy; // perpendicular
+    // Mason jar (drawn first; coins pour over the mouth). Rotate the sample
+    // point into the jar's local frame using the hoisted trig.
+    const dx = sx - jar.cx;
+    const dy = sy - jar.cy;
+    const u = dx * cosA - dy * sinA; // along axis (+ = toward mouth)
+    const v = dx * sinA + dy * cosA; // perpendicular
     if (sdRoundRect(u, v, 0, 0, jar.bodyHalf, jar.bodyR, jar.corner) < 0) {
       color = GLASS;
       // Sheen highlight along the upper-back of the glass.
@@ -173,13 +175,13 @@ function drawIcon(size, maskable) {
 
     // Coins, back-to-front (largest, nearest the mouth, ends up on top).
     for (const c of coins) {
-      const cd = Math.hypot(x - c.x, y - c.y);
+      const cd = Math.hypot(sx - c.x, sy - c.y);
       if (cd <= c.r) {
         if (cd > c.r - 0.02 * U) {
           color = RIM;
         } else if (c.dollar) {
           // Lead coin: gold face stamped with a clean $.
-          color = dollarInk(x, y, c) ? INK : COIN;
+          color = dollarInk(sx, sy, c) ? INK : COIN;
         } else if (Math.abs(cd - c.r * 0.62) < 0.013 * U) {
           color = COIN_EDGE;
         } else {
@@ -241,14 +243,18 @@ function drawIcon(size, maskable) {
 }
 
 const targets = [
-  { name: "icon-192.png", size: 192, maskable: false },
-  { name: "icon-512.png", size: 512, maskable: false },
-  { name: "icon-maskable-512.png", size: 512, maskable: true },
-  { name: "apple-touch-icon.png", size: 180, maskable: true },
+  // Standard icons own their rounded square, so the art fills the canvas.
+  { name: "icon-192.png", size: 192, maskable: false, contentScale: 1 },
+  { name: "icon-512.png", size: 512, maskable: false, contentScale: 1 },
+  // Maskable: launchers crop to a circle/squircle, so keep art in the safe zone.
+  { name: "icon-maskable-512.png", size: 512, maskable: true, contentScale: 0.8 },
+  // Apple only rounds the corners (no circular crop) — a gentler inset reads well.
+  { name: "apple-touch-icon.png", size: 180, maskable: true, contentScale: 0.92 },
 ];
 
 for (const t of targets) {
-  writeFileSync(join(OUT_DIR, t.name), drawIcon(t.size, t.maskable));
+  const opts = { maskable: t.maskable, contentScale: t.contentScale };
+  writeFileSync(join(OUT_DIR, t.name), drawIcon(t.size, opts));
   console.log(`✓ ${t.name} (${t.size}x${t.size})`);
 }
 console.log("Icons written to public/icons");
