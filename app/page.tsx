@@ -298,6 +298,15 @@ export default async function LandingPage() {
               </div>
             ))}
           </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            New to this?{" "}
+            <Link
+              href="/guide/how-to-split-bills-with-roommates"
+              className="font-semibold text-primary hover:underline"
+            >
+              Read our guide on how to split bills with roommates →
+            </Link>
+          </p>
         </div>
       </section>
 
