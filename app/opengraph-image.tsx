@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { SITE_DESCRIPTION } from "@/lib/site";
 
@@ -6,6 +8,16 @@ export const alt =
   "BILL SPILT — free bill splitter for roommates. Split shared bills, see who owes what, settle up.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// Embed the real app icon so the social card matches the launcher/in-app brand.
+const ICON_SRC = (() => {
+  try {
+    const buf = readFileSync(join(process.cwd(), "public/icons/icon-512.png"));
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return null;
+  }
+})();
 
 /**
  * Social share card used for every route (Next picks this up from the app
@@ -32,14 +44,17 @@ export default function OpengraphImage() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 16,
-            fontSize: 30,
+            gap: 22,
+            fontSize: 34,
             fontWeight: 700,
             letterSpacing: 6,
-            opacity: 0.95,
+            opacity: 0.97,
           }}
         >
-          <span style={{ fontSize: 44 }}>💸</span> BILL SPILT
+          {ICON_SRC ? (
+            <img src={ICON_SRC} width={76} height={76} style={{ borderRadius: 18 }} alt="" />
+          ) : null}
+          BILL SPILT
         </div>
         <div
           style={{
