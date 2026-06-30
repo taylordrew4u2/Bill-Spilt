@@ -14,6 +14,7 @@ import {
   Crown,
   ArrowRight,
   Sparkles,
+  Check,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
@@ -70,6 +71,16 @@ const FEATURES = [
   { icon: Bell, title: "Friendly reminders", body: "Nudge a roommate who owes you with a pre-written message in one tap." },
   { icon: Crown, title: "Household admin", body: "Manage members, transfer ownership, and settle everyone up at once." },
   { icon: Users, title: "Up to 12 roommates", body: "Big house? Add your whole place and keep every shared cost straight." },
+];
+
+// Things rival apps commonly gate behind a paid plan — all free in BillSpilt.
+const PREMIUM_ELSEWHERE = [
+  "Recurring bills on autopilot",
+  "One-tap payment reminders",
+  "Receipt photo attachments",
+  "Multiple household admins",
+  "Unlimited expenses & roommates",
+  "Full offline access",
 ];
 
 const FAQ = [
@@ -269,6 +280,38 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Free-where-others-charge */}
+      <section className="border-t bg-card/40 py-16">
+        <div className="mx-auto max-w-3xl px-5 text-center">
+          <h2 className="text-2xl font-bold sm:text-3xl">
+            Free here. Premium everywhere else.
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            The features other bill splitters lock behind a subscription? In
+            BillSpilt they&apos;re all free — forever, with no credit card.
+          </p>
+          <div className="mx-auto mt-8 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
+            {PREMIUM_ELSEWHERE.map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3"
+              >
+                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Check className="h-4 w-4" aria-hidden />
+                </span>
+                <span className="text-sm font-medium">{item}</span>
+              </div>
+            ))}
+          </div>
+          <Link
+            href="/register"
+            className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
+          >
+            Get it all free <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
       {/* Categories strip */}
       <section className="border-y bg-card/40 py-12">
         <div className="mx-auto max-w-5xl px-5 text-center">
@@ -320,7 +363,8 @@ export default async function LandingPage() {
             Stop chasing your roommates for money.
           </h2>
           <p className="mx-auto mt-3 max-w-md opacity-90">
-            Set up your household in a minute and let BillSpilt do the math.
+            Set up your household in under a minute and let BillSpilt do the
+            math. Free forever — no card, no catch.
           </p>
           <Link
             href="/register"
@@ -328,6 +372,9 @@ export default async function LandingPage() {
           >
             Create your free account <ArrowRight className="h-4 w-4" />
           </Link>
+          <p className="mt-3 text-sm opacity-80">
+            Takes a minute · No credit card · Works on every phone
+          </p>
         </div>
       </section>
 
