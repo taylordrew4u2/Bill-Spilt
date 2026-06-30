@@ -47,6 +47,16 @@ export function ExpenseItem({
     } else {
       animate(x, 0, { type: "spring", stiffness: 500, damping: 40 });
     }
+    // Clear the drag flag after the click that may follow this drag has fired,
+    // so a drag never permanently swallows the next genuine tap.
+    setTimeout(() => {
+      draggedRef.current = false;
+    }, 0);
+  }
+
+  function open() {
+    if (draggedRef.current) return; // a drag/swipe, not a tap
+    onOpen?.(expense);
   }
 
   const yourShare = expense.splits.find((s) => s.userId === currentUserId);
@@ -76,15 +86,19 @@ export function ExpenseItem({
           draggedRef.current = true;
         }}
         onDragEnd={handleDragEnd}
-        onClick={() => {
-          // Only treat as a tap if it wasn't a drag/swipe.
-          if (draggedRef.current) {
-            draggedRef.current = false;
-            return;
-          }
-          onOpen?.(expense);
-        }}
+        onClick={onOpen ? open : undefined}
+        onKeyDown={
+          onOpen
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpen(expense);
+                }
+              }
+            : undefined
+        }
         role={onOpen ? "button" : undefined}
+        tabIndex={onOpen ? 0 : undefined}
         className="relative flex cursor-pointer touch-pan-y items-center gap-3 bg-card py-3"
       >
         <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-xl">

@@ -118,11 +118,12 @@ export default function ExpensesPage() {
             />
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery("")}
                 aria-label="Clear search"
                 className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden />
               </button>
             )}
           </div>
@@ -170,6 +171,7 @@ export default function ExpensesPage() {
             <Search className="mb-2 h-6 w-6 text-muted-foreground" />
             <p className="font-medium">No matching expenses</p>
             <button
+              type="button"
               onClick={() => {
                 setQuery("");
                 setCategory("all");
@@ -253,6 +255,7 @@ function FilterChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
         "h-9 flex-shrink-0 whitespace-nowrap rounded-full border px-3 text-sm font-medium transition-colors",

@@ -45,6 +45,7 @@ export function CookieConsent() {
           .
         </p>
         <button
+          type="button"
           onClick={accept}
           className="h-10 flex-shrink-0 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground active:scale-95"
         >

@@ -132,6 +132,7 @@ export function SplitEditor({
                     step="0.01"
                     min="0"
                     placeholder={state.splitType === "percent" ? "%" : "0.00"}
+                    aria-label={`${m.name} ${state.splitType === "percent" ? "percentage" : "amount"}`}
                     className={cn(
                       "h-9 text-right",
                       state.splitType === "exact" && "pl-5",
