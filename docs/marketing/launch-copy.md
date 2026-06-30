@@ -79,11 +79,46 @@ differs. Keep claims accurate — every feature really is free.
 
 ---
 
-## One-line directory blurb (AlternativeTo, app lists, etc.)
+## AlternativeTo listing (full)
 
+**App name:** BILL SPILT
+
+**Tagline:**
+> Free roommate bill splitter — split shared bills, settle up in the fewest payments
+
+**Short description (the blurb that shows in lists):**
 > BILL SPILT is a free roommate bill splitter: track shared expenses, see who
 > owes what, and settle up in the fewest payments — every feature free, no
 > paywall. Installable PWA, works offline.
+
+**Long description:**
+> BILL SPILT helps roommates split shared bills and settle up without the
+> awkwardness. Log an expense in seconds (split evenly, by exact amounts, or by
+> percentage), see everyone's live balance, and get a settle-up plan that nets
+> all the debts into the fewest possible payments — four roommates often settle
+> in two or three transfers.
+>
+> Every feature is free, forever — no premium tier and no credit card. That
+> includes recurring bills (rent, internet, subscriptions logged automatically),
+> receipt photos, CSV export, payment reminders, multiple household admins, and
+> one-tap invite links. It links you to Venmo or Cash App but never holds or
+> processes your money.
+>
+> It's a Progressive Web App: open it in any browser, add it to your home
+> screen, and it runs full-screen and offline like a native app — nothing to
+> install from an app store.
+
+**Suggested "Features" tags:**
+> Free · Bill splitting · Expense tracking · Roommate/household · PWA · Works
+> offline · No registration to browse · Venmo & Cash App · Recurring bills
+
+**Platforms:** Web, Android (PWA), iOS (PWA)
+
+**Licensing:** Free
+
+**Listed as an alternative to:** Splitwise, Settle Up, Tricount, Splid
+
+**Website:** https://billspilt.com
 
 ---
 

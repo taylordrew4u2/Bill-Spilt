@@ -25,6 +25,16 @@ export const GUIDES: Guide[] = [
     title: "The Best Free Splitwise Alternative for Roommates",
     linkText: "The best free Splitwise alternative",
   },
+  {
+    slug: "how-to-split-utilities-with-roommates",
+    title: "How to Split Utility Bills With Roommates",
+    linkText: "How to split utilities with roommates",
+  },
+  {
+    slug: "how-to-ask-a-roommate-for-money",
+    title: "How to Ask a Roommate for Money They Owe You",
+    linkText: "How to ask a roommate for money owed",
+  },
 ];
 
 export const guidePath = (slug: string) => `/guide/${slug}`;

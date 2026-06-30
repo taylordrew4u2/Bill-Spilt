@@ -16,7 +16,7 @@ export function GuideShell({
   jsonLd: object;
   children: React.ReactNode;
 }) {
-  const related = GUIDES.filter((g) => g.slug !== slug);
+  const related = GUIDES.filter((g) => g.slug !== slug).slice(0, 3);
 
   return (
     <div className="min-h-[100dvh] bg-background">
