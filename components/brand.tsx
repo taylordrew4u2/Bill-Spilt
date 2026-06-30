@@ -1,28 +1,33 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-/** The BILL SPILT wordmark + "B" badge, used on auth screens and the header. */
+const SIZES = {
+  sm: { px: 28, text: "text-base" },
+  md: { px: 36, text: "text-xl" },
+  lg: { px: 48, text: "text-3xl" },
+} as const;
+
+/** The BILL SPILT wordmark + app-icon badge, used on auth screens, the header,
+ *  invite screens, and the footer. The badge is the real app icon so the
+ *  in-product brand matches the installed/launcher icon. */
 export function Brand({
   size = "md",
   className,
 }: {
-  size?: "sm" | "md" | "lg";
+  size?: keyof typeof SIZES;
   className?: string;
 }) {
-  const badge =
-    size === "lg" ? "h-12 w-12 text-2xl" : size === "sm" ? "h-7 w-7 text-sm" : "h-9 w-9 text-lg";
-  const text =
-    size === "lg" ? "text-3xl" : size === "sm" ? "text-base" : "text-xl";
+  const { px, text } = SIZES[size];
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <div
-        className={cn(
-          "flex items-center justify-center rounded-xl bg-primary font-extrabold text-primary-foreground shadow-sm",
-          badge,
-        )}
+      <Image
+        src="/icons/icon-192.png"
+        alt=""
         aria-hidden
-      >
-        B
-      </div>
+        width={px}
+        height={px}
+        className="rounded-xl shadow-sm"
+      />
       <span className={cn("font-extrabold tracking-tight", text)}>
         BILL <span className="text-primary">SPILT</span>
       </span>
