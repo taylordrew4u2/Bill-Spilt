@@ -58,12 +58,16 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION to the token Google Search Console
-  // gives you to verify domain ownership (renders the google-site-verification
-  // meta tag). Left out entirely when the env var is unset.
-  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
-    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
-    : undefined,
+  // Search-engine ownership verification. Set each token from the respective
+  // webmaster console; any unset one is simply omitted.
+  //  - NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION → Google Search Console
+  //  - NEXT_PUBLIC_BING_SITE_VERIFICATION   → Bing Webmaster Tools (also DuckDuckGo)
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+      : {},
+  },
   // AdSense account verification.
   other: { "google-adsense-account": ADSENSE_CLIENT },
 };
