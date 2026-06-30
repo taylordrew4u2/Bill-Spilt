@@ -236,6 +236,15 @@ export default async function LandingPage() {
         <p className="mt-4 text-xs text-muted-foreground">
           No credit card · No premium tier · Free forever
         </p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Just need a quick split?{" "}
+          <Link
+            href="/split-calculator"
+            className="font-semibold text-primary hover:underline"
+          >
+            Use the free calculator — no sign-up →
+          </Link>
+        </p>
       </section>
 
       {/* How it works */}

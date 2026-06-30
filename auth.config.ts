@@ -21,6 +21,7 @@ export const authConfig = {
       const isPublicPage =
         p === "/" ||
         p.startsWith("/guide") ||
+        p.startsWith("/split-calculator") ||
         p.startsWith("/join") ||
         p.startsWith("/forgot") ||
         p.startsWith("/reset") ||
