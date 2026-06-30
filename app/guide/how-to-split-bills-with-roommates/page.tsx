@@ -8,7 +8,7 @@ const SLUG = "how-to-split-bills-with-roommates";
 const TITLE = "How to Split Bills With Roommates (Without the Awkwardness)";
 const DESCRIPTION =
   "A simple, fair system for splitting bills with roommates: agree on what's shared, pick a split method, log expenses as they happen, and settle up in the fewest payments. Plus a free roommate bill splitter that does the math for you.";
-const PATH = "/guide/how-to-split-bills-with-roommates";
+const PATH = `/guide/${SLUG}`;
 
 export const metadata: Metadata = {
   title: TITLE,

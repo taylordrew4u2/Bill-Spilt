@@ -123,11 +123,12 @@ export function InstallPrompt() {
               </Button>
             )}
             <button
+              type="button"
               onClick={dismiss}
               aria-label="Dismiss"
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </motion.div>

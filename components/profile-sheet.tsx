@@ -38,6 +38,12 @@ interface Profile {
   paymentMethods: PaymentMethod[];
 }
 
+/** A payment-method row with a stable client key so React keeps input state
+ *  associated with the right row when rows are added/removed/reordered. */
+interface MethodRow extends PaymentMethod {
+  key: number;
+}
+
 export function ProfileSheet({
   open,
   onOpenChange,
@@ -51,11 +57,12 @@ export function ProfileSheet({
 
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [methods, setMethods] = React.useState<PaymentMethod[]>([]);
+  const [methods, setMethods] = React.useState<MethodRow[]>([]);
   const [currentPassword, setCurrentPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
+  const rowKey = React.useRef(0);
 
   // Hydrate the form once the profile arrives.
   React.useEffect(() => {
@@ -63,8 +70,12 @@ export function ProfileSheet({
     if (p && !loaded) {
       setName(p.name);
       setEmail(p.email);
-      // Only keep currently-supported method types (Venmo / Cash App).
-      setMethods(p.paymentMethods.filter((m) => SUPPORTED.has(m.type)));
+      // Only keep currently-supported method types.
+      setMethods(
+        p.paymentMethods
+          .filter((m) => SUPPORTED.has(m.type))
+          .map((m) => ({ ...m, key: ++rowKey.current })),
+      );
       setLoaded(true);
     }
   }, [profileQ.data, loaded]);
@@ -79,7 +90,7 @@ export function ProfileSheet({
   }, [open]);
 
   function addMethod() {
-    setMethods((m) => [...m, { type: "venmo", value: "" }]);
+    setMethods((m) => [...m, { type: "venmo", value: "", key: ++rowKey.current }]);
   }
   function updateMethod(i: number, patch: Partial<PaymentMethod>) {
     setMethods((m) => m.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
@@ -91,7 +102,7 @@ export function ProfileSheet({
   async function save(e: React.FormEvent) {
     e.preventDefault();
     const cleanMethods = methods
-      .map((m) => ({ ...m, value: m.value.trim() }))
+      .map((m) => ({ type: m.type, value: m.value.trim() }))
       .filter((m) => m.value.length > 0);
 
     setSaving(true);
@@ -182,7 +193,7 @@ export function ProfileSheet({
                 {methods.map((m, i) => {
                   const def = PAYMENT_METHODS.find((p) => p.value === m.type);
                   return (
-                    <li key={i} className="flex items-center gap-2">
+                    <li key={m.key} className="flex items-center gap-2">
                       <Select
                         value={m.type}
                         onValueChange={(v) =>
@@ -205,6 +216,7 @@ export function ProfileSheet({
                         onChange={(e) => updateMethod(i, { value: e.target.value })}
                         placeholder={def?.placeholder}
                         maxLength={200}
+                        aria-label={`${def?.label ?? m.type} handle`}
                       />
                       <button
                         type="button"

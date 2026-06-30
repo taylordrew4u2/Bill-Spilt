@@ -76,20 +76,25 @@ export async function shareInvite(
       if (err instanceof DOMException && err.name === "AbortError") return "shared";
     }
   }
+  // Clipboard is unavailable server-side and on insecure (HTTP) origins.
+  if (!nav?.clipboard) return "failed";
   try {
-    await nav!.clipboard.writeText(url);
+    await nav.clipboard.writeText(url);
     return "copied";
   } catch {
     return "failed";
   }
 }
 
-/** Generate a short, human-readable invite code for a household. */
+/** Generate a short, human-readable invite code for a household. Uses a CSPRNG
+ *  since the code gates who can join a household. */
 export function generateInviteCode(length = 6): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint32Array(length);
+  crypto.getRandomValues(bytes);
   let out = "";
   for (let i = 0; i < length; i++) {
-    out += alphabet[Math.floor(Math.random() * alphabet.length)];
+    out += alphabet[bytes[i] % alphabet.length];
   }
   return out;
 }

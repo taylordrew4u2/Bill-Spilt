@@ -90,6 +90,7 @@ export default function HomePage() {
               type.
             </p>
             <button
+              type="button"
               onClick={share}
               className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground active:scale-95"
             >

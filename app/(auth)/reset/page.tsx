@@ -117,9 +117,13 @@ function ResetForm() {
               placeholder="Re-enter password"
             />
           </div>
-          {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm font-medium text-destructive">
+              {error}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
             Update password
           </Button>
         </form>

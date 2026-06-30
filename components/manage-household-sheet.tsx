@@ -227,6 +227,7 @@ export function ManageHouseholdSheet({
                 onChange={(e) => setName(e.target.value)}
                 maxLength={80}
                 autoFocus
+                aria-label="Household name"
               />
               <Button onClick={saveName} disabled={savingName}>
                 {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}

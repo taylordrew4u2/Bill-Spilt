@@ -46,8 +46,11 @@ export async function serveAd(placement: AdPlacement): Promise<Ad | null> {
     }
   }
 
-  // Fire-and-forget impression count.
-  void sql`UPDATE ads SET impressions = impressions + 1 WHERE id = ${chosen.id}`;
+  // Fire-and-forget impression count — swallow errors so a failed write can't
+  // surface as an unhandled rejection.
+  void sql`UPDATE ads SET impressions = impressions + 1 WHERE id = ${chosen.id}`.catch(
+    () => {},
+  );
   return chosen;
 }
 

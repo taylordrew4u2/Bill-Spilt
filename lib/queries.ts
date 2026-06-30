@@ -1,15 +1,19 @@
 import { sql, ensureSchema } from "@/lib/db";
 import { computeBalances, minimizeTransfers } from "@/lib/settlement";
 import { roundMoney } from "@/lib/utils";
+import { PAYMENT_METHODS } from "@/lib/types";
 import type {
   Balance,
   Expense,
   ExpenseSplit,
   Member,
   PaymentMethod,
+  PaymentMethodType,
   RecurringBill,
   SettlementTransfer,
 } from "@/lib/types";
+
+const PAYMENT_METHOD_TYPES = new Set<string>(PAYMENT_METHODS.map((p) => p.value));
 
 /**
  * Return the household the user belongs to (the app assumes one active
@@ -75,9 +79,12 @@ function parsePaymentMethods(raw: unknown): PaymentMethod[] {
   return val
     .filter(
       (m): m is PaymentMethod =>
-        !!m && typeof m.type === "string" && typeof m.value === "string",
+        !!m &&
+        typeof m.type === "string" &&
+        typeof m.value === "string" &&
+        PAYMENT_METHOD_TYPES.has(m.type),
     )
-    .map((m) => ({ type: m.type, value: m.value }));
+    .map((m) => ({ type: m.type as PaymentMethodType, value: m.value }));
 }
 
 export async function getMembers(householdId: string): Promise<Member[]> {

@@ -269,10 +269,10 @@ export function AdsAdminSheet({
                           onClick={() => toggleActive(ad)} disabled={busyId === ad.id}>
                           {busyId === ad.id ? <Loader2 className="h-4 w-4 animate-spin" /> : ad.active ? "Pause" : "Activate"}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => startEdit(ad)}>
+                        <Button size="sm" variant="outline" onClick={() => startEdit(ad)} aria-label="Edit ad">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => remove(ad)} disabled={busyId === ad.id}>
+                        <Button size="sm" variant="outline" onClick={() => remove(ad)} disabled={busyId === ad.id} aria-label="Delete ad">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

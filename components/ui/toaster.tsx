@@ -38,25 +38,47 @@ const icons = {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<Toast[]>([]);
   const counter = React.useRef(0);
+  // Track auto-dismiss timers so they can be cleared on dismiss/unmount.
+  const timers = React.useRef<Map<number, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  );
+
+  const remove = React.useCallback((id: number) => {
+    const handle = timers.current.get(id);
+    if (handle) clearTimeout(handle);
+    timers.current.delete(id);
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   const toast = React.useCallback<ToastContextValue["toast"]>(
     ({ title, description, variant = "default" }) => {
       const id = ++counter.current;
       setToasts((prev) => [...prev, { id, title, description, variant }]);
-      setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-      }, 4000);
+      timers.current.set(
+        id,
+        setTimeout(() => remove(id), 4000),
+      );
     },
-    [],
+    [remove],
   );
 
-  const dismiss = (id: number) =>
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+  // Clear any pending timers if the provider unmounts.
+  React.useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      pending.forEach(clearTimeout);
+      pending.clear();
+    };
+  }, []);
 
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-[100] flex flex-col items-center gap-2 px-3">
+      <div
+        role="status"
+        aria-live="polite"
+        className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-[100] flex flex-col items-center gap-2 px-3"
+      >
         <AnimatePresence>
           {toasts.map((t) => {
             const Icon = icons[t.variant];
@@ -90,11 +112,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   )}
                 </div>
                 <button
-                  onClick={() => dismiss(t.id)}
+                  type="button"
+                  onClick={() => remove(t.id)}
                   className="text-muted-foreground hover:text-foreground"
                   aria-label="Dismiss"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" aria-hidden />
                 </button>
               </motion.div>
             );
