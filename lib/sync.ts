@@ -1,6 +1,6 @@
 "use client";
 
-import { getPendingExpenses, markSynced } from "@/lib/offline-db";
+import { getPendingExpenses, markSynced, discardQueued } from "@/lib/offline-db";
 
 let syncing = false;
 
@@ -18,8 +18,9 @@ export async function syncPending(): Promise<number> {
   try {
     const pending = await getPendingExpenses();
     for (const item of pending) {
+      let res: Response;
       try {
-        const res = await fetch("/api/expenses", {
+        res = await fetch("/api/expenses", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -32,12 +33,21 @@ export async function syncPending(): Promise<number> {
             createdAt: item.createdAt,
           }),
         });
-        if (res.ok && item.localId != null) {
-          await markSynced(item.localId);
-          synced++;
-        }
       } catch {
-        // Network blip — stop and retry on the next online event.
+        // Network blip — stop and retry the whole queue on the next online event.
+        break;
+      }
+
+      if (item.localId == null) continue;
+      if (res.ok) {
+        await markSynced(item.localId);
+        synced++;
+      } else if (res.status >= 400 && res.status < 500) {
+        // Permanent client error (validation / no longer a member): this item
+        // will never be accepted, so drop it rather than retry it forever.
+        await discardQueued(item.localId);
+      } else {
+        // Server error (5xx) — stop and retry on the next sync.
         break;
       }
     }

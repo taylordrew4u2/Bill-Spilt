@@ -122,6 +122,17 @@ export function colorForId(id: string): string {
   return palette[hash % palette.length];
 }
 
+/** Pick black or white text for legible contrast on a solid background hex. */
+export function readableTextColor(hex: string): string {
+  const m = hex.replace("#", "");
+  const r = parseInt(m.slice(0, 2), 16);
+  const g = parseInt(m.slice(2, 4), 16);
+  const b = parseInt(m.slice(4, 6), 16);
+  // Perceived (sRGB) luminance; dark text on light backgrounds, white on dark.
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? "#1f2937" : "#ffffff";
+}
+
 /** Initials from a name for avatar fallbacks. */
 export function initials(name: string): string {
   return name

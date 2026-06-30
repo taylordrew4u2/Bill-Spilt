@@ -51,6 +51,16 @@ export async function markSynced(localId: number): Promise<void> {
   await db.queuedExpenses.delete(localId);
 }
 
+/**
+ * Drop a queued expense the server has permanently rejected (a 4xx that will
+ * never succeed), so it doesn't block/loop the queue forever.
+ */
+export async function discardQueued(localId: number): Promise<void> {
+  const db = getDB();
+  if (!db) return;
+  await db.queuedExpenses.delete(localId);
+}
+
 export async function pendingCount(): Promise<number> {
   const db = getDB();
   if (!db) return 0;

@@ -45,13 +45,25 @@ function makeRunner(conn: string): Runner | null {
 
   // Standard TCP pool. Small max keeps us within managed-provider connection
   // limits across warm serverless instances. SSL is required by managed hosts.
+  //
+  // Cert verification is opt-in to avoid breaking managed providers that present
+  // certs not chained to the system trust store: set DATABASE_CA_CERT (the
+  // provider's CA, PEM) to verify against it, or DATABASE_SSL_STRICT=true to
+  // verify against the system store. Default stays permissive for compatibility.
   const isLocal = host === "localhost" || host === "127.0.0.1";
+  const ca = process.env.DATABASE_CA_CERT;
+  const verify = ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: true };
+  const ssl = isLocal
+    ? undefined
+    : ca || process.env.DATABASE_SSL_STRICT === "true"
+      ? verify
+      : { rejectUnauthorized: false };
   const pool = new Pool({
     connectionString: conn,
     max: 3,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 15_000,
-    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    ssl,
   });
   return async (text, params) => {
     const r = await pool.query(text, params as any[]);

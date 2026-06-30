@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
-import { getSettlementPlan, isMember } from "@/lib/queries";
+import { getSettlementPlan, getPairwiseBalance, findNonMembers } from "@/lib/queries";
 import { getCachedPlan, setCachedPlan, invalidatePlan } from "@/lib/cache";
 import { settleSchema } from "@/lib/validation";
 import { logActivity } from "@/lib/activity";
@@ -30,12 +30,21 @@ export async function POST(req: Request) {
     const { userId, householdId, currency } = await requireHousehold();
     const body = await req.json();
     const parsed = settleSchema.safeParse(body);
-    if (!parsed.success) throw new ApiError(400, "Invalid settlement");
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.errors[0]?.message ?? "Invalid settlement");
+    }
 
     const { from, to, amount } = parsed.data;
     if (from === to) throw new ApiError(400, "Payer and payee must differ");
-    if (!(await isMember(householdId, from)) || !(await isMember(householdId, to))) {
+    if ((await findNonMembers(householdId, [from, to])).length > 0) {
       throw new ApiError(403, "Both parties must be household members");
+    }
+
+    // A settlement can't exceed what the payer currently owes the payee, or it
+    // would distort the ledger. `getPairwiseBalance(to, from) > 0` ⇒ from owes to.
+    const owed = await getPairwiseBalance(householdId, to, from);
+    if (amount > owed + 0.01) {
+      throw new ApiError(400, "That's more than this person currently owes.");
     }
 
     await sql`
