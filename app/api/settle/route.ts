@@ -27,7 +27,7 @@ export async function GET() {
 // Record that a transfer was paid; this rebalances the ledger.
 export async function POST(req: Request) {
   return handle(async () => {
-    const { userId, householdId } = await requireHousehold();
+    const { userId, householdId, currency } = await requireHousehold();
     const body = await req.json();
     const parsed = settleSchema.safeParse(body);
     if (!parsed.success) throw new ApiError(400, "Invalid settlement");
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       householdId,
       userId,
       "settlement_recorded",
-      `Recorded a ${formatCurrency(amount)} payment`,
+      `Recorded a ${formatCurrency(amount, currency)} payment`,
     );
     return NextResponse.json({ ok: true }, { status: 201 });
   });

@@ -18,10 +18,10 @@ import type {
  */
 export async function getUserHousehold(
   userId: string,
-): Promise<{ id: string; name: string; inviteCode: string } | null> {
+): Promise<{ id: string; name: string; inviteCode: string; currency: string } | null> {
   await ensureSchema();
   const { rows } = await sql`
-    SELECT h.id, h.name, h.invite_code
+    SELECT h.id, h.name, h.invite_code, h.currency
     FROM households h
     JOIN household_members m ON m.household_id = h.id
     WHERE m.user_id = ${userId}
@@ -29,7 +29,21 @@ export async function getUserHousehold(
     LIMIT 1
   `;
   if (rows.length === 0) return null;
-  return { id: rows[0].id, name: rows[0].name, inviteCode: rows[0].invite_code };
+  return {
+    id: rows[0].id,
+    name: rows[0].name,
+    inviteCode: rows[0].invite_code,
+    currency: rows[0].currency ?? "USD",
+  };
+}
+
+/** The household's display currency code (defaults to USD). */
+export async function getHouseholdCurrency(householdId: string): Promise<string> {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT currency FROM households WHERE id = ${householdId} LIMIT 1
+  `;
+  return rows[0]?.currency ?? "USD";
 }
 
 /** Verify a user is a member of a household (authorisation guard). */

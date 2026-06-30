@@ -12,8 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MemberAvatar } from "@/components/member-avatar";
+import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 /**
  * Read-only detail view for a single expense: full split breakdown plus the
@@ -32,6 +33,7 @@ export function ExpenseDetailSheet({
   onOpenChange: (open: boolean) => void;
   onEdit?: (expense: Expense) => void;
 }) {
+  const money = useMoney();
   const cat = expense
     ? CATEGORIES.find((c) => c.value === expense.category)
     : null;
@@ -53,7 +55,7 @@ export function ExpenseDetailSheet({
                   </SheetDescription>
                 </div>
                 <span className="ml-auto text-2xl font-extrabold">
-                  {formatCurrency(expense.amount)}
+                  {money(expense.amount)}
                 </span>
               </div>
             </SheetHeader>
@@ -86,7 +88,7 @@ export function ExpenseDetailSheet({
                         {s.userId === currentUserId ? `${s.name} (you)` : s.name}
                       </span>
                       <span className="text-sm font-medium">
-                        {formatCurrency(s.amount)}
+                        {money(s.amount)}
                       </span>
                     </li>
                   ))}
@@ -100,7 +102,7 @@ export function ExpenseDetailSheet({
                 {(() => {
                   const myShare = expense.splits.find((s) => s.userId === currentUserId);
                   return myShare ? (
-                    <p className="text-lg font-semibold">{formatCurrency(myShare.amount)}</p>
+                    <p className="text-lg font-semibold">{money(myShare.amount)}</p>
                   ) : (
                     <p className="text-sm text-muted-foreground">You&apos;re not in this split</p>
                   );

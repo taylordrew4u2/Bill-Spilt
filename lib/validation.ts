@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CURRENCY_CODES } from "@/lib/types";
 
 export const registerSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
@@ -52,12 +53,24 @@ export const createHouseholdSchema = z.object({
   name: z.string().trim().min(1, "Household name is required").max(80),
 });
 
+/** Household currency code (ISO 4217), restricted to the supported list. */
+export const currencySchema = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .refine((c) => (CURRENCY_CODES as string[]).includes(c), "Unsupported currency");
+
+export const updateHouseholdSchema = z.object({
+  name: z.string().trim().min(1, "Household name is required").max(80).optional(),
+  currency: currencySchema.optional(),
+});
+
 export const joinHouseholdSchema = z.object({
   code: z.string().trim().toUpperCase().min(4).max(12),
 });
 
 export const paymentMethodSchema = z.object({
-  type: z.enum(["venmo", "cashapp"]),
+  type: z.enum(["venmo", "cashapp", "paypal", "zelle", "applecash", "revolut"]),
   value: z.string().trim().min(1).max(200),
 });
 

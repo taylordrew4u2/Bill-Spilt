@@ -137,10 +137,13 @@ async function bootstrap(): Promise<void> {
       id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name        TEXT NOT NULL,
       invite_code TEXT UNIQUE NOT NULL,
+      currency    TEXT NOT NULL DEFAULT 'USD',
       created_by  UUID REFERENCES users(id) ON DELETE SET NULL,
       created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  // For households created before currency selection existed.
+  await sql`ALTER TABLE households ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'USD'`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS household_members (

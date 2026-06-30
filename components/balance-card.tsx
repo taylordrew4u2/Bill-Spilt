@@ -3,12 +3,13 @@
 import { ArrowUpRight, ArrowDownRight, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MemberAvatar } from "@/components/member-avatar";
-import { formatCurrency } from "@/lib/utils";
+import { useMoney } from "@/components/app-data";
 import { cn } from "@/lib/utils";
 import type { Balance } from "@/lib/types";
 
 /** Big hero showing the current user's overall position. */
 export function NetSummary({ net }: { net: number }) {
+  const money = useMoney();
   const owed = net > 0.005;
   const owes = net < -0.005;
   return (
@@ -25,7 +26,7 @@ export function NetSummary({ net }: { net: number }) {
           {owed ? "You are owed" : owes ? "You owe" : "You're all settled"}
         </p>
         <p className="mt-2 text-4xl font-extrabold tracking-tight">
-          {formatCurrency(Math.abs(net))}
+          {money(Math.abs(net))}
         </p>
         <p className="mt-1 text-sm opacity-90">
           {owed
@@ -47,6 +48,7 @@ export function BalanceRow({
   balance: Balance;
   isCurrentUser: boolean;
 }) {
+  const money = useMoney();
   const { net } = balance;
   const owed = net > 0.005;
   const owes = net < -0.005;
@@ -75,7 +77,7 @@ export function BalanceRow({
         {owed && <ArrowUpRight className="h-4 w-4" />}
         {owes && <ArrowDownRight className="h-4 w-4" />}
         {!owed && !owes && <Check className="h-4 w-4" />}
-        {net === 0 ? "—" : formatCurrency(Math.abs(net))}
+        {net === 0 ? "—" : money(Math.abs(net))}
       </div>
     </li>
   );

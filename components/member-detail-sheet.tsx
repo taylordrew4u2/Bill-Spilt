@@ -14,9 +14,9 @@ import { Separator } from "@/components/ui/separator";
 import { MemberAvatar } from "@/components/member-avatar";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { useToast } from "@/components/ui/toaster";
-import { useAppData } from "@/components/app-data";
+import { useAppData, useMoney } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
-import { formatCurrency, colorForId } from "@/lib/utils";
+import { colorForId } from "@/lib/utils";
 import { PAYMENT_METHODS, type Member } from "@/lib/types";
 
 export function MemberDetailSheet({
@@ -29,6 +29,7 @@ export function MemberDetailSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const { currentUserId, members, version } = useAppData();
+  const money = useMoney();
   const { toast } = useToast();
   const isSelf = member?.id === currentUserId;
 
@@ -58,7 +59,7 @@ export function MemberDetailSheet({
       })
       .join(", ");
     const text =
-      `Hey ${member.name}, friendly reminder you owe me ${formatCurrency(amount)} on BILL SPILT.` +
+      `Hey ${member.name}, friendly reminder you owe me ${money(amount)} on BILL SPILT.` +
       (ways ? ` You can pay me with ${ways}.` : "");
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
@@ -135,7 +136,7 @@ export function MemberDetailSheet({
                     : "You're settled up"}
               </p>
               {(theyOweYou || youOwe) && (
-                <p className="text-xl font-bold">{formatCurrency(amount)}</p>
+                <p className="text-xl font-bold">{money(amount)}</p>
               )}
             </div>
             {theyOweYou && (

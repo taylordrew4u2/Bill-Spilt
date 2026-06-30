@@ -19,7 +19,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   return handle(async () => {
-    const { userId, householdId } = await requireHousehold();
+    const { userId, householdId, currency } = await requireHousehold();
     const body = await req.json();
     const parsed = expenseSchema.safeParse(body);
     if (!parsed.success) {
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       householdId,
       userId,
       "expense_added",
-      `Added “${data.description}” (${formatCurrency(data.amount)})`,
+      `Added “${data.description}” (${formatCurrency(data.amount, currency)})`,
     );
     return NextResponse.json({ id }, { status: 201 });
   });

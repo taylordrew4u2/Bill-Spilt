@@ -4,8 +4,9 @@ import * as React from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trash2, Paperclip } from "lucide-react";
 import { MemberAvatar } from "@/components/member-avatar";
+import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 const DELETE_THRESHOLD = -96;
 
@@ -25,6 +26,7 @@ export function ExpenseItem({
   onDelete: (id: string) => void;
   onOpen?: (expense: Expense) => void;
 }) {
+  const money = useMoney();
   const x = useMotionValue(0);
   const [removing, setRemoving] = React.useState(false);
   // Track whether the pointer moved (a drag) so a swipe doesn't also fire tap.
@@ -101,10 +103,10 @@ export function ExpenseItem({
           </p>
         </div>
         <div className="text-right">
-          <p className="font-semibold">{formatCurrency(expense.amount)}</p>
+          <p className="font-semibold">{money(expense.amount)}</p>
           {yourShare && (
             <p className="text-xs text-muted-foreground">
-              your share {formatCurrency(yourShare.amount)}
+              your share {money(yourShare.amount)}
             </p>
           )}
         </div>
