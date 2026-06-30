@@ -21,6 +21,19 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  // An invite link sends roommates here pre-bound to a household.
+  const [invite, setInvite] = React.useState<{ code: string; house: string } | null>(
+    null,
+  );
+  const loginHref = invite
+    ? `/login?${new URLSearchParams({ invite: invite.code, house: invite.house })}`
+    : "/login";
+
+  React.useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const code = q.get("invite");
+    if (code) setInvite({ code, house: q.get("house") ?? "" });
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,11 +65,21 @@ export default function RegisterPage() {
       password: payload.password,
       redirect: false,
     });
-    setLoading(false);
     if (login?.error) {
-      router.push("/login");
+      setLoading(false);
+      router.push(invite ? loginHref : "/login");
       return;
     }
+    // Joined automatically when they arrived via an invite link — no tab to
+    // pick, no code to type.
+    if (invite) {
+      await fetch("/api/household", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "join", code: invite.code }),
+      }).catch(() => {});
+    }
+    setLoading(false);
     router.push("/home");
     router.refresh();
   }
@@ -71,9 +94,13 @@ export default function RegisterPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Create your account</CardTitle>
+          <CardTitle className="text-xl">
+            {invite ? "Create your account to join" : "Create your account"}
+          </CardTitle>
           <CardDescription>
-            Split bills with your roommates — free forever, no credit card.
+            {invite
+              ? `You'll join ${invite.house || "your roommates"} the moment your account is ready.`
+              : "Split bills with your roommates — free forever, no credit card."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,14 +138,14 @@ export default function RegisterPage() {
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Create account
+              {invite ? "Create account & join" : "Create account"}
             </Button>
           </form>
         </CardContent>
       </Card>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-primary">
+        <Link href={loginHref} className="font-semibold text-primary">
           Log in
         </Link>
       </p>

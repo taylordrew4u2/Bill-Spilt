@@ -115,24 +115,25 @@ export default async function LandingPage() {
       {/* Hero */}
       <section className="mx-auto max-w-3xl px-5 pb-16 pt-10 text-center sm:pt-20">
         <span className="inline-block rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-          💸 Split bills with your roommates
+          🎉 Free forever — every feature, no paywall
         </span>
         <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Split shared bills,
+          Every feature, free forever.
           <br />
-          <span className="text-primary">settle up in seconds.</span>
+          <span className="text-primary">No paywall, no catch.</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          BILL SPILT helps roommates track shared expenses, see who owes what
-          instantly, and pay each other back with the fewest possible payments —
-          right from your phone. Free forever.
+          Other bill splitters lock recurring bills, reminders, and receipts
+          behind a subscription. BILL SPILT keeps all of it free — split shared
+          costs with your roommates, see who owes what instantly, and settle up
+          in the fewest payments, without ever reaching for your card.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/register"
             className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95 sm:w-auto"
           >
-            Start splitting — it&apos;s free <ArrowRight className="h-4 w-4" />
+            Start free — no card needed <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             href="/login"
@@ -142,7 +143,7 @@ export default async function LandingPage() {
           </Link>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">
-          No credit card · Installs to your home screen · Works offline
+          No credit card · No premium tier · Free forever
         </p>
       </section>
 
