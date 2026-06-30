@@ -11,6 +11,6 @@ export const config = {
   // static assets, the service worker, manifest, icons, and the generated
   // SEO/social-image routes (which crawlers must reach without auth).
   matcher: [
-    "/((?!api/|_next/static|_next/image|favicon.ico|manifest.json|ads.txt|robots.txt|sitemap.xml|opengraph-image|twitter-image|sw.js|workbox-.*|icons/.*|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|js|css|woff2?)$).*)",
+    "/((?!api/|_next/static|_next/image|favicon.ico|manifest.json|ads.txt|robots.txt|sitemap.xml|opengraph-image|twitter-image|sw.js|workbox-.*|icons/.*|.*\\.(?:png|jpg|jpeg|svg|gif|webp|ico|js|css|woff2?|html|txt|xml)$).*)",
   ],
 };
