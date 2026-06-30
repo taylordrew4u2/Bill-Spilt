@@ -1,10 +1,11 @@
 // Generates the PWA PNG icons with zero external dependencies.
 //
 // We hand-encode valid PNGs (signature + IHDR + IDAT + IEND) using Node's
-// built-in zlib. The mark is the BILL SPILT motif: gold coins spilling out of a
-// tipped white cup on a brand-blue rounded square — a visual pun on "spilt".
-// Shapes are drawn from signed-distance fields with 3x3 supersampling for clean
-// edges, so the repo stays install-free while producing real PNG assets.
+// built-in zlib. The mark is the BILL SPILT motif: a knocked-over mason jar
+// with gold coins pouring out onto a brand-blue rounded square — a visual pun
+// on "spilt". Shapes are drawn from signed-distance fields with 3x3
+// supersampling for clean edges, so the repo stays install-free while
+// producing real PNG assets.
 import { deflateSync } from "node:zlib";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -16,32 +17,19 @@ mkdirSync(OUT_DIR, { recursive: true });
 // Palette.
 const BG_TOP = [59, 130, 246]; // #3b82f6
 const BG_BOT = [29, 78, 216]; // #1d4ed8
-const WHITE = [255, 255, 255];
-const CUP_SHADE = [219, 226, 239]; // soft shadow inside the cup mouth
+const GLASS = [244, 248, 253]; // jar glass (near-white, faint cool tint)
+const GLASS_HI = [255, 255, 255]; // sheen highlight
+const GLASS_IN = [206, 219, 235]; // shaded jar interior / mouth
+const NECK = [148, 163, 184]; // thread/rim detail (slate)
 const COIN = [245, 197, 24]; // #f5c518 gold
-const COIN_EDGE = [194, 134, 8]; // darker gold rim detail
-const INK = [29, 78, 216]; // $ on the lead coin (brand blue)
+const COIN_EDGE = [194, 134, 8]; // darker gold ring detail
+const RIM = [255, 255, 255]; // coin rim
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const mix = (c1, c2, t) => [
   lerp(c1[0], c2[0], t),
   lerp(c1[1], c2[1], t),
   lerp(c1[2], c2[2], t),
-];
-
-// "$" glyph, 7 wide x 11 tall (1 = ink), stroked through a central bar.
-const DOLLAR = [
-  [0, 0, 0, 1, 0, 0, 0],
-  [0, 1, 1, 1, 1, 1, 0],
-  [1, 0, 1, 1, 0, 0, 1],
-  [1, 0, 1, 1, 0, 0, 0],
-  [0, 1, 1, 1, 0, 0, 0],
-  [0, 0, 1, 1, 1, 0, 0],
-  [0, 0, 0, 1, 1, 1, 0],
-  [1, 0, 0, 1, 1, 0, 1],
-  [1, 0, 0, 1, 1, 0, 1],
-  [0, 1, 1, 1, 1, 1, 0],
-  [0, 0, 0, 1, 0, 0, 0],
 ];
 
 // CRC32 table for PNG chunk checksums.
@@ -74,9 +62,7 @@ function chunk(type, data) {
 function sdRoundRect(px, py, cx, cy, hw, hh, r) {
   const qx = Math.abs(px - cx) - (hw - r);
   const qy = Math.abs(py - cy) - (hh - r);
-  const ax = Math.max(qx, 0);
-  const ay = Math.max(qy, 0);
-  return Math.hypot(ax, ay) + Math.min(Math.max(qx, qy), 0) - r;
+  return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
 }
 
 // Rotate (px,py) by `ang` around (cx,cy).
@@ -89,34 +75,33 @@ function rot(px, py, cx, cy, ang) {
 }
 
 function drawIcon(size, maskable) {
-  const U = size; // shapes are defined in normalized units * size
+  const U = size;
   const radius = Math.floor(size * 0.22);
 
-  // Tipped cup: a rounded rectangle rotated so its mouth pours toward the
-  // lower-right corner.
-  const cup = {
-    cx: 0.39 * U,
-    cy: 0.37 * U,
-    hw: 0.145 * U,
-    hh: 0.2 * U,
-    r: 0.07 * U,
-    ang: 0.78, // ~45° clockwise
-    mouthY: -0.2 * U, // local-y of the open rim
+  // Knocked-over mason jar, axis tilted so the mouth pours to the lower-right.
+  const jar = {
+    cx: 0.36 * U,
+    cy: 0.36 * U,
+    ang: 0.52, // ~30°
+    bodyHalf: 0.18 * U, // half-length along the axis
+    bodyR: 0.135 * U, // half-height (glass radius)
+    corner: 0.06 * U,
+    mouthU: 0.18 * U, // +u face = the open mouth
+    threads: [0.085 * U, 0.115 * U, 0.145 * U], // neck rings near the mouth
   };
 
-  // Coins spilling along a diagonal from the cup mouth to the corner.
-  const start = [0.52 * U, 0.46 * U];
-  const end = [0.83 * U, 0.83 * U];
+  // Coins pouring along a diagonal from the jar mouth toward the corner.
+  const start = [0.52 * U, 0.49 * U];
+  const end = [0.84 * U, 0.84 * U];
   const coins = [
-    { t: 0.88, r: 0.06 * U },
-    { t: 0.62, r: 0.088 * U },
-    { t: 0.34, r: 0.115 * U },
-    { t: 0.0, r: 0.142 * U, dollar: true },
+    { t: 0.92, r: 0.055 * U },
+    { t: 0.66, r: 0.085 * U },
+    { t: 0.38, r: 0.112 * U },
+    { t: 0.06, r: 0.138 * U },
   ].map((c) => ({
     x: lerp(start[0], end[0], c.t),
     y: lerp(start[1], end[1], c.t),
     r: c.r,
-    dollar: c.dollar,
   }));
 
   const inRounded = (x, y) => {
@@ -126,40 +111,35 @@ function drawIcon(size, maskable) {
     return dx * dx + dy * dy <= radius * radius;
   };
 
-  // Colour of a single sample point (alpha 0 or 255).
   function sampleAt(x, y) {
     if (!inRounded(x, y)) return null;
     let color = mix(BG_TOP, BG_BOT, y / size);
 
-    // Cup (drawn first; coins pour over its mouth).
-    const [lx, ly] = rot(x, y, cup.cx, cup.cy, -cup.ang);
-    const d = sdRoundRect(lx, ly, cup.cx, cup.cy, cup.hw, cup.hh, cup.r);
-    if (d < 0) {
-      color = WHITE;
-      // Hollow rim shading near the open (mouth) end.
-      const rimY = cup.cy + cup.mouthY;
-      if (ly < rimY + 0.07 * U) color = CUP_SHADE;
+    // Mason jar (drawn first; coins pour over the mouth).
+    const rp = rot(x, y, jar.cx, jar.cy, -jar.ang);
+    const u = rp[0] - jar.cx; // along axis (+ = toward mouth)
+    const v = rp[1] - jar.cy; // perpendicular
+    if (sdRoundRect(u, v, 0, 0, jar.bodyHalf, jar.bodyR, jar.corner) < 0) {
+      color = GLASS;
+      // Sheen highlight along the upper-back of the glass.
+      if (v < -jar.bodyR * 0.4 && u < jar.bodyHalf * 0.35) color = GLASS_HI;
+      // Shaded open interior near the mouth end.
+      if (u > jar.bodyHalf - 0.085 * U) color = GLASS_IN;
+      // Neck threads near the mouth.
+      for (const tu of jar.threads) {
+        if (Math.abs(u - (jar.bodyHalf - tu)) < 0.012 * U && Math.abs(v) < jar.bodyR * 0.92) {
+          color = NECK;
+        }
+      }
     }
 
-    // Coins, back-to-front (lead coin with the $ ends up on top).
+    // Coins, back-to-front (largest, nearest the mouth, ends up on top).
     for (const c of coins) {
       const cd = Math.hypot(x - c.x, y - c.y);
       if (cd <= c.r) {
-        color = COIN;
-        // Rim ring + inner detail ring for a struck-coin look.
-        if (cd > c.r - 0.02 * U) color = WHITE;
-        else if (Math.abs(cd - c.r * 0.66) < 0.012 * U) color = COIN_EDGE;
-        else if (c.dollar) {
-          // Stamp a "$" into the lead coin.
-          const gh = c.r * 1.5;
-          const cell = gh / 11;
-          const gw = cell * 7;
-          const col = Math.floor((x - (c.x - gw / 2)) / cell);
-          const row = Math.floor((y - (c.y - gh / 2)) / cell);
-          if (row >= 0 && row < 11 && col >= 0 && col < 7 && DOLLAR[row][col]) {
-            color = INK;
-          }
-        }
+        if (cd > c.r - 0.02 * U) color = RIM;
+        else if (Math.abs(cd - c.r * 0.62) < 0.013 * U) color = COIN_EDGE;
+        else color = COIN;
       }
     }
     return color;
@@ -173,7 +153,7 @@ function drawIcon(size, maskable) {
       let r = 0;
       let g = 0;
       let b = 0;
-      let a = 0;
+      let cov = 0;
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
           const c = sampleAt(x + (sx + 0.5) / SS, y + (sy + 0.5) / SS);
@@ -181,18 +161,15 @@ function drawIcon(size, maskable) {
             r += c[0];
             g += c[1];
             b += c[2];
-            a += 255;
+            cov += 1;
           }
         }
       }
-      const n = SS * SS;
       const i = (y * size + x) * 4;
-      // Average over covered samples so colour stays crisp at edges.
-      const cov = a / 255;
       px[i] = cov ? Math.round(r / cov) : 0;
       px[i + 1] = cov ? Math.round(g / cov) : 0;
       px[i + 2] = cov ? Math.round(b / cov) : 0;
-      px[i + 3] = Math.round(a / n);
+      px[i + 3] = Math.round((cov / (SS * SS)) * 255);
     }
   }
 
