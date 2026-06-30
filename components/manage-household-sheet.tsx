@@ -13,11 +13,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MemberAvatar } from "@/components/member-avatar";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { MemberDetailSheet } from "@/components/member-detail-sheet";
 import { useToast } from "@/components/ui/toaster";
-import type { Member } from "@/lib/types";
+import { CURRENCIES, type Member } from "@/lib/types";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { timeAgo, shareInvite } from "@/lib/utils";
@@ -57,6 +64,7 @@ export function ManageHouseholdSheet({
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [copied, setCopied] = React.useState(false);
   const [regenBusy, setRegenBusy] = React.useState(false);
+  const [currencyBusy, setCurrencyBusy] = React.useState(false);
   const [detailMember, setDetailMember] = React.useState<Member | null>(null);
 
   function openDetail(m: Member) {
@@ -116,6 +124,27 @@ export function ManageHouseholdSheet({
       await refresh();
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function changeCurrency(currency: string) {
+    if (currency === household?.currency) return;
+    setCurrencyBusy(true);
+    try {
+      const res = await fetch("/api/household", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currency }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast({ title: data.error || "Could not change currency", variant: "error" });
+        return;
+      }
+      toast({ title: `Currency set to ${currency}`, variant: "success" });
+      await refresh();
+    } finally {
+      setCurrencyBusy(false);
     }
   }
 
@@ -252,6 +281,40 @@ export function ManageHouseholdSheet({
                   )}
                 </Button>
               </div>
+            </div>
+
+            <Separator className="my-4" />
+          </>
+        )}
+
+        {/* Currency — admin only */}
+        {isAdmin && (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Currency
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  How amounts are shown across the household.
+                </p>
+              </div>
+              <Select
+                value={household?.currency ?? "USD"}
+                onValueChange={changeCurrency}
+                disabled={currencyBusy}
+              >
+                <SelectTrigger className="w-36 flex-shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.symbol} {c.code} · {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <Separator className="my-4" />

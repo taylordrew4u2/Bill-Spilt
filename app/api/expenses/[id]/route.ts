@@ -43,7 +43,7 @@ export async function PATCH(
 ) {
   return handle(async () => {
     const { id: expenseId } = await params;
-    const { userId, householdId } = await requireHousehold();
+    const { userId, householdId, currency } = await requireHousehold();
     const body = await req.json();
     const parsed = expenseSchema.safeParse(body);
     if (!parsed.success) {
@@ -74,7 +74,7 @@ export async function PATCH(
       householdId,
       userId,
       "expense_edited",
-      `Edited “${data.description}” (${formatCurrency(data.amount)})`,
+      `Edited “${data.description}” (${formatCurrency(data.amount, currency)})`,
     );
     return NextResponse.json({ ok: true });
   });

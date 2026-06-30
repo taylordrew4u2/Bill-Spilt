@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { sql, ensureSchema } from "@/lib/db";
 import { requireUserId, requireHousehold, handle, ApiError } from "@/lib/api";
 import { getUserHousehold, isOwner } from "@/lib/queries";
-import { createHouseholdSchema, joinHouseholdSchema } from "@/lib/validation";
+import {
+  createHouseholdSchema,
+  joinHouseholdSchema,
+  updateHouseholdSchema,
+} from "@/lib/validation";
 import { generateInviteCode } from "@/lib/utils";
 import { joinHouseholdByCode } from "@/lib/invite";
 import { logActivity } from "@/lib/activity";
@@ -18,27 +22,42 @@ export async function GET() {
   });
 }
 
-// Rename the household (head admin only).
+// Update the household name and/or currency (head admin only).
 export async function PATCH(req: Request) {
   return handle(async () => {
     const { userId, householdId } = await requireHousehold();
     if (!(await isOwner(householdId, userId))) {
-      throw new ApiError(403, "Only the household admin can rename the household");
+      throw new ApiError(403, "Only the household admin can change household settings");
     }
     const body = await req.json();
-    const parsed = createHouseholdSchema.safeParse(body);
-    if (!parsed.success) throw new ApiError(400, "Household name is required");
+    const parsed = updateHouseholdSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new ApiError(400, parsed.error.errors[0]?.message ?? "Invalid input");
+    }
+    const { name, currency } = parsed.data;
+    if (name === undefined && currency === undefined) {
+      throw new ApiError(400, "Nothing to update");
+    }
 
-    await sql`
-      UPDATE households SET name = ${parsed.data.name} WHERE id = ${householdId}
-    `;
-    await logActivity(
-      householdId,
-      userId,
-      "household_renamed",
-      `Renamed the household to “${parsed.data.name}”`,
-    );
-    return NextResponse.json({ ok: true, name: parsed.data.name });
+    if (name !== undefined) {
+      await sql`UPDATE households SET name = ${name} WHERE id = ${householdId}`;
+      await logActivity(
+        householdId,
+        userId,
+        "household_renamed",
+        `Renamed the household to “${name}”`,
+      );
+    }
+    if (currency !== undefined) {
+      await sql`UPDATE households SET currency = ${currency} WHERE id = ${householdId}`;
+      await logActivity(
+        householdId,
+        userId,
+        "currency_changed",
+        `Set the household currency to ${currency}`,
+      );
+    }
+    return NextResponse.json({ ok: true, name, currency });
   });
 }
 

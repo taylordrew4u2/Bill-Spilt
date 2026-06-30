@@ -20,7 +20,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   return handle(async () => {
-    const { userId, householdId } = await requireHousehold();
+    const { userId, householdId, currency } = await requireHousehold();
     const body = await req.json();
     const parsed = recurringSchema.safeParse(body);
     if (!parsed.success) {
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       householdId,
       userId,
       "recurring_added",
-      `Added recurring bill “${data.description}” (${formatCurrency(data.amount)}/${data.frequency === "weekly" ? "wk" : "mo"})`,
+      `Added recurring bill “${data.description}” (${formatCurrency(data.amount, currency)}/${data.frequency === "weekly" ? "wk" : "mo"})`,
     );
     return NextResponse.json({ id: rows[0].id }, { status: 201 });
   });

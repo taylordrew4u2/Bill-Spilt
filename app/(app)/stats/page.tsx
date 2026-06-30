@@ -15,14 +15,15 @@ import {
 } from "@/components/ui/sheet";
 import { RecurringForm } from "@/components/recurring-form";
 import { MemberAvatar } from "@/components/member-avatar";
-import { useAppData } from "@/components/app-data";
+import { useAppData, useMoney } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
 import { CATEGORIES, type Expense, type RecurringBill } from "@/lib/types";
-import { formatCurrency, colorForId } from "@/lib/utils";
+import { colorForId } from "@/lib/utils";
 
 export default function StatsPage() {
   const { version, mutate } = useAppData();
+  const money = useMoney();
   const { toast } = useToast();
   const expensesQ = useFetch<{ expenses: Expense[] }>("/api/expenses");
   const recurringQ = useFetch<{ bills: RecurringBill[] }>("/api/recurring");
@@ -95,7 +96,7 @@ export default function StatsPage() {
             {expensesQ.loading && !expensesQ.data ? (
               <Skeleton className="mt-1 h-8 w-24" />
             ) : (
-              <p className="mt-1 text-2xl font-bold">{formatCurrency(total)}</p>
+              <p className="mt-1 text-2xl font-bold">{money(total)}</p>
             )}
           </CardContent>
         </Card>
@@ -127,7 +128,7 @@ export default function StatsPage() {
                         {c.emoji} {c.label}
                       </span>
                       <span className="font-medium">
-                        {formatCurrency(c.amount)}
+                        {money(c.amount)}
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -159,7 +160,7 @@ export default function StatsPage() {
                   <MemberAvatar id={p.id} name={p.name} className="h-8 w-8" />
                   <span className="flex-1 truncate text-sm">{p.name}</span>
                   <span className="text-sm font-medium">
-                    {formatCurrency(p.amount)}
+                    {money(p.amount)}
                   </span>
                   <span className="w-12 text-right text-xs text-muted-foreground">
                     {total > 0 ? Math.round((p.amount / total) * 100) : 0}%
@@ -194,7 +195,7 @@ export default function StatsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{b.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatCurrency(b.amount)} · paid by {b.paidByName} · next{" "}
+                      {money(b.amount)} · paid by {b.paidByName} · next{" "}
                       {b.nextRun}
                     </p>
                   </div>

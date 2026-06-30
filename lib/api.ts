@@ -36,11 +36,12 @@ export async function requireSiteAdmin(): Promise<{
 export async function requireHousehold(): Promise<{
   userId: string;
   householdId: string;
+  currency: string;
 }> {
   const userId = await requireUserId();
   const household = await getUserHousehold(userId);
   if (!household) throw new ApiError(404, "You are not in a household yet");
-  return { userId, householdId: household.id };
+  return { userId, householdId: household.id, currency: household.currency };
 }
 
 /** Wrap a route handler with uniform error handling. */

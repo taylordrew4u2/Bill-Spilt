@@ -11,6 +11,7 @@ export type ActivityAction =
   | "member_removed"
   | "member_left"
   | "household_renamed"
+  | "currency_changed"
   | "admin_transferred"
   | "recurring_added"
   | "recurring_charged"

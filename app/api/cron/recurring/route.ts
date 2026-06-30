@@ -27,8 +27,10 @@ export async function GET(req: Request) {
   const today = new Date().toISOString().slice(0, 10);
 
   const { rows: due } = await sql`
-    SELECT * FROM recurring_bills
-    WHERE active = true AND next_run <= ${today}
+    SELECT rb.*, h.currency AS household_currency
+    FROM recurring_bills rb
+    JOIN households h ON h.id = rb.household_id
+    WHERE rb.active = true AND rb.next_run <= ${today}
   `;
 
   let processed = 0;
@@ -50,7 +52,7 @@ export async function GET(req: Request) {
         bill.household_id,
         null,
         "recurring_charged",
-        `Auto-logged recurring bill “${bill.description}” (${formatCurrency(Number(bill.amount))})`,
+        `Auto-logged recurring bill “${bill.description}” (${formatCurrency(Number(bill.amount), bill.household_currency ?? "USD")})`,
       );
 
       // Advance the schedule from the previous next_run to avoid drift.

@@ -15,11 +15,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberAvatar } from "@/components/member-avatar";
-import { useAppData } from "@/components/app-data";
+import { useAppData, useMoney } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { PAYMENT_METHODS, type Balance, type SettlementTransfer } from "@/lib/types";
 
 interface SettlementRecord {
@@ -34,6 +34,7 @@ interface SettlementRecord {
 
 export default function SettlePage() {
   const { version, mutate, currentUserId, isAdmin, members } = useAppData();
+  const money = useMoney();
   const { toast } = useToast();
   const { data, loading, refetch } = useFetch<{
     balances: Balance[];
@@ -96,7 +97,7 @@ export default function SettlePage() {
       })
       .join(", ");
     const text =
-      `Hey ${t.fromName}, friendly reminder you owe me ${formatCurrency(t.amount)} on BILL SPILT.` +
+      `Hey ${t.fromName}, friendly reminder you owe me ${money(t.amount)} on BILL SPILT.` +
       (ways ? ` You can pay me with ${ways}.` : "");
 
     try {
@@ -224,7 +225,7 @@ export default function SettlePage() {
                         {t.to === currentUserId ? "You" : t.toName}
                       </span>
                       <span className="ml-auto text-lg font-bold text-primary">
-                        {formatCurrency(t.amount)}
+                        {money(t.amount)}
                       </span>
                     </div>
 
@@ -303,7 +304,7 @@ export default function SettlePage() {
                       · {formatDate(s.settledAt)}
                     </span>
                   </div>
-                  <span className="font-semibold">{formatCurrency(s.amount)}</span>
+                  <span className="font-semibold">{money(s.amount)}</span>
                   <button
                     onClick={() => undoSettlement(s.id)}
                     disabled={undoing === s.id}

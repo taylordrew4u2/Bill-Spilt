@@ -2,11 +2,14 @@
 
 import * as React from "react";
 import type { Member } from "@/lib/types";
+import { DEFAULT_CURRENCY } from "@/lib/types";
+import { formatCurrency } from "@/lib/utils";
 
 interface Household {
   id: string;
   name: string;
   inviteCode: string;
+  currency: string;
 }
 
 interface AppData {
@@ -33,6 +36,23 @@ export function useAppData(): AppData {
   const ctx = React.useContext(Ctx);
   if (!ctx) throw new Error("useAppData must be used within <AppDataProvider>");
   return ctx;
+}
+
+/** The active household's display currency code (defaults to USD). */
+export function useCurrency(): string {
+  return useAppData().household?.currency ?? DEFAULT_CURRENCY;
+}
+
+/**
+ * A currency formatter bound to the household's currency. Use in place of
+ * importing `formatCurrency` directly so amounts render in the chosen currency.
+ */
+export function useMoney(): (amount: number) => string {
+  const currency = useCurrency();
+  return React.useCallback(
+    (amount: number) => formatCurrency(amount, currency),
+    [currency],
+  );
 }
 
 export function AppDataProvider({ children }: { children: React.ReactNode }) {

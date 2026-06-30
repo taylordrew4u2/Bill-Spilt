@@ -25,7 +25,13 @@ export const CATEGORIES: { value: ExpenseCategory; label: string; emoji: string 
 
 export type RecurringFrequency = "weekly" | "monthly";
 
-export type PaymentMethodType = "venmo" | "cashapp";
+export type PaymentMethodType =
+  | "venmo"
+  | "cashapp"
+  | "paypal"
+  | "zelle"
+  | "applecash"
+  | "revolut";
 
 export const PAYMENT_METHODS: {
   value: PaymentMethodType;
@@ -35,12 +41,39 @@ export const PAYMENT_METHODS: {
 }[] = [
   { value: "venmo", label: "Venmo", emoji: "💸", placeholder: "@username" },
   { value: "cashapp", label: "Cash App", emoji: "💵", placeholder: "$cashtag" },
+  { value: "paypal", label: "PayPal", emoji: "🅿️", placeholder: "paypal.me/you or email" },
+  { value: "zelle", label: "Zelle", emoji: "🏦", placeholder: "email or phone" },
+  { value: "applecash", label: "Apple Cash", emoji: "🍎", placeholder: "phone or email" },
+  { value: "revolut", label: "Revolut", emoji: "💳", placeholder: "@revtag" },
 ];
 
 export interface PaymentMethod {
   type: PaymentMethodType;
   value: string;
 }
+
+/** Supported display currencies. Amounts aren't converted — this only changes
+ *  how money is formatted (symbol, grouping, decimals). */
+export const CURRENCIES: { code: string; label: string; symbol: string }[] = [
+  { code: "USD", label: "US Dollar", symbol: "$" },
+  { code: "EUR", label: "Euro", symbol: "€" },
+  { code: "GBP", label: "British Pound", symbol: "£" },
+  { code: "CAD", label: "Canadian Dollar", symbol: "C$" },
+  { code: "AUD", label: "Australian Dollar", symbol: "A$" },
+  { code: "NZD", label: "New Zealand Dollar", symbol: "NZ$" },
+  { code: "INR", label: "Indian Rupee", symbol: "₹" },
+  { code: "JPY", label: "Japanese Yen", symbol: "¥" },
+  { code: "CNY", label: "Chinese Yuan", symbol: "¥" },
+  { code: "MXN", label: "Mexican Peso", symbol: "MX$" },
+  { code: "BRL", label: "Brazilian Real", symbol: "R$" },
+  { code: "SGD", label: "Singapore Dollar", symbol: "S$" },
+  { code: "CHF", label: "Swiss Franc", symbol: "CHF" },
+  { code: "SEK", label: "Swedish Krona", symbol: "kr" },
+  { code: "ZAR", label: "South African Rand", symbol: "R" },
+];
+
+export const CURRENCY_CODES = CURRENCIES.map((c) => c.code);
+export const DEFAULT_CURRENCY = "USD";
 
 export interface Member {
   id: string;
