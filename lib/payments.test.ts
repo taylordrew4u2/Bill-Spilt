@@ -5,7 +5,7 @@ describe("paymentLink", () => {
   it("builds a Venmo pay link, stripping @ and prefilling amount + note", () => {
     const url = paymentLink(
       { type: "venmo", value: "@alice" },
-      { amount: 12.5, note: "BILL SPILT" },
+      { amount: 12.5, note: "BillSpilt" },
     );
     expect(url).toContain("https://venmo.com/?");
     expect(url).toContain("recipients=alice");

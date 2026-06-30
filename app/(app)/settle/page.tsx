@@ -97,12 +97,12 @@ export default function SettlePage() {
       })
       .join(", ");
     const text =
-      `Hey ${t.fromName}, friendly reminder you owe me ${money(t.amount)} on BILL SPILT.` +
+      `Hey ${t.fromName}, friendly reminder you owe me ${money(t.amount)} on BillSpilt.` +
       (ways ? ` You can pay me with ${ways}.` : "");
 
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ title: "BILL SPILT reminder", text });
+        await navigator.share({ title: "BillSpilt reminder", text });
         return;
       }
       await navigator.clipboard.writeText(text);
@@ -239,8 +239,8 @@ export default function SettlePage() {
                           linkContext={{
                             amount: t.amount,
                             note: payerName
-                              ? `BILL SPILT — from ${payerName}`
-                              : "BILL SPILT",
+                              ? `BillSpilt — from ${payerName}`
+                              : "BillSpilt",
                           }}
                         />
                       </div>

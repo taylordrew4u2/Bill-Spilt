@@ -63,7 +63,7 @@ const JSON_LD = {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "BILL SPILT", item: SITE_URL },
+        { "@type": "ListItem", position: 1, name: "BillSpilt", item: SITE_URL },
         {
           "@type": "ListItem",
           position: 2,
@@ -104,7 +104,7 @@ export default function GuidePage() {
             Let a free roommate bill splitter do the math
           </h2>
           <p className="mt-2 text-muted-foreground">
-            Doing all of this by hand works, but it&apos;s a chore. BILL SPILT is
+            Doing all of this by hand works, but it&apos;s a chore. BillSpilt is
             a free roommate bill splitter built for exactly this: log a shared
             expense in seconds, see everyone&apos;s balance update instantly, and
             get the fewest-payments plan when it&apos;s time to settle up. Every
@@ -134,7 +134,7 @@ export default function GuidePage() {
         <p className="mt-10 text-sm text-muted-foreground">
           More:{" "}
           <Link href="/" className="font-medium text-primary hover:underline">
-            BILL SPILT — the free roommate bill splitter
+            BillSpilt — the free roommate bill splitter
           </Link>
         </p>
     </GuideShell>

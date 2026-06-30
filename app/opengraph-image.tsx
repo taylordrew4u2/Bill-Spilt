@@ -5,7 +5,7 @@ import { SITE_DESCRIPTION } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const alt =
-  "BILL SPILT — free bill splitter for roommates. Split shared bills, see who owes what, settle up.";
+  "BillSpilt — free bill splitter for roommates. Split shared bills, see who owes what, settle up.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -54,7 +54,7 @@ export default function OpengraphImage() {
           {ICON_SRC ? (
             <img src={ICON_SRC} width={76} height={76} style={{ borderRadius: 18 }} alt="" />
           ) : null}
-          BILL SPILT
+          BillSpilt
         </div>
         <div
           style={{

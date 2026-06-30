@@ -11,14 +11,14 @@ import {
 } from "@/lib/site";
 
 const APP_NAME = SITE_NAME;
-const DEFAULT_TITLE = "BILL SPILT — Free bill splitter for roommates";
+const DEFAULT_TITLE = "BillSpilt — Free bill splitter for roommates";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: APP_NAME,
   title: {
     default: DEFAULT_TITLE,
-    template: "%s · BILL SPILT",
+    template: "%s · BillSpilt",
   },
   description: SITE_DESCRIPTION,
   keywords: SITE_KEYWORDS,

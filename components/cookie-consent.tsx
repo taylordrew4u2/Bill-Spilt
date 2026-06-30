@@ -37,7 +37,7 @@ export function CookieConsent() {
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t bg-card/95 backdrop-blur safe-bottom">
       <div className="mx-auto flex max-w-3xl flex-col gap-3 p-4 sm:flex-row sm:items-center">
         <p className="flex-1 text-sm text-muted-foreground">
-          We use cookies — including from Google for ads — to keep BILL SPILT
+          We use cookies — including from Google for ads — to keep BillSpilt
           free. By using the app you agree to this.{" "}
           <Link href="/privacy" className="font-medium text-primary hover:underline">
             Privacy Policy

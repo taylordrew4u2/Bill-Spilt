@@ -22,22 +22,22 @@ import { CATEGORIES } from "@/lib/types";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Roommate Bill Splitter — Split Bills & Settle Up, Free | BILL SPILT",
+  title: "Roommate Bill Splitter — Split Bills & Settle Up, Free | BillSpilt",
   description:
-    "BILL SPILT is the free roommate bill splitter: split shared bills, see who owes what instantly, and settle up in the fewest payments — no paywall, no credit card. Split rent, utilities & groceries. Works offline.",
+    "BillSpilt is the free roommate bill splitter: split shared bills, see who owes what instantly, and settle up in the fewest payments — no paywall, no credit card. Split rent, utilities & groceries. Works offline.",
   keywords: SITE_KEYWORDS,
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "Roommate Bill Splitter, Free Forever — BILL SPILT",
+    title: "Roommate Bill Splitter, Free Forever — BillSpilt",
     description:
       "The free roommate bill splitter. Split shared bills, see who owes what, and settle up in the fewest payments — no paywall, no credit card.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Roommate Bill Splitter, Free Forever — BILL SPILT",
+    title: "Roommate Bill Splitter, Free Forever — BillSpilt",
     description:
       "The free roommate bill splitter. Split shared bills, see who owes what, settle up in the fewest payments.",
   },
@@ -57,7 +57,7 @@ const STEPS = [
   {
     icon: ArrowRight,
     title: "3. Settle up",
-    body: "BILL SPILT works out the fewest possible payments to clear every debt, then you pay with one tap via Venmo or Cash App.",
+    body: "BillSpilt works out the fewest possible payments to clear every debt, then you pay with one tap via Venmo or Cash App.",
   },
 ];
 
@@ -75,23 +75,23 @@ const FEATURES = [
 const FAQ = [
   {
     q: "What is the best free roommate bill splitter?",
-    a: "BILL SPILT is a free roommate bill splitter built specifically for shared households: it tracks who paid for what, shows everyone's balance instantly, and settles up in the fewest payments. Unlike many bill splitters, every feature — recurring bills, reminders, receipts, multiple admins — is free forever, with no paywall and no credit card.",
+    a: "BillSpilt is a free roommate bill splitter built specifically for shared households: it tracks who paid for what, shows everyone's balance instantly, and settles up in the fewest payments. Unlike many bill splitters, every feature — recurring bills, reminders, receipts, multiple admins — is free forever, with no paywall and no credit card.",
   },
   {
-    q: "Is BILL SPILT really free?",
+    q: "Is BillSpilt really free?",
     a: "Yes — free forever, no premium tiers and no credit card. The app is supported by ads, which lets us keep every feature free for roommates.",
   },
   {
-    q: "Does BILL SPILT handle the actual payments?",
-    a: "No. BILL SPILT calculates who owes what and links you straight to Venmo or Cash App, but the money moves directly between you and your roommates — we never hold or process funds.",
+    q: "Does BillSpilt handle the actual payments?",
+    a: "No. BillSpilt calculates who owes what and links you straight to Venmo or Cash App, but the money moves directly between you and your roommates — we never hold or process funds.",
   },
   {
     q: "How does the settle-up work?",
-    a: "Instead of everyone paying everyone, BILL SPILT nets all the debts and finds the fewest payments that clear them — so four roommates might settle with just two or three transfers.",
+    a: "Instead of everyone paying everyone, BillSpilt nets all the debts and finds the fewest payments that clear them — so four roommates might settle with just two or three transfers.",
   },
   {
     q: "Can I use it on my phone like an app?",
-    a: "Yes. BILL SPILT is a Progressive Web App — add it to your home screen and it runs full-screen and offline, just like a native app, with nothing to install from an app store.",
+    a: "Yes. BillSpilt is a Progressive Web App — add it to your home screen and it runs full-screen and offline, just like a native app, with nothing to install from an app store.",
   },
   {
     q: "How do we split unevenly?",
@@ -203,7 +203,7 @@ export default async function LandingPage() {
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
           Other roommate bill splitters lock recurring bills, reminders, and
-          receipts behind a subscription. BILL SPILT keeps all of it free —
+          receipts behind a subscription. BillSpilt keeps all of it free —
           split shared costs with your roommates, see who owes what instantly,
           and settle up in the fewest payments, without ever reaching for your
           card.
@@ -254,7 +254,7 @@ export default async function LandingPage() {
             Everything roommates need
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-muted-foreground">
-            From the first grocery run to moving-out day, BILL SPILT keeps every
+            From the first grocery run to moving-out day, BillSpilt keeps every
             shared cost fair and clear.
           </p>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -320,7 +320,7 @@ export default async function LandingPage() {
             Stop chasing your roommates for money.
           </h2>
           <p className="mx-auto mt-3 max-w-md opacity-90">
-            Set up your household in a minute and let BILL SPILT do the math.
+            Set up your household in a minute and let BillSpilt do the math.
           </p>
           <Link
             href="/register"
@@ -341,7 +341,7 @@ export default async function LandingPage() {
             <Link href="/login" className="hover:underline">Log in</Link>
           </nav>
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} BILL SPILT
+            © {new Date().getFullYear()} BillSpilt
           </p>
         </div>
       </footer>

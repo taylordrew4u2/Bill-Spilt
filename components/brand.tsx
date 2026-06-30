@@ -7,7 +7,7 @@ const SIZES = {
   lg: { px: 48, text: "text-3xl" },
 } as const;
 
-/** The BILL SPILT wordmark + app-icon badge, used on auth screens, the header,
+/** The BillSpilt wordmark + app-icon badge, used on auth screens, the header,
  *  invite screens, and the footer. The badge is the real app icon so the
  *  in-product brand matches the installed/launcher icon. */
 export function Brand({
@@ -29,7 +29,7 @@ export function Brand({
         className="rounded-xl shadow-sm"
       />
       <span className={cn("font-extrabold tracking-tight", text)}>
-        BILL <span className="text-primary">SPILT</span>
+        Bill<span className="text-primary">Spilt</span>
       </span>
     </div>
   );

@@ -53,7 +53,7 @@ const JSON_LD = {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "BILL SPILT", item: SITE_URL },
+        { "@type": "ListItem", position: 1, name: "BillSpilt", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: "How to ask a roommate for money owed", item: `${SITE_URL}${PATH}` },
       ],
     },
@@ -87,7 +87,7 @@ export default function AskRoommateGuide() {
       <section className="mt-12 rounded-2xl border bg-card p-6">
         <h2 className="text-xl font-bold">Never have the awkward conversation again</h2>
         <p className="mt-2 text-muted-foreground">
-          BILL SPILT keeps a live balance of who owes what, links roommates
+          BillSpilt keeps a live balance of who owes what, links roommates
           straight to Venmo or Cash App with the amount ready, and sends a
           friendly pre-written reminder in one tap — so the math does the asking
           for you. Free forever, no paywall.

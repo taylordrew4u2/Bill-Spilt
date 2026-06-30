@@ -1,4 +1,4 @@
-# BILL SPILT — Launch copy
+# BillSpilt — Launch copy
 
 Ready-to-paste copy for launching. Swap `https://billspilt.com` if your domain
 differs. Keep claims accurate — every feature really is free.
@@ -7,7 +7,7 @@ differs. Keep claims accurate — every feature really is free.
 
 ## Product Hunt
 
-**Name:** BILL SPILT
+**Name:** BillSpilt
 
 **Tagline (60 char max):**
 > The free roommate bill splitter — every feature, no paywall
@@ -19,7 +19,7 @@ differs. Keep claims accurate — every feature really is free.
 **First comment (from the maker):**
 > Hey Product Hunt 👋
 >
-> I built BILL SPILT because every roommate bill splitter I tried eventually
+> I built BillSpilt because every roommate bill splitter I tried eventually
 > asked me to pay to unlock the parts I actually needed — recurring bills,
 > reminders, receipts. So I made one where **everything is free, forever**. No
 > premium tier, no credit card.
@@ -54,7 +54,7 @@ differs. Keep claims accurate — every feature really is free.
 **Body:**
 > My roommates and I kept losing track of who paid for what, and the apps we
 > tried locked recurring bills and reminders behind a subscription. So I built
-> **BILL SPILT** — a free roommate bill splitter where every feature is included,
+> **BillSpilt** — a free roommate bill splitter where every feature is included,
 > no paywall, no credit card.
 >
 > The part I'm proudest of: instead of everyone paying everyone back, it nets all
@@ -74,25 +74,25 @@ differs. Keep claims accurate — every feature really is free.
 ## X / short social
 
 > Every bill splitter I tried paywalled the useful parts. So I built one that
-> doesn't. BILL SPILT: split bills with roommates, settle up in the fewest
+> doesn't. BillSpilt: split bills with roommates, settle up in the fewest
 > payments, every feature free. No app store, works offline. https://billspilt.com
 
 ---
 
 ## AlternativeTo listing (full)
 
-**App name:** BILL SPILT
+**App name:** BillSpilt
 
 **Tagline:**
 > Free roommate bill splitter — split shared bills, settle up in the fewest payments
 
 **Short description (the blurb that shows in lists):**
-> BILL SPILT is a free roommate bill splitter: track shared expenses, see who
+> BillSpilt is a free roommate bill splitter: track shared expenses, see who
 > owes what, and settle up in the fewest payments — every feature free, no
 > paywall. Installable PWA, works offline.
 
 **Long description:**
-> BILL SPILT helps roommates split shared bills and settle up without the
+> BillSpilt helps roommates split shared bills and settle up without the
 > awkwardness. Log an expense in seconds (split evenly, by exact amounts, or by
 > percentage), see everyone's live balance, and get a settle-up plan that nets
 > all the debts into the fewest possible payments — four roommates often settle
