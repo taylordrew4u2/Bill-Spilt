@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const BASE = process.env.NEXT_PUBLIC_APP_URL || "https://billspilt.com";
+import { SITE_URL as BASE } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
