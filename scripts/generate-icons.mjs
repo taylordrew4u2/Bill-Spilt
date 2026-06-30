@@ -24,6 +24,30 @@ const NECK = [148, 163, 184]; // thread/rim detail (slate)
 const COIN = [245, 197, 24]; // #f5c518 gold
 const COIN_EDGE = [194, 134, 8]; // darker gold ring detail
 const RIM = [255, 255, 255]; // coin rim
+const INK = [29, 78, 216]; // $ on the lead coin (brand blue)
+
+// "$" centreline as a polyline (units = fraction of coin radius, y down) — an
+// S-curve drawn as smooth strokes, with a vertical bar overlaid.
+const DOLLAR_PTS = [
+  [0.34, -0.3],
+  [0.06, -0.42],
+  [-0.26, -0.3],
+  [-0.3, -0.07],
+  [-0.05, 0.03],
+  [0.05, 0.03],
+  [0.3, 0.13],
+  [0.26, 0.36],
+  [-0.06, 0.46],
+  [-0.34, 0.34],
+];
+
+// Distance from point p to segment a-b.
+function segDist(px, py, ax, ay, bx, by) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const mix = (c1, c2, t) => [
@@ -97,12 +121,26 @@ function drawIcon(size, maskable) {
     { t: 0.92, r: 0.055 * U },
     { t: 0.66, r: 0.085 * U },
     { t: 0.38, r: 0.112 * U },
-    { t: 0.06, r: 0.138 * U },
+    { t: 0.06, r: 0.138 * U, dollar: true },
   ].map((c) => ({
     x: lerp(start[0], end[0], c.t),
     y: lerp(start[1], end[1], c.t),
     r: c.r,
+    dollar: c.dollar,
   }));
+
+  // Is point (x,y) on the "$" stamp of coin c?
+  function dollarInk(x, y, c) {
+    const lx = (x - c.x) / c.r;
+    const ly = (y - c.y) / c.r;
+    if (Math.abs(lx) < 0.075 && Math.abs(ly) < 0.52) return true; // vertical bar
+    for (let i = 0; i < DOLLAR_PTS.length - 1; i++) {
+      const [ax, ay] = DOLLAR_PTS[i];
+      const [bx, by] = DOLLAR_PTS[i + 1];
+      if (segDist(lx, ly, ax, ay, bx, by) < 0.12) return true;
+    }
+    return false;
+  }
 
   const inRounded = (x, y) => {
     if (maskable) return true;
@@ -137,9 +175,16 @@ function drawIcon(size, maskable) {
     for (const c of coins) {
       const cd = Math.hypot(x - c.x, y - c.y);
       if (cd <= c.r) {
-        if (cd > c.r - 0.02 * U) color = RIM;
-        else if (Math.abs(cd - c.r * 0.62) < 0.013 * U) color = COIN_EDGE;
-        else color = COIN;
+        if (cd > c.r - 0.02 * U) {
+          color = RIM;
+        } else if (c.dollar) {
+          // Lead coin: gold face stamped with a clean $.
+          color = dollarInk(x, y, c) ? INK : COIN;
+        } else if (Math.abs(cd - c.r * 0.62) < 0.013 * U) {
+          color = COIN_EDGE;
+        } else {
+          color = COIN;
+        }
       }
     }
     return color;
