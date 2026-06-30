@@ -14,14 +14,32 @@ import {
   Crown,
   ArrowRight,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { Brand } from "@/components/brand";
 import { CATEGORIES } from "@/lib/types";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
 
-export const metadata = {
-  title: "BILL SPILT — Split bills with your roommates",
+export const metadata: Metadata = {
+  title: "Free Bill Splitter for Roommates — Split Bills & Settle Up | BILL SPILT",
   description:
-    "BILL SPILT is a free app for roommates to split shared bills, see who owes what instantly, and settle up with the fewest payments. Installable, works offline.",
+    "Split bills with your roommates for free. BILL SPILT tracks shared expenses, shows who owes what instantly, and settles up in the fewest payments — no paywall, no credit card. Split rent, utilities & groceries. Works offline.",
+  keywords: SITE_KEYWORDS,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: "Free Bill Splitter for Roommates — BILL SPILT",
+    description:
+      "Split shared bills with roommates, see who owes what, and settle up in the fewest payments. Free forever — no paywall, no credit card.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Bill Splitter for Roommates — BILL SPILT",
+    description:
+      "Split shared bills, see who owes what, settle up in the fewest payments. Free forever.",
+  },
 };
 
 const STEPS = [
@@ -76,6 +94,56 @@ const FAQ = [
   },
 ];
 
+// Structured data so search engines can show rich results (app listing, FAQ
+// accordions). The FAQ schema is generated from the same copy shown on-page,
+// so it always matches what a visitor reads.
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      publisher: { "@id": `${SITE_URL}/#org` },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#org`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: `${SITE_URL}/icons/icon-512.png`,
+    },
+    {
+      "@type": "WebApplication",
+      "@id": `${SITE_URL}/#app`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: SITE_DESCRIPTION,
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Web, iOS, Android",
+      browserRequirements: "Requires a modern web browser. Installable as a PWA.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+        description: "Free forever — every feature, no paywall.",
+      },
+      featureList: FEATURES.map((f) => f.title),
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/#faq`,
+      mainEntity: FAQ.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ],
+};
+
 export default async function LandingPage() {
   // Logged-in users go straight to the app.
   const session = await auth();
@@ -83,6 +151,10 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-[100dvh] bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* AdSense — the landing is public, content-rich, and ad-appropriate. */}
       {ADSENSE_CLIENT && (
         <Script
