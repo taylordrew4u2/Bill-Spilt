@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { Brand } from "@/components/brand";
+import { GuideShell } from "@/components/guide-shell";
 import { SITE_URL } from "@/lib/site";
 
+const SLUG = "how-to-split-bills-with-roommates";
 const TITLE = "How to Split Bills With Roommates (Without the Awkwardness)";
 const DESCRIPTION =
   "A simple, fair system for splitting bills with roommates: agree on what's shared, pick a split method, log expenses as they happen, and settle up in the fewest payments. Plus a free roommate bill splitter that does the math for you.";
@@ -76,25 +77,8 @@ const JSON_LD = {
 
 export default function GuidePage() {
   return (
-    <div className="min-h-[100dvh] bg-background">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
-      />
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4 safe-top">
-        <Link href="/">
-          <Brand size="sm" />
-        </Link>
-        <Link
-          href="/register"
-          className="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
-        >
-          Get started
-        </Link>
-      </header>
-
-      <article className="mx-auto max-w-2xl px-5 pb-16 pt-6">
-        <p className="text-sm font-medium text-primary">Guide</p>
+    <GuideShell slug={SLUG} jsonLd={JSON_LD}>
+      <p className="text-sm font-medium text-primary">Guide</p>
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
           How to split bills with roommates (without the awkwardness)
         </h1>
@@ -153,7 +137,6 @@ export default function GuidePage() {
             BILL SPILT — the free roommate bill splitter
           </Link>
         </p>
-      </article>
-    </div>
+    </GuideShell>
   );
 }
