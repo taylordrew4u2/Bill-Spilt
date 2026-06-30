@@ -12,6 +12,16 @@ export const metadata = {
   robots: { index: false },
 };
 
+/** Full-height, centered shell shared by the invite screens. */
+function JoinScreen({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 px-5 text-center safe-top safe-bottom">
+      <Brand size="lg" />
+      {children}
+    </div>
+  );
+}
+
 /**
  * Invite entry point. A roommate taps a shared link and lands here. We collapse
  * the whole old join flow (sign up → pick the "Join" tab → type the code →
@@ -34,8 +44,7 @@ export default async function JoinPage({
   const household = await getHouseholdByCode(code);
   if (!household) {
     return (
-      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 px-5 text-center safe-top safe-bottom">
-        <Brand size="lg" />
+      <JoinScreen>
         <div className="space-y-1.5">
           <h1 className="text-xl font-bold">This invite link isn&apos;t valid</h1>
           <p className="mx-auto max-w-xs text-sm text-muted-foreground">
@@ -49,7 +58,7 @@ export default async function JoinPage({
         >
           Get started
         </Link>
-      </div>
+      </JoinScreen>
     );
   }
 
@@ -70,13 +79,12 @@ export default async function JoinPage({
 
   // Logged in but not a member → join automatically, no further taps.
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-6 px-5 text-center safe-top safe-bottom">
-      <Brand size="lg" />
+    <JoinScreen>
       <div className="flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-sm font-medium">
-        <Users className="h-4 w-4 text-primary" />
+        <Users className="h-4 w-4 text-primary" aria-hidden />
         Joining {household.name}
       </div>
       <JoinInvite code={code} householdName={household.name} />
-    </div>
+    </JoinScreen>
   );
 }

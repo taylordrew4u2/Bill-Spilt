@@ -16,50 +16,36 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useInvite, acceptInvite } from "@/lib/use-invite";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { invite, withInvite } = useInvite();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  // Preserve an invite when an existing user follows a link and logs in.
-  const [invite, setInvite] = React.useState<{ code: string; house: string } | null>(
-    null,
-  );
-  const registerHref = invite
-    ? `/register?${new URLSearchParams({ invite: invite.code, house: invite.house })}`
-    : "/register";
-
-  React.useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    const code = q.get("invite");
-    if (code) setInvite({ code, house: q.get("house") ?? "" });
-  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const res = await signIn("credentials", {
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-      redirect: false,
-    });
-    if (res?.error) {
+    try {
+      const form = new FormData(e.currentTarget);
+      const res = await signIn("credentials", {
+        email: String(form.get("email")),
+        password: String(form.get("password")),
+        redirect: false,
+      });
+      if (res?.error) {
+        setError("Incorrect email or password");
+        return;
+      }
+      // Followed an invite link → join the household once logged in.
+      if (invite) await acceptInvite(invite.code);
+      router.push("/home");
+      router.refresh();
+    } finally {
       setLoading(false);
-      setError("Incorrect email or password");
-      return;
     }
-    if (invite) {
-      await fetch("/api/household", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "join", code: invite.code }),
-      }).catch(() => {});
-    }
-    setLoading(false);
-    router.push("/home");
-    router.refresh();
   }
 
   return (
@@ -75,12 +61,12 @@ export default function LoginPage() {
           <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
             {invite
-              ? `Log in to join ${invite.house || "your roommates"}.`
+              ? `Log in to join ${invite.householdName || "your roommates"}.`
               : "Log in to split bills with your roommates."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4" aria-busy={loading}>
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -113,10 +99,12 @@ export default function LoginPage() {
               />
             </div>
             {error && (
-              <p className="text-sm font-medium text-destructive">{error}</p>
+              <p role="alert" className="text-sm font-medium text-destructive">
+                {error}
+              </p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
               Log in
             </Button>
           </form>
@@ -124,7 +112,7 @@ export default function LoginPage() {
       </Card>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         New here?{" "}
-        <Link href={registerHref} className="font-semibold text-primary">
+        <Link href={withInvite("/register")} className="font-semibold text-primary">
           Create an account
         </Link>
       </p>
