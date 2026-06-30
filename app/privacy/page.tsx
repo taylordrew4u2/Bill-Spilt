@@ -20,7 +20,7 @@ export default function PrivacyPage() {
       <div className="mt-6 space-y-6 text-sm leading-relaxed text-foreground/90">
         <section className="space-y-2">
           <p>
-            BILL SPILT (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is a bill-splitting
+            BillSpilt (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is a bill-splitting
             app for roommates available at billspilt.com. This policy explains
             what we collect, how we use it, and the third parties involved —
             including how cookies are used to serve ads.
@@ -138,7 +138,7 @@ export default function PrivacyPage() {
         <section className="space-y-2">
           <h2 className="text-lg font-semibold">Children</h2>
           <p>
-            BILL SPILT is not directed to children under 13, and we do not
+            BillSpilt is not directed to children under 13, and we do not
             knowingly collect personal information from them.
           </p>
         </section>

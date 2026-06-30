@@ -49,7 +49,7 @@ const JSON_LD = {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "BILL SPILT", item: SITE_URL },
+        { "@type": "ListItem", position: 1, name: "BillSpilt", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: "How to split rent fairly", item: `${SITE_URL}${PATH}` },
       ],
     },
@@ -84,7 +84,7 @@ export default function SplitRentGuide() {
         <h2 className="text-xl font-bold">Once you&apos;ve agreed, track it automatically</h2>
         <p className="mt-2 text-muted-foreground">
           However you divide it, rent is a recurring bill — so set it once and
-          stop re-entering it. BILL SPILT logs rent automatically every month
+          stop re-entering it. BillSpilt logs rent automatically every month
           with each person&apos;s exact share (equal, exact dollars, or
           percentage), rolls it into the same who-owes-what balance as everything
           else, and is free forever — no paywall, no credit card.

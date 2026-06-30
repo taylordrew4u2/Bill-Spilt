@@ -12,7 +12,7 @@ import nodemailer from "nodemailer";
 // --- Resend (preferred) ---
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM =
-  process.env.RESEND_FROM || "BILL SPILT <onboarding@resend.dev>";
+  process.env.RESEND_FROM || "BillSpilt <onboarding@resend.dev>";
 
 // --- SMTP (fallback) ---
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
@@ -30,16 +30,16 @@ export function emailConfigured(): boolean {
 
 function resetContent(link: string) {
   return {
-    subject: "Reset your BILL SPILT password",
+    subject: "Reset your BillSpilt password",
     text:
-      `You requested a password reset for BILL SPILT.\n\n` +
+      `You requested a password reset for BillSpilt.\n\n` +
       `Reset it here (link expires in 1 hour):\n${link}\n\n` +
       `If you didn't request this, you can safely ignore this email.`,
     html: `
       <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
         <h2 style="margin:0 0 8px">Reset your password</h2>
         <p style="color:#475569;margin:0 0 20px">
-          You requested a password reset for <strong>BILL SPILT</strong>.
+          You requested a password reset for <strong>BillSpilt</strong>.
         </p>
         <a href="${link}" style="display:inline-block;background:#2563eb;color:#fff;
           text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600">
@@ -91,7 +91,7 @@ async function sendViaSmtp(
     });
   }
   await transporter.sendMail({
-    from: `"BILL SPILT" <${SMTP_FROM}>`,
+    from: `"BillSpilt" <${SMTP_FROM}>`,
     to,
     subject: c.subject,
     text: c.text,

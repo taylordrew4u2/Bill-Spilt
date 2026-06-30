@@ -19,9 +19,9 @@ export default function TermsPage() {
 
       <div className="mt-6 space-y-6 text-sm leading-relaxed text-foreground/90">
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Using BILL SPILT</h2>
+          <h2 className="text-lg font-semibold">Using BillSpilt</h2>
           <p>
-            BILL SPILT is a free tool that helps roommates track shared expenses
+            BillSpilt is a free tool that helps roommates track shared expenses
             and settle up. By creating an account you agree to use it lawfully
             and to keep your login credentials secure. You&apos;re responsible
             for the accuracy of the expenses and balances you record.
@@ -31,7 +31,7 @@ export default function TermsPage() {
         <section className="space-y-2">
           <h2 className="text-lg font-semibold">Not a payment service</h2>
           <p>
-            BILL SPILT helps you <em>calculate</em> who owes what — it does{" "}
+            BillSpilt helps you <em>calculate</em> who owes what — it does{" "}
             <strong>not</strong> process, hold, or transfer money. Actual
             payments happen directly between you and your roommates through
             whatever method you choose. We&apos;re not a party to those payments

@@ -58,7 +58,7 @@ const JSON_LD = {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "BILL SPILT", item: SITE_URL },
+        { "@type": "ListItem", position: 1, name: "BillSpilt", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: "How to split utilities with roommates", item: `${SITE_URL}${PATH}` },
       ],
     },
@@ -92,7 +92,7 @@ export default function SplitUtilitiesGuide() {
       <section className="mt-12 rounded-2xl border bg-card p-6">
         <h2 className="text-xl font-bold">Put utilities on autopilot</h2>
         <p className="mt-2 text-muted-foreground">
-          Add each utility as a recurring bill in BILL SPILT and it&apos;s logged
+          Add each utility as a recurring bill in BillSpilt and it&apos;s logged
           automatically every month, split how you chose, and folded into one
           who-owes-what balance — even when the bills live in different
           roommates&apos; names. Free forever, no paywall.

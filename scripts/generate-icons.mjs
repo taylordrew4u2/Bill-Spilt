@@ -1,7 +1,7 @@
 // Generates the PWA PNG icons with zero external dependencies.
 //
 // We hand-encode valid PNGs (signature + IHDR + IDAT + IEND) using Node's
-// built-in zlib. The mark is the BILL SPILT motif: a knocked-over mason jar
+// built-in zlib. The mark is the BillSpilt motif: a knocked-over mason jar
 // with gold coins pouring out onto a brand-blue rounded square — a visual pun
 // on "spilt". Shapes are drawn from signed-distance fields with 3x3
 // supersampling for clean edges, so the repo stays install-free while

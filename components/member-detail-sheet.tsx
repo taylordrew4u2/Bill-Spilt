@@ -59,11 +59,11 @@ export function MemberDetailSheet({
       })
       .join(", ");
     const text =
-      `Hey ${member.name}, friendly reminder you owe me ${money(amount)} on BILL SPILT.` +
+      `Hey ${member.name}, friendly reminder you owe me ${money(amount)} on BillSpilt.` +
       (ways ? ` You can pay me with ${ways}.` : "");
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({ title: "BILL SPILT reminder", text });
+        await navigator.share({ title: "BillSpilt reminder", text });
         return;
       }
       await navigator.clipboard.writeText(text);
@@ -159,7 +159,7 @@ export function MemberDetailSheet({
                 youOwe
                   ? {
                       amount,
-                      note: myName ? `BILL SPILT — from ${myName}` : "BILL SPILT",
+                      note: myName ? `BillSpilt — from ${myName}` : "BillSpilt",
                     }
                   : undefined
               }

@@ -63,13 +63,13 @@ export async function shareInvite(
 ): Promise<"shared" | "copied" | "failed"> {
   const url = inviteUrl(code);
   const text = householdName
-    ? `Join ${householdName} on BILL SPILT to split our bills:`
-    : "Join my household on BILL SPILT to split our bills:";
+    ? `Join ${householdName} on BillSpilt to split our bills:`
+    : "Join my household on BillSpilt to split our bills:";
 
   const nav = typeof navigator !== "undefined" ? navigator : undefined;
   if (nav?.share) {
     try {
-      await nav.share({ title: "BILL SPILT invite", text, url });
+      await nav.share({ title: "BillSpilt invite", text, url });
       return "shared";
     } catch (err) {
       // User dismissed the share sheet — not an error worth surfacing.

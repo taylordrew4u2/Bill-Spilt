@@ -2,7 +2,7 @@
 
 <img src="public/icons/icon-512.png" width="96" height="96" alt="Bill Spilt icon" />
 
-# BILL SPILT
+# BillSpilt
 
 **The roommate bill splitter that lives on your phone — no app store required.**
 
@@ -57,7 +57,7 @@ Split shared expenses, see who owes what, and settle up with the fewest payments
 
 ## Why it's interesting
 
-BILL SPILT isn't a CRUD demo. The hard parts are the parts users never see:
+BillSpilt isn't a CRUD demo. The hard parts are the parts users never see:
 
 - **A settlement engine** that collapses a tangle of IOUs into the minimum number of payments.
 - **Offline-first writes** that queue in the browser and reconcile when the network returns.

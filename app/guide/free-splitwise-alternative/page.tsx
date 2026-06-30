@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
 const SLUG = "free-splitwise-alternative";
 const TITLE = "The Best Free Splitwise Alternative for Roommates";
 const DESCRIPTION =
-  "Looking for a free alternative to Splitwise? BILL SPILT is a free roommate bill splitter with every feature included — unlimited expenses, recurring bills, reminders, and minimum-payment settle-up — no paywall, no premium tier, no credit card.";
+  "Looking for a free alternative to Splitwise? BillSpilt is a free roommate bill splitter with every feature included — unlimited expenses, recurring bills, reminders, and minimum-payment settle-up — no paywall, no premium tier, no credit card.";
 const PATH = `/guide/${SLUG}`;
 
 export const metadata: Metadata = {
@@ -31,19 +31,19 @@ const INCLUDED = [
 const FAQ = [
   {
     q: "Is there a free alternative to Splitwise?",
-    a: "Yes. BILL SPILT is a free roommate bill splitter where every feature is included at no cost — there's no premium tier and no credit card required. It covers the essentials most roommates use a bill splitter for: tracking shared expenses, seeing who owes what, and settling up in the fewest payments.",
+    a: "Yes. BillSpilt is a free roommate bill splitter where every feature is included at no cost — there's no premium tier and no credit card required. It covers the essentials most roommates use a bill splitter for: tracking shared expenses, seeing who owes what, and settling up in the fewest payments.",
   },
   {
-    q: "Why is BILL SPILT free?",
-    a: "BILL SPILT is supported by unobtrusive ads, which lets every feature stay free for roommates rather than gating them behind a subscription.",
+    q: "Why is BillSpilt free?",
+    a: "BillSpilt is supported by unobtrusive ads, which lets every feature stay free for roommates rather than gating them behind a subscription.",
   },
   {
     q: "Do I need to install anything?",
-    a: "No app store needed. BILL SPILT is a Progressive Web App — open it in your browser and add it to your home screen, where it runs full-screen and offline like a native app.",
+    a: "No app store needed. BillSpilt is a Progressive Web App — open it in your browser and add it to your home screen, where it runs full-screen and offline like a native app.",
   },
   {
     q: "Does it handle the actual payments?",
-    a: "No — and that's by design. BILL SPILT calculates who owes what and links you straight to Venmo or Cash App, but money moves directly between you and your roommates. It never holds or processes funds.",
+    a: "No — and that's by design. BillSpilt calculates who owes what and links you straight to Venmo or Cash App, but money moves directly between you and your roommates. It never holds or processes funds.",
   },
 ];
 
@@ -76,7 +76,7 @@ export default function SplitwiseAlternativeGuide() {
       </h1>
       <p className="mt-4 text-lg text-muted-foreground">
         If you&apos;ve bumped into limits or paywalls in another bill splitter,
-        BILL SPILT is a genuinely free alternative built for roommates — every
+        BillSpilt is a genuinely free alternative built for roommates — every
         feature included, no premium tier, no credit card.
       </p>
 
@@ -95,7 +95,7 @@ export default function SplitwiseAlternativeGuide() {
       <section className="mt-10">
         <h2 className="text-xl font-bold">What makes it a good switch</h2>
         <p className="mt-2 text-muted-foreground">
-          BILL SPILT focuses on the core job a roommate bill splitter needs to do
+          BillSpilt focuses on the core job a roommate bill splitter needs to do
           and does it without nickel-and-diming: a smart settle-up that nets
           everyone&apos;s debts into the fewest payments, private per-person split
           breakdowns, multiple household admins, and offline support so you can
