@@ -12,6 +12,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
   return [
     { url: `${BASE}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    {
+      url: `${BASE}/split-calculator`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     ...guides,
     { url: `${BASE}/register`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
