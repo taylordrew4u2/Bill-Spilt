@@ -6,7 +6,7 @@
 
 **The roommate bill splitter that lives on your phone — no app store required.**
 
-Split shared expenses, see who owes what, and settle up with the fewest payments possible. Free forever, works offline, installs to your home screen in one tap.
+Split shared expenses, see who owes what, and settle up with the fewest payments possible. **Free forever — every feature, no paywall, no premium tier, no credit card.** Works offline, installs to your home screen in one tap.
 
 [**▶ Try the live demo →**](https://billspilt.com)
 
@@ -77,7 +77,8 @@ It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-de
 | 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list, with history + undo. |
 | 💳 **Ways to pay** | Each roommate shares Venmo / Cash App handles — shown (with deep links + copy) when you owe them. |
 | 👑 **Multiple admins** | Any leaseholder can be an admin. Admins can rename the household, manage members, promote others, and settle everyone in one tap. Activity log included. |
-| 🔑 **Invite code (admin-only)** | Only admins can see and share the invite code. Admins can regenerate it at any time, invalidating the old one. |
+| 🔗 **One-tap invite links** | Share a link via the native share sheet — your roommate taps it and is dropped straight into the household. No code to type, no "Create vs. Join" decision: logged-in users join instantly; new users are auto-joined the moment they sign up. The raw code stays as a manual fallback. |
+| 🔑 **Invite code (admin-only)** | Only admins can see and regenerate the invite code, invalidating the old link at any time. |
 | 🔒 **Private split breakdown** | The person who added an expense sees the full per-person breakdown. Everyone else sees just the total and their own share. |
 | 🔁 **Recurring bills** | Rent, internet, subscriptions auto-logged daily by a Vercel Cron job. |
 | 📸 **Receipt photos** | Attach a photo to any expense (Vercel Blob). |
@@ -85,6 +86,7 @@ It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-de
 | 🔐 **Auth + password reset** | Credentials auth with a self-serve email reset flow (SMTP). |
 | 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
 | 📲 **Installable PWA** | Standalone display, app icons, dark mode, install prompt, home-screen shortcuts. |
+| 🔍 **Search-engine ready** | SEO-tuned landing with Open Graph / Twitter cards, a generated 1200×630 social image, JSON-LD structured data (WebApplication + FAQ rich results), canonical tags, sitemap, and robots. |
 
 ---
 
@@ -212,13 +214,19 @@ The database **schema creates itself** on first request via `ensureSchema()` —
 app/
   (auth)/login · (auth)/register        Credentials auth screens
   (app)/home · expenses · settle · stats  Four bottom-nav tabs
+  join/[code]                           One-tap invite entry (auto-join / sign-up)
   api/                                  REST route handlers (Node runtime)
+  opengraph-image.tsx                   Generated 1200×630 social card
+  robots.ts · sitemap.ts                SEO crawl directives
 components/
   ui/                                   shadcn/ui primitives
+  join-invite.tsx                       Client-side auto-join on the invite link
   *                                     Feature components (sheets, swipe rows, charts)
 lib/
   settlement.ts                         Min-cash-flow + split math
   db.ts                                 Provider-agnostic SQL layer
+  invite.ts                             Shared join-by-code logic (link + API)
+  site.ts                               Canonical SEO metadata (URL, keywords, …)
   expenses.ts                           Atomic expense + splits write
   queries.ts                            Read models & balance aggregation
   offline-db.ts · sync.ts               IndexedDB queue & sync
