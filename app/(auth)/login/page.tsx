@@ -21,6 +21,19 @@ export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  // Preserve an invite when an existing user follows a link and logs in.
+  const [invite, setInvite] = React.useState<{ code: string; house: string } | null>(
+    null,
+  );
+  const registerHref = invite
+    ? `/register?${new URLSearchParams({ invite: invite.code, house: invite.house })}`
+    : "/register";
+
+  React.useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const code = q.get("invite");
+    if (code) setInvite({ code, house: q.get("house") ?? "" });
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,11 +45,19 @@ export default function LoginPage() {
       password: String(form.get("password")),
       redirect: false,
     });
-    setLoading(false);
     if (res?.error) {
+      setLoading(false);
       setError("Incorrect email or password");
       return;
     }
+    if (invite) {
+      await fetch("/api/household", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "join", code: invite.code }),
+      }).catch(() => {});
+    }
+    setLoading(false);
     router.push("/home");
     router.refresh();
   }
@@ -52,7 +73,11 @@ export default function LoginPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Welcome back</CardTitle>
-          <CardDescription>Log in to split bills with your roommates.</CardDescription>
+          <CardDescription>
+            {invite
+              ? `Log in to join ${invite.house || "your roommates"}.`
+              : "Log in to split bills with your roommates."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -99,7 +124,7 @@ export default function LoginPage() {
       </Card>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         New here?{" "}
-        <Link href="/register" className="font-semibold text-primary">
+        <Link href={registerHref} className="font-semibold text-primary">
           Create an account
         </Link>
       </p>

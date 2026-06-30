@@ -3,19 +3,28 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { CookieConsent } from "@/components/cookie-consent";
 import { ADSENSE_CLIENT } from "@/lib/ads-config";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+} from "@/lib/site";
 
-const APP_NAME = "BILL SPILT";
-const APP_DESCRIPTION =
-  "Split shared bills with your roommates, see who owes what instantly, and settle up with the fewest payments. Free forever.";
+const APP_NAME = SITE_NAME;
+const DEFAULT_TITLE = "BILL SPILT — Free bill splitter for roommates";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   applicationName: APP_NAME,
   title: {
-    default: "BILL SPILT — Split bills with your roommates",
+    default: DEFAULT_TITLE,
     template: "%s · BILL SPILT",
   },
-  description: APP_DESCRIPTION,
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  category: "finance",
   manifest: "/manifest.json",
+  alternates: { canonical: "/" },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -25,6 +34,29 @@ export const metadata: Metadata = {
   icons: {
     icon: "/icons/icon-192.png",
     apple: "/icons/apple-touch-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    siteName: APP_NAME,
+    url: SITE_URL,
+    title: DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: DEFAULT_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   // AdSense account verification.
   other: { "google-adsense-account": ADSENSE_CLIENT },

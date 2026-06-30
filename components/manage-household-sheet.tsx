@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Copy, Check, Crown, UserMinus, LogOut, Pencil, ShieldPlus, RefreshCw } from "lucide-react";
+import { Loader2, Share2, Check, Crown, UserMinus, LogOut, Pencil, ShieldPlus, RefreshCw } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -20,7 +20,7 @@ import { useToast } from "@/components/ui/toaster";
 import type { Member } from "@/lib/types";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo, shareInvite } from "@/lib/utils";
 
 interface ActivityEntry {
   id: string;
@@ -161,14 +161,15 @@ export function ManageHouseholdSheet({
     }
   }
 
-  async function copyCode() {
+  async function shareLink() {
     if (!household) return;
-    try {
-      await navigator.clipboard.writeText(household.inviteCode);
+    const how = await shareInvite(household.inviteCode, household.name);
+    if (how === "copied") {
       setCopied(true);
+      toast({ title: "Invite link copied", variant: "success" });
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({ title: household.inviteCode });
+    } else if (how === "failed") {
+      toast({ title: "Couldn't share the link", variant: "error" });
     }
   }
 
@@ -228,20 +229,20 @@ export function ManageHouseholdSheet({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Invite code
+                  Invite link
                 </p>
                 <p className="text-xl font-bold tracking-[0.25em]">
                   {household?.inviteCode}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={copyCode}>
+                <Button variant="outline" onClick={shareLink}>
                   {copied ? (
                     <Check className="h-4 w-4 text-emerald-600" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <Share2 className="h-4 w-4" />
                   )}
-                  {copied ? "Copied" : "Copy"}
+                  {copied ? "Copied" : "Share"}
                 </Button>
                 <Button variant="outline" onClick={regenCode} disabled={regenBusy} aria-label="Regenerate invite code">
                   {regenBusy ? (

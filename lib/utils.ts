@@ -42,6 +42,48 @@ export function timeAgo(input: string | Date): string {
   return formatDate(d);
 }
 
+/**
+ * Absolute URL a roommate can tap to join, built from an invite code. Prefers
+ * the configured public URL and falls back to the current origin (client-side).
+ */
+export function inviteUrl(code: string): string {
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "");
+  return `${base}/join/${code}`;
+}
+
+/**
+ * Share an invite link via the native share sheet, falling back to copying it
+ * to the clipboard. Returns how it was handled so callers can show feedback.
+ */
+export async function shareInvite(
+  code: string,
+  householdName?: string,
+): Promise<"shared" | "copied" | "failed"> {
+  const url = inviteUrl(code);
+  const text = householdName
+    ? `Join ${householdName} on BILL SPILT to split our bills:`
+    : "Join my household on BILL SPILT to split our bills:";
+
+  const nav = typeof navigator !== "undefined" ? navigator : undefined;
+  if (nav?.share) {
+    try {
+      await nav.share({ title: "BILL SPILT invite", text, url });
+      return "shared";
+    } catch (err) {
+      // User dismissed the share sheet — not an error worth surfacing.
+      if (err instanceof DOMException && err.name === "AbortError") return "shared";
+    }
+  }
+  try {
+    await nav!.clipboard.writeText(url);
+    return "copied";
+  } catch {
+    return "failed";
+  }
+}
+
 /** Generate a short, human-readable invite code for a household. */
 export function generateInviteCode(length = 6): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
