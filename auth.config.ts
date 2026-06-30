@@ -20,6 +20,7 @@ export const authConfig = {
       // and legal pages.
       const isPublicPage =
         p === "/" ||
+        p.startsWith("/guide") ||
         p.startsWith("/join") ||
         p.startsWith("/forgot") ||
         p.startsWith("/reset") ||

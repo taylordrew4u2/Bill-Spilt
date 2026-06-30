@@ -58,6 +58,12 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION to the token Google Search Console
+  // gives you to verify domain ownership (renders the google-site-verification
+  // meta tag). Left out entirely when the env var is unset.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
   // AdSense account verification.
   other: { "google-adsense-account": ADSENSE_CLIENT },
 };
