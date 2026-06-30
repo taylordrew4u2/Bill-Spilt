@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { sql, ensureSchema, MAX_MEMBERS } from "@/lib/db";
+import { sql, ensureSchema } from "@/lib/db";
 import { requireUserId, requireHousehold, handle, ApiError } from "@/lib/api";
 import { getUserHousehold, isOwner } from "@/lib/queries";
 import { createHouseholdSchema, joinHouseholdSchema } from "@/lib/validation";
 import { generateInviteCode } from "@/lib/utils";
+import { joinHouseholdByCode } from "@/lib/invite";
 import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
@@ -51,28 +52,10 @@ export async function POST(req: Request) {
     if (body.action === "join") {
       const parsed = joinHouseholdSchema.safeParse(body);
       if (!parsed.success) throw new ApiError(400, "Enter a valid invite code");
-      const { code } = parsed.data;
 
-      const { rows } = await sql`
-        SELECT id, name FROM households WHERE invite_code = ${code} LIMIT 1
-      `;
-      const household = rows[0];
-      if (!household) throw new ApiError(404, "No household found for that code");
-
-      const count = await sql`
-        SELECT COUNT(*)::int AS n FROM household_members WHERE household_id = ${household.id}
-      `;
-      if (count.rows[0].n >= MAX_MEMBERS) {
-        throw new ApiError(403, `This household is full (max ${MAX_MEMBERS} members)`);
-      }
-
-      await sql`
-        INSERT INTO household_members (household_id, user_id)
-        VALUES (${household.id}, ${userId})
-        ON CONFLICT DO NOTHING
-      `;
-      await logActivity(household.id, userId, "member_joined", "Joined the household");
-      return NextResponse.json({ household }, { status: 200 });
+      const result = await joinHouseholdByCode(userId, parsed.data.code);
+      if (!result.ok) throw new ApiError(result.status, result.error);
+      return NextResponse.json({ household: result.household }, { status: 200 });
     }
 
     // default: create

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Copy, Check, Users } from "lucide-react";
+import { Check, Users, Share2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -10,6 +10,7 @@ import { AdArea } from "@/components/ad-area";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
+import { shareInvite } from "@/lib/utils";
 import type { Balance } from "@/lib/types";
 
 export default function HomePage() {
@@ -27,15 +28,15 @@ export default function HomePage() {
   const balances = data?.balances ?? [];
   const mine = balances.find((b) => b.userId === currentUserId);
 
-  async function copyCode() {
+  async function share() {
     if (!household) return;
-    try {
-      await navigator.clipboard.writeText(household.inviteCode);
+    const how = await shareInvite(household.inviteCode, household.name);
+    if (how === "copied") {
       setCopied(true);
-      toast({ title: "Invite code copied", variant: "success" });
+      toast({ title: "Invite link copied", variant: "success" });
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({ title: household.inviteCode, description: "Copy this code manually" });
+    } else if (how === "failed") {
+      toast({ title: "Couldn't share the link", variant: "error" });
     }
   }
 
@@ -84,25 +85,30 @@ export default function HomePage() {
               Invite roommates
             </div>
             <Separator className="my-3" />
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs text-muted-foreground">Share this code</p>
-                <p className="text-2xl font-bold tracking-[0.25em]">
-                  {household.inviteCode}
-                </p>
-              </div>
-              <button
-                onClick={copyCode}
-                className="flex h-11 items-center gap-2 rounded-md border px-4 text-sm font-medium active:scale-95"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-emerald-600" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Send a link — they tap it, sign up, and they&apos;re in. No codes to
+              type.
+            </p>
+            <button
+              onClick={share}
+              className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground active:scale-95"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4" /> Link copied
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-4 w-4" /> Share invite link
+                </>
+              )}
+            </button>
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              Or share the code{" "}
+              <span className="font-semibold tracking-[0.15em] text-foreground">
+                {household.inviteCode}
+              </span>
+            </p>
           </CardContent>
         </Card>
       )}
