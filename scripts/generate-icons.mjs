@@ -17,13 +17,16 @@ mkdirSync(OUT_DIR, { recursive: true });
 // Palette.
 const BG_TOP = [59, 130, 246]; // #3b82f6
 const BG_BOT = [29, 78, 216]; // #1d4ed8
-const GLASS = [244, 248, 253]; // jar glass (near-white, faint cool tint)
-const GLASS_HI = [255, 255, 255]; // sheen highlight
-const GLASS_IN = [206, 219, 235]; // shaded jar interior / mouth
+const SHADOW = [18, 52, 150]; // soft contact shadow (deep blue)
+const GLASS_HI = [255, 255, 255]; // glass — lit (upper) edge
+const GLASS_SHADE = [219, 228, 242]; // glass — shaded (lower) edge
+const GLASS_IN = [201, 214, 231]; // shaded jar interior / mouth
 const NECK = [148, 163, 184]; // thread/rim detail (slate)
-const COIN = [245, 197, 24]; // #f5c518 gold
-const COIN_EDGE = [194, 134, 8]; // darker gold ring detail
-const RIM = [255, 255, 255]; // coin rim
+const COIN_LIGHT = [253, 224, 120]; // gold, lit
+const COIN = [245, 197, 24]; // gold, mid
+const COIN_DARK = [198, 134, 10]; // gold, shaded edge
+const SPEC = [255, 252, 228]; // specular highlight on coins
+const RIM = [255, 255, 255]; // coin rim (separates the pile)
 const INK = [29, 78, 216]; // $ on the lead coin (brand blue)
 
 // "$" centreline as a polyline (units = fraction of coin radius, y down) — an
@@ -145,6 +148,30 @@ function drawIcon(size, { maskable = false, contentScale = 1 } = {}) {
     return dx * dx + dy * dy <= radius * radius;
   };
 
+  // True if (px,py) is inside the jar body or any coin — used for the shadow.
+  function inMotif(px, py) {
+    const dx = px - jar.cx;
+    const dy = py - jar.cy;
+    const u = dx * cosA - dy * sinA;
+    const v = dx * sinA + dy * cosA;
+    if (sdRoundRect(u, v, 0, 0, jar.bodyHalf, jar.bodyR, jar.corner) < 0) return true;
+    for (const c of coins) {
+      if (Math.hypot(px - c.x, py - c.y) <= c.r) return true;
+    }
+    return false;
+  }
+
+  // Soft contact shadow: light from the upper-left, so the motif casts a blur
+  // toward the lower-right. Averaged over a small kernel for soft edges.
+  const SH_OFF = 0.05 * U;
+  const SH_K = 0.018 * U;
+  const SH_KERNEL = [
+    [-SH_K, -SH_K],
+    [SH_K, SH_K],
+    [-SH_K, SH_K],
+    [SH_K, -SH_K],
+  ];
+
   function sampleAt(x, y) {
     if (!inRounded(x, y)) return null;
     // Background spans the full canvas; only the artwork is scaled into the
@@ -153,6 +180,13 @@ function drawIcon(size, { maskable = false, contentScale = 1 } = {}) {
     const sx = center + (x - center) / contentScale;
     const sy = center + (y - center) / contentScale;
 
+    // Contact shadow on the background (drawn under the artwork).
+    let sh = 0;
+    for (const [kx, ky] of SH_KERNEL) {
+      if (inMotif(sx - SH_OFF + kx, sy - SH_OFF + ky)) sh += 1;
+    }
+    if (sh) color = mix(color, SHADOW, (sh / SH_KERNEL.length) * 0.34);
+
     // Mason jar (drawn first; coins pour over the mouth). Rotate the sample
     // point into the jar's local frame using the hoisted trig.
     const dx = sx - jar.cx;
@@ -160,9 +194,9 @@ function drawIcon(size, { maskable = false, contentScale = 1 } = {}) {
     const u = dx * cosA - dy * sinA; // along axis (+ = toward mouth)
     const v = dx * sinA + dy * cosA; // perpendicular
     if (sdRoundRect(u, v, 0, 0, jar.bodyHalf, jar.bodyR, jar.corner) < 0) {
-      color = GLASS;
-      // Sheen highlight along the upper-back of the glass.
-      if (v < -jar.bodyR * 0.4 && u < jar.bodyHalf * 0.35) color = GLASS_HI;
+      // Glass gradient: lit upper edge → softly shaded lower edge.
+      const tv = Math.max(0, Math.min(1, (v + jar.bodyR) / (2 * jar.bodyR)));
+      color = mix(GLASS_HI, GLASS_SHADE, tv);
       // Shaded open interior near the mouth end.
       if (u > jar.bodyHalf - 0.085 * U) color = GLASS_IN;
       // Neck threads near the mouth.
@@ -173,19 +207,22 @@ function drawIcon(size, { maskable = false, contentScale = 1 } = {}) {
       }
     }
 
-    // Coins, back-to-front (largest, nearest the mouth, ends up on top).
+    // Coins, back-to-front (largest, nearest the mouth, ends up on top). Each is
+    // a struck disc: gold radial-shaded from an upper-left highlight, a small
+    // specular dot, and a white rim that separates overlapping coins.
     for (const c of coins) {
       const cd = Math.hypot(sx - c.x, sy - c.y);
       if (cd <= c.r) {
         if (cd > c.r - 0.02 * U) {
           color = RIM;
-        } else if (c.dollar) {
-          // Lead coin: gold face stamped with a clean $.
-          color = dollarInk(sx, sy, c) ? INK : COIN;
-        } else if (Math.abs(cd - c.r * 0.62) < 0.013 * U) {
-          color = COIN_EDGE;
         } else {
-          color = COIN;
+          const hd = Math.hypot(sx - (c.x - 0.32 * c.r), sy - (c.y - 0.32 * c.r));
+          if (hd < 0.17 * c.r) {
+            color = SPEC;
+          } else {
+            color = mix(COIN_LIGHT, COIN_DARK, Math.min(1, hd / (1.5 * c.r)));
+          }
+          if (c.dollar && dollarInk(sx, sy, c)) color = INK;
         }
       }
     }
