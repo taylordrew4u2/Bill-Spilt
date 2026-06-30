@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
 import { updateExpense } from "@/lib/expenses";
-import { isMember } from "@/lib/queries";
+import { findNonMembers } from "@/lib/queries";
 import { expenseSchema } from "@/lib/validation";
 import { invalidatePlan } from "@/lib/cache";
 import { logActivity } from "@/lib/activity";
@@ -51,11 +51,9 @@ export async function PATCH(
     }
     const data = parsed.data;
 
-    const participants = new Set([data.paidBy, ...data.splits.map((s) => s.userId)]);
-    for (const id of participants) {
-      if (!(await isMember(householdId, id))) {
-        throw new ApiError(403, "All participants must be household members");
-      }
+    const participants = [...new Set([data.paidBy, ...data.splits.map((s) => s.userId)])];
+    if ((await findNonMembers(householdId, participants)).length > 0) {
+      throw new ApiError(403, "All participants must be household members");
     }
 
     const ok = await updateExpense(expenseId, {

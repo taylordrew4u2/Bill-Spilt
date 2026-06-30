@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
-import { getRecurringBills, isMember } from "@/lib/queries";
+import { getRecurringBills, findNonMembers } from "@/lib/queries";
 import { recurringSchema } from "@/lib/validation";
 import { validateSplits } from "@/lib/settlement";
 import { logActivity } from "@/lib/activity";
@@ -31,10 +31,9 @@ export async function POST(req: Request) {
     const err = validateSplits(data.amount, data.splitType, data.splits);
     if (err) throw new ApiError(400, err);
 
-    for (const id of [data.paidBy, ...data.splits.map((s) => s.userId)]) {
-      if (!(await isMember(householdId, id))) {
-        throw new ApiError(403, "All participants must be household members");
-      }
+    const participants = [...new Set([data.paidBy, ...data.splits.map((s) => s.userId)])];
+    if ((await findNonMembers(householdId, participants)).length > 0) {
+      throw new ApiError(403, "All participants must be household members");
     }
 
     // First run: tomorrow (so daily cron picks it up on its next pass).

@@ -64,6 +64,25 @@ export async function isMember(
   return rows.length > 0;
 }
 
+/**
+ * Return the subset of `userIds` that are NOT members of the household, in a
+ * single query (vs. one round-trip per id). Empty array ⇒ everyone is a member.
+ */
+export async function findNonMembers(
+  householdId: string,
+  userIds: string[],
+): Promise<string[]> {
+  if (userIds.length === 0) return [];
+  await ensureSchema();
+  const { rows } = await sql(
+    `SELECT user_id FROM household_members
+     WHERE household_id = $1 AND user_id = ANY($2::uuid[])`,
+    [householdId, userIds],
+  );
+  const members = new Set(rows.map((r) => r.user_id));
+  return userIds.filter((id) => !members.has(id));
+}
+
 function parsePaymentMethods(raw: unknown): PaymentMethod[] {
   // pg returns jsonb as a parsed value; the Neon HTTP driver may hand back a
   // string. Normalise both, and ignore anything malformed.

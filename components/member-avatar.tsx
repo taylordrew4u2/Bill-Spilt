@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { colorForId, initials } from "@/lib/utils";
+import { colorForId, initials, readableTextColor } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 export function MemberAvatar({
@@ -11,9 +11,10 @@ export function MemberAvatar({
   name: string;
   className?: string;
 }) {
+  const bg = colorForId(id);
   return (
     <Avatar className={cn("h-9 w-9", className)}>
-      <AvatarFallback style={{ backgroundColor: colorForId(id) }}>
+      <AvatarFallback style={{ backgroundColor: bg, color: readableTextColor(bg) }}>
         {initials(name) || "?"}
       </AvatarFallback>
     </Avatar>
