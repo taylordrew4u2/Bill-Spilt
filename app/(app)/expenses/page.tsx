@@ -139,7 +139,7 @@ export default function ExpensesPage() {
                   key={c.value}
                   active={category === c.value}
                   onClick={() => setCategory(c.value)}
-                  label={`${c.emoji} ${c.label}`}
+                  label={c.label}
                 />
               ))}
             </div>

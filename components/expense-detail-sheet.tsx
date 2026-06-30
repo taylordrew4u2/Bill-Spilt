@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ExternalLink, Pencil } from "lucide-react";
+import { ExternalLink, Pencil, Package } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +37,7 @@ export function ExpenseDetailSheet({
   const cat = expense
     ? CATEGORIES.find((c) => c.value === expense.category)
     : null;
+  const CatIcon = cat?.icon ?? Package;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -45,8 +46,8 @@ export function ExpenseDetailSheet({
           <>
             <SheetHeader className="mb-1">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-2xl">
-                  {cat?.emoji ?? "📦"}
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <CatIcon className="h-6 w-6" aria-hidden />
                 </div>
                 <div className="min-w-0">
                   <SheetTitle className="truncate">{expense.description}</SheetTitle>

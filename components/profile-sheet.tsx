@@ -206,7 +206,7 @@ export function ProfileSheet({
                         <SelectContent>
                           {PAYMENT_METHODS.map((p) => (
                             <SelectItem key={p.value} value={p.value}>
-                              {p.emoji} {p.label}
+                              {p.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
