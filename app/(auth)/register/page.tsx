@@ -16,72 +16,56 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useInvite, acceptInvite } from "@/lib/use-invite";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { invite, withInvite } = useInvite();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  // An invite link sends roommates here pre-bound to a household.
-  const [invite, setInvite] = React.useState<{ code: string; house: string } | null>(
-    null,
-  );
-  const loginHref = invite
-    ? `/login?${new URLSearchParams({ invite: invite.code, house: invite.house })}`
-    : "/login";
-
-  React.useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    const code = q.get("invite");
-    if (code) setInvite({ code, house: q.get("house") ?? "" });
-  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const form = new FormData(e.currentTarget);
-    const payload = {
-      name: String(form.get("name")),
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-    };
+    try {
+      const form = new FormData(e.currentTarget);
+      const payload = {
+        name: String(form.get("name")),
+        email: String(form.get("email")),
+        password: String(form.get("password")),
+      };
 
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      setError(body.error || "Could not create account");
-      setLoading(false);
-      return;
-    }
-
-    // Auto-login after successful registration.
-    const login = await signIn("credentials", {
-      email: payload.email,
-      password: payload.password,
-      redirect: false,
-    });
-    if (login?.error) {
-      setLoading(false);
-      router.push(invite ? loginHref : "/login");
-      return;
-    }
-    // Joined automatically when they arrived via an invite link — no tab to
-    // pick, no code to type.
-    if (invite) {
-      await fetch("/api/household", {
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "join", code: invite.code }),
-      }).catch(() => {});
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error || "Could not create account");
+        return;
+      }
+
+      // Auto-login after registration; on failure fall back to the log-in page
+      // (preserving the invite so they still land in the right household).
+      const login = await signIn("credentials", {
+        email: payload.email,
+        password: payload.password,
+        redirect: false,
+      });
+      if (login?.error) {
+        router.push(withInvite("/login"));
+        return;
+      }
+
+      // Arrived via an invite link → join automatically, no code to type.
+      if (invite) await acceptInvite(invite.code);
+      router.push("/home");
+      router.refresh();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    router.push("/home");
-    router.refresh();
   }
 
   return (
@@ -99,12 +83,12 @@ export default function RegisterPage() {
           </CardTitle>
           <CardDescription>
             {invite
-              ? `You'll join ${invite.house || "your roommates"} the moment your account is ready.`
+              ? `You'll join ${invite.householdName || "your roommates"} the moment your account is ready.`
               : "Split bills with your roommates — free forever, no credit card."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4" aria-busy={loading}>
             <div className="space-y-1.5">
               <Label htmlFor="name">Name</Label>
               <Input id="name" name="name" required placeholder="Alex Doe" autoComplete="name" />
@@ -134,10 +118,12 @@ export default function RegisterPage() {
               />
             </div>
             {error && (
-              <p className="text-sm font-medium text-destructive">{error}</p>
+              <p role="alert" className="text-sm font-medium text-destructive">
+                {error}
+              </p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
               {invite ? "Create account & join" : "Create account"}
             </Button>
           </form>
@@ -145,7 +131,7 @@ export default function RegisterPage() {
       </Card>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href={loginHref} className="font-semibold text-primary">
+        <Link href={withInvite("/login")} className="font-semibold text-primary">
           Log in
         </Link>
       </p>
