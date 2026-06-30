@@ -21,24 +21,24 @@ import { CATEGORIES } from "@/lib/types";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Free Bill Splitter for Roommates — Split Bills & Settle Up | BILL SPILT",
+  title: "Roommate Bill Splitter — Split Bills & Settle Up, Free | BILL SPILT",
   description:
-    "Split bills with your roommates for free. BILL SPILT tracks shared expenses, shows who owes what instantly, and settles up in the fewest payments — no paywall, no credit card. Split rent, utilities & groceries. Works offline.",
+    "BILL SPILT is the free roommate bill splitter: split shared bills, see who owes what instantly, and settle up in the fewest payments — no paywall, no credit card. Split rent, utilities & groceries. Works offline.",
   keywords: SITE_KEYWORDS,
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "Free Bill Splitter for Roommates — BILL SPILT",
+    title: "Roommate Bill Splitter, Free Forever — BILL SPILT",
     description:
-      "Split shared bills with roommates, see who owes what, and settle up in the fewest payments. Free forever — no paywall, no credit card.",
+      "The free roommate bill splitter. Split shared bills, see who owes what, and settle up in the fewest payments — no paywall, no credit card.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Bill Splitter for Roommates — BILL SPILT",
+    title: "Roommate Bill Splitter, Free Forever — BILL SPILT",
     description:
-      "Split shared bills, see who owes what, settle up in the fewest payments. Free forever.",
+      "The free roommate bill splitter. Split shared bills, see who owes what, settle up in the fewest payments.",
   },
 };
 
@@ -72,6 +72,10 @@ const FEATURES = [
 ];
 
 const FAQ = [
+  {
+    q: "What is the best free roommate bill splitter?",
+    a: "BILL SPILT is a free roommate bill splitter built specifically for shared households: it tracks who paid for what, shows everyone's balance instantly, and settles up in the fewest payments. Unlike many bill splitters, every feature — recurring bills, reminders, receipts, multiple admins — is free forever, with no paywall and no credit card.",
+  },
   {
     q: "Is BILL SPILT really free?",
     a: "Yes — free forever, no premium tiers and no credit card. The app is supported by ads, which lets us keep every feature free for roommates.",
@@ -119,6 +123,7 @@ const JSON_LD = {
       "@type": "WebApplication",
       "@id": `${SITE_URL}/#app`,
       name: SITE_NAME,
+      alternateName: "Roommate Bill Splitter",
       url: SITE_URL,
       description: SITE_DESCRIPTION,
       applicationCategory: "FinanceApplication",
@@ -190,15 +195,16 @@ export default async function LandingPage() {
           🎉 Free forever — every feature, no paywall
         </span>
         <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Every feature, free forever.
+          The free roommate bill splitter.
           <br />
           <span className="text-primary">No paywall, no catch.</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          Other bill splitters lock recurring bills, reminders, and receipts
-          behind a subscription. BILL SPILT keeps all of it free — split shared
-          costs with your roommates, see who owes what instantly, and settle up
-          in the fewest payments, without ever reaching for your card.
+          Other roommate bill splitters lock recurring bills, reminders, and
+          receipts behind a subscription. BILL SPILT keeps all of it free —
+          split shared costs with your roommates, see who owes what instantly,
+          and settle up in the fewest payments, without ever reaching for your
+          card.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
