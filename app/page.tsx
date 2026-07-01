@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Script from "next/script";
 import { redirect } from "next/navigation";
-import { ADSENSE_CLIENT } from "@/lib/ads-config";
+import { AdSenseScript } from "@/components/adsense-script";
+import { SiteFooter } from "@/components/site-footer";
 import {
   Receipt,
   Scale,
@@ -173,15 +173,7 @@ export default async function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
       {/* AdSense — the landing is public, content-rich, and ad-appropriate. */}
-      {ADSENSE_CLIENT && (
-        <Script
-          id="adsbygoogle-landing"
-          async
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-        />
-      )}
+      <AdSenseScript />
       {/* Nav */}
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 safe-top">
         <Brand size="sm" />
@@ -388,19 +380,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 safe-bottom">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-5 sm:flex-row sm:justify-between">
-          <Brand size="sm" />
-          <nav className="flex gap-5 text-sm text-muted-foreground">
-            <Link href="/privacy" className="hover:underline">Privacy</Link>
-            <Link href="/terms" className="hover:underline">Terms</Link>
-            <Link href="/login" className="hover:underline">Log in</Link>
-          </nav>
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} BillSpilt
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

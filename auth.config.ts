@@ -22,6 +22,8 @@ export const authConfig = {
         p === "/" ||
         p.startsWith("/guide") ||
         p.startsWith("/split-calculator") ||
+        p.startsWith("/about") ||
+        p.startsWith("/contact") ||
         p.startsWith("/join") ||
         p.startsWith("/forgot") ||
         p.startsWith("/reset") ||

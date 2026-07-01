@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Sparkles, Scale } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { SplitCalculator } from "@/components/split-calculator";
+import { SiteFooter } from "@/components/site-footer";
 import { SITE_URL } from "@/lib/site";
 
 const TITLE = "Free Bill Split Calculator — Split a Bill by People & Tip | BillSpilt";
@@ -104,25 +105,7 @@ export default function SplitCalculatorPage() {
         </section>
       </main>
 
-      {/* Footer — keeps the brand + legal links consistent with the rest of the app */}
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-5 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
-          <Link href="/" aria-label="BillSpilt home">
-            <Brand size="sm" />
-          </Link>
-          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link href="/privacy" className="hover:text-foreground">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-foreground">
-              Terms
-            </Link>
-            <Link href="/register" className="hover:text-foreground">
-              Get started
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
