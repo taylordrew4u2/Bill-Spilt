@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Brand } from "@/components/brand";
+import { AdSenseScript } from "@/components/adsense-script";
+import { SiteFooter } from "@/components/site-footer";
 import { GUIDES, guidePath } from "@/lib/guides";
 
 /**
@@ -24,6 +26,7 @@ export function GuideShell({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <AdSenseScript />
       <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4 safe-top">
         <Link href="/">
           <Brand size="sm" />
@@ -59,6 +62,8 @@ export function GuideShell({
           </div>
         </section>
       )}
+
+      <SiteFooter />
     </div>
   );
 }
