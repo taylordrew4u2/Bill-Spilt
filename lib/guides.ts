@@ -35,6 +35,16 @@ export const GUIDES: Guide[] = [
     title: "How to Ask a Roommate for Money They Owe You",
     linkText: "How to ask a roommate for money owed",
   },
+  {
+    slug: "how-to-split-groceries-with-roommates",
+    title: "How to Split Groceries With Roommates Fairly",
+    linkText: "How to split groceries with roommates",
+  },
+  {
+    slug: "splitting-bills-with-different-incomes",
+    title: "How to Split Bills When Roommates Earn Different Amounts",
+    linkText: "Splitting bills with different incomes",
+  },
 ];
 
 export const guidePath = (slug: string) => `/guide/${slug}`;

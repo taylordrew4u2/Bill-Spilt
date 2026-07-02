@@ -20,6 +20,7 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { Brand } from "@/components/brand";
 import { CATEGORIES } from "@/lib/types";
+import { GUIDES, guidePath } from "@/lib/guides";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -354,6 +355,35 @@ export default async function LandingPage() {
               Read our guide on how to split bills with roommates →
             </Link>
           </p>
+        </div>
+      </section>
+
+      {/* Guides */}
+      <section className="border-t bg-card/40 py-16">
+        <div className="mx-auto max-w-5xl px-5">
+          <h2 className="text-center text-2xl font-bold sm:text-3xl">
+            Guides for splitting bills with roommates
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+            Practical, no-fluff advice on dividing rent, utilities, groceries,
+            and more — with worked examples and the fairness math spelled out.
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {GUIDES.map((g) => (
+              <Link
+                key={g.slug}
+                href={guidePath(g.slug)}
+                className="group rounded-xl border bg-card p-5 transition-colors hover:border-primary/50"
+              >
+                <h3 className="font-semibold group-hover:text-primary">
+                  {g.title}
+                </h3>
+                <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  Read guide <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
