@@ -105,6 +105,33 @@ export default function SplitwiseAlternativeGuide() {
       </section>
 
       <section className="mt-10">
+        <h2 className="text-xl font-bold">What to look for in a free bill splitter</h2>
+        <p className="mt-2 text-muted-foreground">
+          &ldquo;Free&rdquo; means different things across bill-splitting apps.
+          Some cap how many expenses you can add each month, some lock recurring
+          bills or receipt scanning behind a subscription, and some show the
+          balance but leave you to work out the actual payments. Before you
+          commit a whole household to one, check the things that quietly matter:
+        </p>
+        <ul className="mt-4 space-y-2 text-muted-foreground">
+          <li>• <strong>No expense or roommate caps</strong> — you shouldn&apos;t hit a wall mid-month.</li>
+          <li>• <strong>A real settle-up</strong> that reduces everyone&apos;s debts to the fewest transfers, not just a running total.</li>
+          <li>• <strong>Flexible splits</strong> — even, exact, and percentage — because not every bill divides the same way.</li>
+          <li>• <strong>Recurring bills</strong> so rent and utilities log themselves.</li>
+          <li>• <strong>Offline access</strong> for adding expenses without signal.</li>
+        </ul>
+        <p className="mt-4 text-muted-foreground">
+          BillSpilt includes all of these at no cost. If you&apos;re coming from
+          a paid tier elsewhere, you likely won&apos;t miss it — and you can
+          sanity-check any split first with the{" "}
+          <Link href="/split-calculator" className="font-medium text-primary hover:underline">
+            free split calculator
+          </Link>{" "}
+          before you even make an account.
+        </p>
+      </section>
+
+      <section className="mt-10">
         <h2 className="text-xl font-bold">FAQ</h2>
         <div className="mt-4 space-y-4">
           {FAQ.map((item) => (
