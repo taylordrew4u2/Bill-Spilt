@@ -127,9 +127,9 @@ export default function PrivacyPage() {
             data rights, email{" "}
             <a
               className="font-medium text-primary hover:underline"
-              href="mailto:taylordrew4u@gmail.com"
+              href="mailto:skatematesnyc@gmail.com"
             >
-              taylordrew4u@gmail.com
+              skatematesnyc@gmail.com
             </a>
             .
           </p>
@@ -150,9 +150,9 @@ export default function PrivacyPage() {
             &ldquo;last updated&rdquo; date above. Questions? Email{" "}
             <a
               className="font-medium text-primary hover:underline"
-              href="mailto:taylordrew4u@gmail.com"
+              href="mailto:skatematesnyc@gmail.com"
             >
-              taylordrew4u@gmail.com
+              skatematesnyc@gmail.com
             </a>
             .
           </p>

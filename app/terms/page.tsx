@@ -66,9 +66,9 @@ export default function TermsPage() {
             Questions about these terms? Email{" "}
             <a
               className="font-medium text-primary hover:underline"
-              href="mailto:taylordrew4u@gmail.com"
+              href="mailto:skatematesnyc@gmail.com"
             >
-              taylordrew4u@gmail.com
+              skatematesnyc@gmail.com
             </a>
             .
           </p>

@@ -10,7 +10,7 @@ const TITLE = "Contact BillSpilt — support & feedback";
 const DESCRIPTION =
   "Get in touch with the BillSpilt team. Email us for support, feedback, privacy questions, or anything about the free roommate bill splitter.";
 const PATH = "/contact";
-const SUPPORT_EMAIL = "taylordrew4u@gmail.com";
+const SUPPORT_EMAIL = "skatematesnyc@gmail.com";
 
 export const metadata: Metadata = {
   title: TITLE,
