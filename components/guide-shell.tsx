@@ -3,13 +3,14 @@ import { Brand } from "@/components/brand";
 import { AdSenseScript } from "@/components/adsense-script";
 import { SiteFooter } from "@/components/site-footer";
 import { GUIDES, guidePath } from "@/lib/guides";
+import { getNonce } from "@/lib/nonce";
 
 /**
  * Shared chrome for /guide content pages: header, article wrapper, JSON-LD
  * injection, and a "related guides" cross-link block (good for SEO internal
  * linking and for keeping readers on-site).
  */
-export function GuideShell({
+export async function GuideShell({
   slug,
   jsonLd,
   children,
@@ -19,11 +20,13 @@ export function GuideShell({
   children: React.ReactNode;
 }) {
   const related = GUIDES.filter((g) => g.slug !== slug).slice(0, 3);
+  const nonce = await getNonce();
 
   return (
     <div className="min-h-[100dvh] bg-background">
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <AdSenseScript />

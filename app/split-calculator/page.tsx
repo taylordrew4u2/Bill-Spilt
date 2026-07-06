@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles, Scale } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { SplitCalculator } from "@/components/split-calculator";
 import { SiteFooter } from "@/components/site-footer";
+import { getNonce } from "@/lib/nonce";
 import { SITE_URL } from "@/lib/site";
 
 const TITLE = "Free Bill Split Calculator — Split a Bill by People & Tip | BillSpilt";
@@ -30,11 +31,13 @@ const JSON_LD = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
 
-export default function SplitCalculatorPage() {
+export default async function SplitCalculatorPage() {
+  const nonce = await getNonce();
   return (
     <div className="min-h-[100dvh] bg-background">
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
 

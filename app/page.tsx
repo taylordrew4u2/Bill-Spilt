@@ -21,6 +21,7 @@ import { auth } from "@/auth";
 import { Brand } from "@/components/brand";
 import { CATEGORIES } from "@/lib/types";
 import { GUIDES, guidePath } from "@/lib/guides";
+import { getNonce } from "@/lib/nonce";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -167,10 +168,13 @@ export default async function LandingPage() {
   const session = await auth();
   if (session?.user) redirect("/home");
 
+  const nonce = await getNonce();
+
   return (
     <div className="min-h-[100dvh] bg-background">
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
       {/* AdSense — the landing is public, content-rich, and ad-appropriate. */}

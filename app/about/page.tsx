@@ -4,6 +4,7 @@ import { ArrowRight, Scale, Heart, ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { AdSenseScript } from "@/components/adsense-script";
 import { SiteFooter } from "@/components/site-footer";
+import { getNonce } from "@/lib/nonce";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const TITLE = "About BillSpilt — the free roommate bill splitter";
@@ -46,11 +47,13 @@ const VALUES = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const nonce = await getNonce();
   return (
     <div className="min-h-[100dvh] bg-background">
       <script
         type="application/ld+json"
+        nonce={nonce}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
       />
       <AdSenseScript />

@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { CookieConsent } from "@/components/cookie-consent";
 import { ADSENSE_CLIENT } from "@/lib/ads-config";
+import { getNonce } from "@/lib/nonce";
 import {
   SITE_URL,
   SITE_NAME,
@@ -81,16 +82,18 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const nonce = await getNonce();
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Apply the saved/system theme before paint to avoid a flash. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`,
           }}
