@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { Brand } from "@/components/brand";
+import { MarketingHeader } from "@/components/marketing-header";
 import { AdSenseScript } from "@/components/adsense-script";
 import { SiteFooter } from "@/components/site-footer";
+import { JsonLd } from "@/components/json-ld";
 import { GUIDES, guidePath } from "@/lib/guides";
-import { getNonce } from "@/lib/nonce";
 
 /**
  * Shared chrome for /guide content pages: header, article wrapper, JSON-LD
  * injection, and a "related guides" cross-link block (good for SEO internal
  * linking and for keeping readers on-site).
  */
-export async function GuideShell({
+export function GuideShell({
   slug,
   jsonLd,
   children,
@@ -20,27 +20,12 @@ export async function GuideShell({
   children: React.ReactNode;
 }) {
   const related = GUIDES.filter((g) => g.slug !== slug).slice(0, 3);
-  const nonce = await getNonce();
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <script
-        type="application/ld+json"
-        nonce={nonce}
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
       <AdSenseScript />
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4 safe-top">
-        <Link href="/">
-          <Brand size="sm" />
-        </Link>
-        <Link
-          href="/register"
-          className="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
-        >
-          Get started
-        </Link>
-      </header>
+      <MarketingHeader />
 
       <article className="mx-auto max-w-2xl px-5 pb-16 pt-6">{children}</article>
 

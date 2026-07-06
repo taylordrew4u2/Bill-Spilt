@@ -30,14 +30,22 @@ function buildCsp(nonce: string): string {
     "connect-src 'self' https:",
     // Ad creatives render inside iframes served from Google's ad domains.
     "frame-src 'self' https:",
-    "worker-src 'self'",
+    // Video/audio ad creatives.
+    "media-src 'self' https:",
+    // AdSense's ad-quality and measurement code spins up blob: Web Workers.
+    "worker-src 'self' blob:",
     "manifest-src 'self'",
     "object-src 'none'",
     "base-uri 'none'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
   ];
+  // Only meaningful (and safe) once the site is actually served over https —
+  // in dev it would force-upgrade a plain http://<lan-ip>:3000 request to a
+  // non-existent https origin and break the page.
+  if (process.env.NODE_ENV === "production") {
+    directives.push("upgrade-insecure-requests");
+  }
   // Optional violation reporting — set CSP_REPORT_URI to a collector endpoint.
   const reportUri = process.env.CSP_REPORT_URI;
   if (reportUri) directives.push(`report-uri ${reportUri}`);
@@ -65,29 +73,27 @@ export default auth((req) => {
   const csp = buildCsp(nonce);
   const p = req.nextUrl.pathname;
   const isLoggedIn = !!req.auth?.user;
+  const withCsp = (res: NextResponse) => {
+    res.headers.set("Content-Security-Policy", csp);
+    return res;
+  };
 
   // Authorization, mirroring authConfig.authorized (which the callback form of
   // `auth()` bypasses, so we replicate it here).
   if (isAuthRoute(p) && isLoggedIn) {
-    const res = NextResponse.redirect(new URL("/home", req.nextUrl));
-    res.headers.set("Content-Security-Policy", csp);
-    return res;
+    return withCsp(NextResponse.redirect(new URL("/home", req.nextUrl)));
   }
   if (!isAuthRoute(p) && !isPublicRoute(p) && !isLoggedIn) {
     const url = new URL("/login", req.nextUrl);
     url.searchParams.set("callbackUrl", p);
-    const res = NextResponse.redirect(url);
-    res.headers.set("Content-Security-Policy", csp);
-    return res;
+    return withCsp(NextResponse.redirect(url));
   }
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
-  const res = NextResponse.next({ request: { headers: requestHeaders } });
-  res.headers.set("Content-Security-Policy", csp);
-  return res;
+  return withCsp(NextResponse.next({ request: { headers: requestHeaders } }));
 });
 
 export const config = {

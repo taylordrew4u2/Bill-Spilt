@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { GuideShell } from "@/components/guide-shell";
+import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
 const SLUG = "splitting-bills-with-different-incomes";
@@ -65,14 +66,7 @@ const JSON_LD = {
       description: DESCRIPTION,
       mainEntityOfPage: `${SITE_URL}${PATH}`,
     },
-    {
-      "@type": "FAQPage",
-      mainEntity: FAQ.map((item) => ({
-        "@type": "Question",
-        name: item.q,
-        acceptedAnswer: { "@type": "Answer", text: item.a },
-      })),
-    },
+    faqJsonLd(FAQ),
     {
       "@type": "BreadcrumbList",
       itemListElement: [
@@ -170,17 +164,7 @@ export default function DifferentIncomesGuide() {
         </Link>
       </section>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">Frequently asked questions</h2>
-        <div className="mt-5 space-y-4">
-          {FAQ.map((item) => (
-            <div key={item.q} className="rounded-xl border bg-card p-5">
-              <h3 className="font-semibold">{item.q}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{item.a}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <FaqSection faq={FAQ} />
     </GuideShell>
   );
 }

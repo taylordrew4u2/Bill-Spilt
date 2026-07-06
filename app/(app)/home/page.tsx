@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { NetSummary, BalanceRow } from "@/components/balance-card";
+import { AdArea } from "@/components/ad-area";
 import { useAppData } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
@@ -112,6 +113,11 @@ export default function HomePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Self-served house ads only — the AdSense loader script never runs
+          inside the authenticated app, so this can never render a Google
+          network unit here even if a slot id is configured. */}
+      <AdArea placement="home" />
     </div>
   );
 }

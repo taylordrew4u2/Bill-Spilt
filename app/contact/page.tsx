@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, MessageCircleQuestion, ShieldCheck } from "lucide-react";
-import { Brand } from "@/components/brand";
+import { MarketingHeader } from "@/components/marketing-header";
 import { AdSenseScript } from "@/components/adsense-script";
 import { SiteFooter } from "@/components/site-footer";
-import { getNonce } from "@/lib/nonce";
+import { JsonLd } from "@/components/json-ld";
 import { SITE_URL, SITE_NAME } from "@/lib/site";
 
 const TITLE = "Contact BillSpilt — support & feedback";
@@ -54,28 +54,13 @@ const REASONS = [
   },
 ];
 
-export default async function ContactPage() {
-  const nonce = await getNonce();
+export default function ContactPage() {
   return (
     <div className="min-h-[100dvh] bg-background">
-      <script
-        type="application/ld+json"
-        nonce={nonce}
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
-      />
+      <JsonLd data={JSON_LD} />
       <AdSenseScript />
 
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4 safe-top">
-        <Link href="/" aria-label="BillSpilt home">
-          <Brand size="sm" />
-        </Link>
-        <Link
-          href="/register"
-          className="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
-        >
-          Get started
-        </Link>
-      </header>
+      <MarketingHeader />
 
       <main className="mx-auto max-w-2xl px-5 pb-16 pt-6">
         <p className="text-sm font-medium text-primary">Contact</p>
