@@ -5,21 +5,18 @@ import { SiteFooter } from "@/components/site-footer";
 import {
   Receipt,
   Scale,
-  Users,
   CreditCard,
   Repeat,
   Camera,
   WifiOff,
   Bell,
-  Crown,
   ArrowRight,
-  Sparkles,
+  ArrowUpRight,
   Check,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { Brand } from "@/components/brand";
-import { CATEGORIES } from "@/lib/types";
 import { GUIDES, guidePath } from "@/lib/guides";
 import { JsonLd } from "@/components/json-ld";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
@@ -50,39 +47,27 @@ const STEPS = [
   {
     icon: Receipt,
     title: "1. Log an expense",
-    body: "Add what you paid in seconds — pick a category, the amount, and how to split it (evenly, exact amounts, or by percentage).",
+    body: "Add what you paid — split it evenly, by exact amounts, or by percentage.",
   },
   {
     icon: Scale,
     title: "2. See who owes what",
-    body: "Your home screen shows everyone's net balance instantly — green if you're owed, red if you owe. No spreadsheets, no mental math.",
+    body: "Everyone's balance updates instantly. No spreadsheets, no mental math.",
   },
   {
     icon: ArrowRight,
     title: "3. Settle up",
-    body: "BillSpilt works out the fewest possible payments to clear every debt, then you pay with one tap via Venmo or Cash App.",
+    body: "BillSpilt finds the fewest payments to clear every debt — pay with one tap via Venmo or Cash App.",
   },
 ];
 
 const FEATURES = [
-  { icon: Scale, title: "Smart settle-up", body: "A minimum-payments algorithm turns a tangle of IOUs into the shortest list of “A pays B $X.”" },
-  { icon: CreditCard, title: "Ways to pay", body: "Share your Venmo or Cash App handle; roommates pay you with a tap, amount pre-filled." },
-  { icon: Repeat, title: "Recurring bills", body: "Rent, internet, and subscriptions are logged automatically on schedule." },
-  { icon: Camera, title: "Receipt photos", body: "Snap a photo of the receipt and attach it to any expense." },
-  { icon: WifiOff, title: "Works offline", body: "Add expenses with no signal — they sync automatically when you reconnect." },
-  { icon: Bell, title: "Friendly reminders", body: "Nudge a roommate who owes you with a pre-written message in one tap." },
-  { icon: Crown, title: "Household admin", body: "Manage members, transfer ownership, and settle everyone up at once." },
-  { icon: Users, title: "Up to 12 roommates", body: "Big house? Add your whole place and keep every shared cost straight." },
-];
-
-// Things rival apps commonly gate behind a paid plan — all free in BillSpilt.
-const PREMIUM_ELSEWHERE = [
-  "Recurring bills on autopilot",
-  "One-tap payment reminders",
-  "Receipt photo attachments",
-  "Multiple household admins",
-  "Unlimited expenses & roommates",
-  "Full offline access",
+  { icon: Scale, title: "Smart settle-up", body: "Turns a tangle of IOUs into the shortest list of “A pays B $X.”" },
+  { icon: Repeat, title: "Recurring bills", body: "Rent, internet, and subscriptions log themselves on schedule." },
+  { icon: CreditCard, title: "One-tap payments", body: "Roommates pay you via Venmo or Cash App, amount pre-filled." },
+  { icon: Bell, title: "Friendly reminders", body: "Nudge whoever owes you with a pre-written message." },
+  { icon: Camera, title: "Receipt photos", body: "Snap the receipt and attach it to any expense." },
+  { icon: WifiOff, title: "Works offline", body: "Add expenses with no signal — they sync when you reconnect." },
 ];
 
 const FAQ = [
@@ -163,6 +148,47 @@ const JSON_LD = {
   ],
 };
 
+/** Static mock of the in-app home screen so first-time visitors instantly see
+ *  what the product does. Purely illustrative — hidden from screen readers. */
+function AppPreview() {
+  const rows = [
+    { name: "Sam", note: "owes you", amount: "$24.00" },
+    { name: "Priya", note: "owes you", amount: "$12.50" },
+  ];
+  return (
+    <div
+      aria-hidden
+      className="mx-auto mt-10 w-full max-w-sm rounded-2xl border bg-card p-4 text-left shadow-lg"
+    >
+      <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 p-4 text-white">
+        <p className="text-xs opacity-90">You are owed</p>
+        <p className="mt-1 text-3xl font-extrabold tracking-tight">$36.50</p>
+      </div>
+      <ul className="mt-3 divide-y">
+        {rows.map((r) => (
+          <li key={r.name} className="flex items-center gap-3 py-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+              {r.name[0]}
+            </span>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{r.name}</p>
+              <p className="text-xs text-muted-foreground">{r.note}</p>
+            </div>
+            <span className="flex items-center gap-1 text-sm font-semibold text-emerald-600">
+              <ArrowUpRight className="h-4 w-4" />
+              {r.amount}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
+        <Check className="h-4 w-4" />
+        Settle up: 1 payment clears everything
+      </div>
+    </div>
+  );
+}
+
 export default async function LandingPage() {
   // Logged-in users go straight to the app.
   const session = await auth();
@@ -193,41 +219,30 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-10 text-center sm:pt-20">
-        <span className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
-          Free forever — every feature, no paywall
-        </span>
-        <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">
-          The free roommate bill splitter.
+      <section className="mx-auto max-w-3xl px-5 pb-16 pt-10 text-center sm:pt-16">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+          Split bills with your roommates.
           <br />
-          <span className="text-primary">No paywall, no catch.</span>
+          <span className="text-primary">Settle up in seconds.</span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          Other roommate bill splitters lock recurring bills, reminders, and
-          receipts behind a subscription. BillSpilt keeps all of it free —
-          split shared costs with your roommates, see who owes what instantly,
-          and settle up in the fewest payments, without ever reaching for your
-          card.
+          BillSpilt is the free roommate bill splitter: log shared expenses,
+          see who owes what instantly, and clear every debt in the fewest
+          payments.
         </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-8 flex justify-center">
           <Link
             href="/register"
             className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95 sm:w-auto"
           >
-            Start free — no card needed <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/login"
-            className="flex h-12 w-full max-w-xs items-center justify-center rounded-lg border px-8 text-base font-semibold hover:bg-accent sm:w-auto"
-          >
-            Log in
+            Start splitting — it&apos;s free <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">
-          No credit card · No premium tier · Free forever
+          Free forever · No credit card · No premium tier
         </p>
-        <p className="mt-3 text-sm text-muted-foreground">
+        <AppPreview />
+        <p className="mt-8 text-sm text-muted-foreground">
           Just need a quick split?{" "}
           <Link
             href="/split-calculator"
@@ -265,10 +280,10 @@ export default async function LandingPage() {
             Everything roommates need
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-center text-muted-foreground">
-            From the first grocery run to moving-out day, BillSpilt keeps every
-            shared cost fair and clear.
+            Rent, utilities, groceries — from the first shared cost to
+            moving-out day.
           </p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-xl border bg-card p-5">
                 <f.icon className="h-6 w-6 text-primary" />
@@ -277,61 +292,16 @@ export default async function LandingPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Free-where-others-charge */}
-      <section className="border-t bg-card/40 py-16">
-        <div className="mx-auto max-w-3xl px-5 text-center">
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            Free here. Premium everywhere else.
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            The features other bill splitters lock behind a subscription? In
-            BillSpilt they&apos;re all free — forever, with no credit card.
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            <Check className="mr-1 inline h-4 w-4 text-primary" aria-hidden />
+            Every feature is free — including the ones other bill splitters put
+            behind a subscription.
           </p>
-          <div className="mx-auto mt-8 grid max-w-2xl gap-3 text-left sm:grid-cols-2">
-            {PREMIUM_ELSEWHERE.map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3"
-              >
-                <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Check className="h-4 w-4" aria-hidden />
-                </span>
-                <span className="text-sm font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
-          <Link
-            href="/register"
-            className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-          >
-            Get it all free <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Categories strip */}
-      <section className="border-y bg-card/40 py-12">
-        <div className="mx-auto max-w-5xl px-5 text-center">
-          <h2 className="text-xl font-bold">Built for every shared cost</h2>
-          <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-            {CATEGORIES.map((c) => (
-              <span
-                key={c.value}
-                className="inline-flex items-center gap-1.5 rounded-full border bg-card px-4 py-2 text-sm font-medium"
-              >
-                <c.icon className="h-4 w-4 text-primary" aria-hidden />
-                {c.label}
-              </span>
-            ))}
-          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-16">
+      <section className="border-t bg-card/40 py-16">
         <div className="mx-auto max-w-2xl px-5">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
             Frequently asked questions
@@ -357,7 +327,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Guides */}
-      <section className="border-t bg-card/40 py-16">
+      <section className="py-16">
         <div className="mx-auto max-w-5xl px-5">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
             Guides for splitting bills with roommates
