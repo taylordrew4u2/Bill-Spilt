@@ -81,7 +81,7 @@ const PREMIUM_ELSEWHERE = [
   "One-tap payment reminders",
   "Receipt photo attachments",
   "Multiple household admins",
-  "Unlimited expenses & roommates",
+  "Unlimited expenses",
   "Full offline access",
 ];
 
