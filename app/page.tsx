@@ -183,7 +183,7 @@ function AppPreview() {
       </ul>
       <div className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
         <Check className="h-4 w-4" />
-        Settle up: 1 payment clears everything
+        Settle up: 2 payments clear everything
       </div>
     </div>
   );
