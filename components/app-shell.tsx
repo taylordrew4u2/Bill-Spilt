@@ -21,7 +21,7 @@ function Header() {
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [adsOpen, setAdsOpen] = React.useState(false);
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
+    <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-gutter py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
       <button
         onClick={() => setManageOpen(true)}
         className="flex flex-col items-start text-left"
@@ -40,7 +40,7 @@ function Header() {
           <button
             onClick={() => setAdsOpen(true)}
             aria-label="Manage ads"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
           >
             <Megaphone className="h-5 w-5" />
           </button>
@@ -48,21 +48,21 @@ function Header() {
         <button
           onClick={() => setProfileOpen(true)}
           aria-label="Your profile"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
         >
           <UserCircle2 className="h-5 w-5" />
         </button>
         <button
           onClick={() => setManageOpen(true)}
           aria-label="Manage household"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
         >
           <Settings className="h-5 w-5" />
         </button>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           aria-label="Log out"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
         >
           <LogOut className="h-5 w-5" />
         </button>
@@ -96,7 +96,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <div className="flex w-full flex-1 flex-col">
           <Header />
-          <main className="flex-1 px-4 pb-28 pt-4 md:pb-12">
+          <main className="flex-1 px-gutter pb-28 pt-4 md:pb-12">
             <div className="mx-auto w-full max-w-lg">{children}</div>
           </main>
         </div>

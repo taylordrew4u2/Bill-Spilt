@@ -76,6 +76,17 @@
 }
 
 @layer utilities {
+  /*
+   * The standard horizontal page gutter. 20px keeps controls off the edge of
+   * a phone screen (16px reads as cramped, and curved display corners eat
+   * into it), and `max()` widens it past the notch cutout when the device is
+   * held in landscape.
+   */
+  .px-gutter {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
   /* Hide scrollbars on horizontal scrollers for a cleaner mobile look. */
   .no-scrollbar::-webkit-scrollbar {
     display: none;

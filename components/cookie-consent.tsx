@@ -35,7 +35,7 @@ export function CookieConsent() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t bg-card/95 backdrop-blur safe-bottom">
-      <div className="mx-auto flex max-w-3xl flex-col gap-3 p-4 sm:flex-row sm:items-center">
+      <div className="mx-auto flex max-w-3xl flex-col gap-3 px-gutter py-4 sm:flex-row sm:items-center">
         <p className="flex-1 text-sm text-muted-foreground">
           We use cookies — including from Google for ads — to keep BillSpilt
           free. By using the app you agree to this.{" "}
@@ -47,7 +47,7 @@ export function CookieConsent() {
         <button
           type="button"
           onClick={accept}
-          className="h-10 flex-shrink-0 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground active:scale-95"
+          className="h-11 flex-shrink-0 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground active:scale-95"
         >
           Got it
         </button>

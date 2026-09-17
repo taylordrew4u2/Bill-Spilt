@@ -11,7 +11,7 @@ import { GUIDES, guidePath } from "@/lib/guides";
 export function SiteFooter() {
   return (
     <footer className="border-t bg-card/40 safe-bottom">
-      <div className="mx-auto max-w-5xl px-5 py-10">
+      <div className="mx-auto max-w-5xl px-gutter py-10">
         <div className="grid gap-8 sm:grid-cols-4">
           <div className="sm:col-span-1">
             <Brand size="sm" />
@@ -24,10 +24,10 @@ export function SiteFooter() {
           <nav aria-label="Product" className="text-sm">
             <p className="font-semibold">Product</p>
             <ul className="mt-3 space-y-2 text-muted-foreground">
-              <li><Link href="/" className="hover:text-foreground">Home</Link></li>
-              <li><Link href="/split-calculator" className="hover:text-foreground">Bill split calculator</Link></li>
-              <li><Link href="/register" className="hover:text-foreground">Get started</Link></li>
-              <li><Link href="/login" className="hover:text-foreground">Log in</Link></li>
+              <li><Link href="/" className="inline-block py-1 hover:text-foreground">Home</Link></li>
+              <li><Link href="/split-calculator" className="inline-block py-1 hover:text-foreground">Bill split calculator</Link></li>
+              <li><Link href="/register" className="inline-block py-1 hover:text-foreground">Get started</Link></li>
+              <li><Link href="/login" className="inline-block py-1 hover:text-foreground">Log in</Link></li>
             </ul>
           </nav>
 
@@ -36,7 +36,7 @@ export function SiteFooter() {
             <ul className="mt-3 space-y-2 text-muted-foreground">
               {GUIDES.slice(0, 4).map((g) => (
                 <li key={g.slug}>
-                  <Link href={guidePath(g.slug)} className="hover:text-foreground">
+                  <Link href={guidePath(g.slug)} className="inline-block py-1 hover:text-foreground">
                     {g.linkText}
                   </Link>
                 </li>
@@ -47,10 +47,10 @@ export function SiteFooter() {
           <nav aria-label="Company" className="text-sm">
             <p className="font-semibold">Company</p>
             <ul className="mt-3 space-y-2 text-muted-foreground">
-              <li><Link href="/about" className="hover:text-foreground">About</Link></li>
-              <li><Link href="/contact" className="hover:text-foreground">Contact</Link></li>
-              <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
-              <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
+              <li><Link href="/about" className="inline-block py-1 hover:text-foreground">About</Link></li>
+              <li><Link href="/contact" className="inline-block py-1 hover:text-foreground">Contact</Link></li>
+              <li><Link href="/privacy" className="inline-block py-1 hover:text-foreground">Privacy</Link></li>
+              <li><Link href="/terms" className="inline-block py-1 hover:text-foreground">Terms</Link></li>
             </ul>
           </nav>
         </div>
