@@ -80,8 +80,8 @@ It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-de
 | 🔗 **One-tap invite links** | Share a link via the native share sheet — your roommate taps it and is dropped straight into the household. No code to type, no "Create vs. Join" decision: logged-in users join instantly; new users are auto-joined the moment they sign up. The raw code stays as a manual fallback. |
 | 🔑 **Invite code (admin-only)** | Only admins can see and regenerate the invite code, invalidating the old link at any time. |
 | 🔒 **Private split breakdown** | The person who added an expense sees the full per-person breakdown. Everyone else sees just the total and their own share. |
-| 🔁 **Recurring bills** | Rent, internet, subscriptions auto-logged daily by a Vercel Cron job. |
-| 📸 **Receipt photos** | Attach a photo to any expense (Vercel Blob). |
+| 🔁 **Recurring bills** | Fixed bills (rent, subscriptions) auto-logged daily by a Vercel Cron job; bills that change each cycle (electric, wifi) prompt for the real amount when they come due. |
+| 📸 **Receipts** | Attach a camera photo, a picture from the library, or a file — including a PDF statement (Vercel Blob). |
 | 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; download the full ledger any time. |
 | 🔐 **Auth + password reset** | Credentials auth with a self-serve email reset flow (SMTP). |
 | 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
@@ -161,7 +161,7 @@ Every dependency is free and Vercel-native — the whole app runs at $0.
 | Framework | **Next.js 16** (App Router) · **React 19** · **TypeScript** (strict) |
 | UI | **Tailwind CSS** · **shadcn/ui** · **Framer Motion** (swipe gestures, sheets) |
 | Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected by host |
-| File storage | **Vercel Blob** (receipt photos) |
+| File storage | **Vercel Blob** (receipt photos and PDFs) |
 | Cache | **Vercel KV** — optional, degrades gracefully |
 | Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) + SMTP password reset (**nodemailer**) |
 | Background jobs | **Vercel Cron** (`vercel.json`) |

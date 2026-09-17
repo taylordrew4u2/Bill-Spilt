@@ -9,6 +9,7 @@ import type {
   Member,
   PaymentMethod,
   PaymentMethodType,
+  PendingRecurringCharge,
   RecurringBill,
   SettlementTransfer,
 } from "@/lib/types";
@@ -303,6 +304,7 @@ export async function getRecurringBills(
     id: r.id,
     householdId: r.household_id,
     description: r.description,
+    amountType: r.amount_type === "variable" ? "variable" : "fixed",
     amount: Number(r.amount),
     category: r.category,
     splitType: r.split_type,
@@ -314,6 +316,42 @@ export async function getRecurringBills(
         ? r.next_run.toISOString().slice(0, 10)
         : String(r.next_run),
     active: r.active,
+  }));
+}
+
+/**
+ * Due cycles of variable recurring bills that still need their real amount,
+ * oldest first. These are raised by the daily cron and cleared once someone
+ * logs or skips them.
+ */
+export async function getPendingRecurringCharges(
+  householdId: string,
+): Promise<PendingRecurringCharge[]> {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT c.id, c.recurring_id, c.due_date,
+           r.description, r.amount, r.category, r.split_type, r.paid_by, r.frequency,
+           u.name AS paid_by_name
+    FROM recurring_charges c
+    JOIN recurring_bills r ON r.id = c.recurring_id
+    JOIN users u ON u.id = r.paid_by
+    WHERE c.household_id = ${householdId} AND c.status = 'pending'
+    ORDER BY c.due_date ASC
+  `;
+  return rows.map((r) => ({
+    id: r.id,
+    recurringId: r.recurring_id,
+    description: r.description,
+    category: r.category,
+    splitType: r.split_type,
+    paidBy: r.paid_by,
+    paidByName: r.paid_by_name,
+    frequency: r.frequency,
+    estimatedAmount: Number(r.amount),
+    dueDate:
+      r.due_date instanceof Date
+        ? r.due_date.toISOString().slice(0, 10)
+        : String(r.due_date),
   }));
 }
 

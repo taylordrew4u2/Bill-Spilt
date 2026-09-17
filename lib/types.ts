@@ -41,6 +41,15 @@ export const CATEGORIES: {
 
 export type RecurringFrequency = "weekly" | "monthly";
 
+/**
+ * How a recurring bill's amount behaves:
+ * - fixed:    the same every cycle (rent, a subscription) — auto-logged.
+ * - variable: changes every cycle (electric, water, a usage-based phone bill).
+ *             The schedule still fires, but instead of logging an expense it
+ *             raises a charge that waits for someone to type the real amount.
+ */
+export type RecurringAmountType = "fixed" | "variable";
+
 export type PaymentMethodType =
   | "venmo"
   | "cashapp"
@@ -144,6 +153,9 @@ export interface RecurringBill {
   id: string;
   householdId: string;
   description: string;
+  amountType: RecurringAmountType;
+  /** For fixed bills, the charged amount. For variable bills, an optional
+   *  typical amount used to pre-fill the prompt (0 when not set). */
   amount: number;
   category: ExpenseCategory;
   splitType: SplitType;
@@ -152,6 +164,21 @@ export interface RecurringBill {
   frequency: RecurringFrequency;
   nextRun: string;
   active: boolean;
+}
+
+/** A due cycle of a variable recurring bill, waiting for its real amount. */
+export interface PendingRecurringCharge {
+  id: string;
+  recurringId: string;
+  description: string;
+  category: ExpenseCategory;
+  splitType: SplitType;
+  paidBy: string;
+  paidByName: string;
+  frequency: RecurringFrequency;
+  /** The bill's typical amount, to pre-fill the input (0 when not set). */
+  estimatedAmount: number;
+  dueDate: string;
 }
 
 export type AdPlacement = "all" | "home" | "expenses" | "settle" | "stats";

@@ -14,16 +14,31 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/toaster";
 import { useAppData } from "@/components/app-data";
-import { validateSplits } from "@/lib/settlement";
+import { validateSplits, validateSplitShape } from "@/lib/settlement";
 import { SplitEditor, buildSplits, type SplitState } from "@/components/split-editor";
-import { CATEGORIES, type SplitType, type ExpenseCategory } from "@/lib/types";
-import { roundMoney } from "@/lib/utils";
+import {
+  CATEGORIES,
+  type SplitType,
+  type ExpenseCategory,
+  type RecurringAmountType,
+} from "@/lib/types";
+import { cn, roundMoney } from "@/lib/utils";
+
+const AMOUNT_TYPES: {
+  value: RecurringAmountType;
+  label: string;
+  hint: string;
+}[] = [
+  { value: "fixed", label: "Same every time", hint: "Rent, subscriptions" },
+  { value: "variable", label: "Changes each time", hint: "Electric, water, wifi" },
+];
 
 export function RecurringForm({ onDone }: { onDone: () => void }) {
   const { members, currentUserId } = useAppData();
   const { toast } = useToast();
 
   const [description, setDescription] = React.useState("");
+  const [amountType, setAmountType] = React.useState<RecurringAmountType>("fixed");
   const [amount, setAmount] = React.useState("");
   const [category, setCategory] = React.useState<ExpenseCategory>("rent");
   const [paidBy, setPaidBy] = React.useState(currentUserId ?? "");
@@ -40,11 +55,25 @@ export function RecurringForm({ onDone }: { onDone: () => void }) {
   }, [currentUserId]);
 
   const numericAmount = parseFloat(amount) || 0;
+  const isVariable = amountType === "variable";
+
+  /** Exact dollar shares can't describe a total that changes, so switching to
+   *  a variable amount falls back to an equal split. */
+  function chooseAmountType(next: RecurringAmountType) {
+    setAmountType(next);
+    if (next === "variable" && split.splitType === "exact") {
+      setSplit({ ...split, splitType: "equal" });
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const splits = buildSplits(members, split);
-    const err = validateSplits(numericAmount, split.splitType, splits);
+    // A variable bill has no total yet, so only the split shape is checked now;
+    // the amount is validated when the bill comes due.
+    const err = isVariable
+      ? validateSplitShape(split.splitType, splits)
+      : validateSplits(numericAmount, split.splitType, splits);
     if (err) {
       toast({ title: err, variant: "error" });
       return;
@@ -56,6 +85,7 @@ export function RecurringForm({ onDone }: { onDone: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           description: description.trim(),
+          amountType,
           amount: roundMoney(numericAmount),
           category,
           splitType: split.splitType,
@@ -69,7 +99,13 @@ export function RecurringForm({ onDone }: { onDone: () => void }) {
         toast({ title: data.error || "Could not save bill", variant: "error" });
         return;
       }
-      toast({ title: "Recurring bill added", variant: "success" });
+      toast({
+        title: "Recurring bill added",
+        description: isVariable
+          ? "We'll ask for the amount each time it's due."
+          : undefined,
+        variant: "success",
+      });
       onDone();
     } finally {
       setSubmitting(false);
@@ -91,9 +127,39 @@ export function RecurringForm({ onDone }: { onDone: () => void }) {
         />
       </div>
 
+      <div className="space-y-1.5">
+        <Label>Amount</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {AMOUNT_TYPES.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              onClick={() => chooseAmountType(t.value)}
+              aria-pressed={amountType === t.value}
+              className={cn(
+                "rounded-xl border p-3 text-left transition",
+                amountType === t.value
+                  ? "border-primary bg-primary/5"
+                  : "hover:bg-accent",
+              )}
+            >
+              <span className="block text-sm font-medium">{t.label}</span>
+              <span className="block text-xs text-muted-foreground">{t.hint}</span>
+            </button>
+          ))}
+        </div>
+        {isVariable && (
+          <p className="text-xs text-muted-foreground">
+            We&apos;ll ask someone for the real amount every time this bill is due.
+          </p>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="ramount">Amount</Label>
+          <Label htmlFor="ramount">
+            {isVariable ? "Typical amount (optional)" : "Amount"}
+          </Label>
           <div className="relative">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               $
@@ -106,7 +172,7 @@ export function RecurringForm({ onDone }: { onDone: () => void }) {
               inputMode="decimal"
               step="0.01"
               min="0"
-              required
+              required={!isVariable}
               placeholder="0.00"
               className="pl-7"
             />
@@ -174,6 +240,8 @@ export function RecurringForm({ onDone }: { onDone: () => void }) {
         amount={numericAmount}
         state={split}
         onChange={setSplit}
+        allowExact={!isVariable}
+        amountLabel={isVariable && numericAmount <= 0 ? "even share" : undefined}
       />
 
       <Button type="submit" className="w-full" size="lg" disabled={submitting}>

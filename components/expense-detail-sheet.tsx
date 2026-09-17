@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ExternalLink, Pencil, Package } from "lucide-react";
+import { ExternalLink, Pencil, Package, FileText } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -14,11 +14,12 @@ import { Separator } from "@/components/ui/separator";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
+import { isPdfReceipt } from "@/components/receipt-picker";
 import { formatDate } from "@/lib/utils";
 
 /**
  * Read-only detail view for a single expense: full split breakdown plus the
- * attached receipt photo (if any). Opened by tapping an expense row.
+ * attached receipt — a photo or a PDF — if any. Opened by tapping an expense row.
  */
 export function ExpenseDetailSheet({
   expense,
@@ -117,24 +118,39 @@ export function ExpenseDetailSheet({
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Receipt
                 </p>
-                <a
-                  href={expense.receiptUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative block overflow-hidden rounded-xl border"
-                >
-                  <Image
-                    src={expense.receiptUrl}
-                    alt="Receipt"
-                    width={600}
-                    height={800}
-                    className="h-auto max-h-72 w-full object-contain bg-muted"
-                    unoptimized
-                  />
-                  <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-background/90 px-2 py-1 text-xs font-medium shadow">
-                    <ExternalLink className="h-3 w-3" /> Open
-                  </span>
-                </a>
+                {isPdfReceipt(expense.receiptUrl) ? (
+                  <a
+                    href={expense.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-xl border p-3"
+                  >
+                    <FileText className="h-5 w-5 text-muted-foreground" aria-hidden />
+                    <span className="flex-1 text-sm font-medium">PDF receipt</span>
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <ExternalLink className="h-3 w-3" /> Open
+                    </span>
+                  </a>
+                ) : (
+                  <a
+                    href={expense.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative block overflow-hidden rounded-xl border"
+                  >
+                    <Image
+                      src={expense.receiptUrl}
+                      alt="Receipt"
+                      width={600}
+                      height={800}
+                      className="h-auto max-h-72 w-full object-contain bg-muted"
+                      unoptimized
+                    />
+                    <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-background/90 px-2 py-1 text-xs font-medium shadow">
+                      <ExternalLink className="h-3 w-3" /> Open
+                    </span>
+                  </a>
+                )}
               </>
             )}
 
