@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { requireHousehold, handle, ApiError } from "@/lib/api";
-import { getRecurringBills, findNonMembers } from "@/lib/queries";
+import {
+  getRecurringBills,
+  getPendingRecurringCharges,
+  findNonMembers,
+} from "@/lib/queries";
 import { recurringSchema } from "@/lib/validation";
-import { validateSplits } from "@/lib/settlement";
+import { validateSplits, validateSplitShape } from "@/lib/settlement";
 import { logActivity } from "@/lib/activity";
 import { formatCurrency } from "@/lib/utils";
 
@@ -13,8 +17,11 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   return handle(async () => {
     const { householdId } = await requireHousehold();
-    const bills = await getRecurringBills(householdId);
-    return NextResponse.json({ bills });
+    const [bills, pending] = await Promise.all([
+      getRecurringBills(householdId),
+      getPendingRecurringCharges(householdId),
+    ]);
+    return NextResponse.json({ bills, pending });
   });
 }
 
@@ -28,7 +35,13 @@ export async function POST(req: Request) {
     }
     const data = parsed.data;
 
-    const err = validateSplits(data.amount, data.splitType, data.splits);
+    // Fixed bills must reconcile against their amount now; variable bills only
+    // need a well-formed split shape — the amount arrives when they come due.
+    const isVariable = data.amountType === "variable";
+    const amount = data.amount ?? 0;
+    const err = isVariable
+      ? validateSplitShape(data.splitType, data.splits)
+      : validateSplits(amount, data.splitType, data.splits);
     if (err) throw new ApiError(400, err);
 
     const participants = [...new Set([data.paidBy, ...data.splits.map((s) => s.userId)])];
@@ -43,19 +56,22 @@ export async function POST(req: Request) {
 
     const { rows } = await sql`
       INSERT INTO recurring_bills
-        (household_id, description, amount, category, split_type, paid_by, splits, frequency, next_run)
+        (household_id, description, amount_type, amount, category, split_type, paid_by, splits, frequency, next_run)
       VALUES (
-        ${householdId}, ${data.description}, ${data.amount}, ${data.category},
+        ${householdId}, ${data.description}, ${data.amountType}, ${amount}, ${data.category},
         ${data.splitType}, ${data.paidBy}, ${JSON.stringify(data.splits)}::jsonb,
         ${data.frequency}, ${nextRun}
       )
       RETURNING id
     `;
+    const per = data.frequency === "weekly" ? "wk" : "mo";
     await logActivity(
       householdId,
       userId,
       "recurring_added",
-      `Added recurring bill “${data.description}” (${formatCurrency(data.amount, currency)}/${data.frequency === "weekly" ? "wk" : "mo"})`,
+      isVariable
+        ? `Added recurring bill “${data.description}” (amount varies, asked each ${per === "wk" ? "week" : "month"})`
+        : `Added recurring bill “${data.description}” (${formatCurrency(amount, currency)}/${per})`,
     );
     return NextResponse.json({ id: rows[0].id }, { status: 201 });
   });
