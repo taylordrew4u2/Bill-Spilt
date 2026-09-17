@@ -60,6 +60,7 @@
   "overrides": {
     "undici": "^6.27.0",
     "postcss": "^8.5.16",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "browserslist": "^4.28.7"
   }
 }
