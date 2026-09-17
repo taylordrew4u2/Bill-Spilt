@@ -87,6 +87,29 @@ export function validateSplits(
 }
 
 /**
+ * Validate a split payload whose total isn't known yet (a variable recurring
+ * bill). Checks everything `validateSplits` does except reconciliation against
+ * an amount — "exact" is rejected outright, since fixed dollar shares can't
+ * describe a bill whose total changes every cycle.
+ */
+export function validateSplitShape(
+  splitType: SplitType,
+  splits: SplitInput[],
+): string | null {
+  if (splits.length === 0) return "At least one person must be included in the split.";
+  if (splitType === "exact") {
+    return "A bill that changes each time can't use exact dollar splits — use equal or percent.";
+  }
+  if (splitType === "percent") {
+    const total = roundMoney(splits.reduce((s, x) => s + (x.value ?? 0), 0));
+    if (total !== 100) {
+      return `Percentages must add up to 100% (got ${total}%).`;
+    }
+  }
+  return null;
+}
+
+/**
  * Given the list of net balances (positive = owed money, negative = owes
  * money), produce a minimal set of transfers that settles everyone up.
  *

@@ -14,11 +14,17 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { RecurringForm } from "@/components/recurring-form";
+import { PendingBillsCard } from "@/components/pending-bills-card";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useAppData, useMoney } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
-import { CATEGORIES, type Expense, type RecurringBill } from "@/lib/types";
+import {
+  CATEGORIES,
+  type Expense,
+  type PendingRecurringCharge,
+  type RecurringBill,
+} from "@/lib/types";
 import { colorForId } from "@/lib/utils";
 
 export default function StatsPage() {
@@ -26,7 +32,10 @@ export default function StatsPage() {
   const money = useMoney();
   const { toast } = useToast();
   const expensesQ = useFetch<{ expenses: Expense[] }>("/api/expenses");
-  const recurringQ = useFetch<{ bills: RecurringBill[] }>("/api/recurring");
+  const recurringQ = useFetch<{
+    bills: RecurringBill[];
+    pending: PendingRecurringCharge[];
+  }>("/api/recurring");
   const [sheetOpen, setSheetOpen] = React.useState(false);
   const [deleting, setDeleting] = React.useState<string | null>(null);
 
@@ -42,6 +51,7 @@ export default function StatsPage() {
     [expensesQ.data],
   );
   const bills = recurringQ.data?.bills ?? [];
+  const pending = recurringQ.data?.pending ?? [];
 
   const { total, byCategory, byPayer } = React.useMemo(() => {
     let total = 0;
@@ -88,6 +98,14 @@ export default function StatsPage() {
   return (
     <div className="space-y-5 duration-500 animate-in fade-in slide-in-from-bottom-3">
       <h1 className="text-lg font-bold">Stats</h1>
+
+      <PendingBillsCard
+        pending={pending}
+        onResolved={() => {
+          mutate();
+          void recurringQ.refetch();
+        }}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <Card>
@@ -187,7 +205,9 @@ export default function StatsPage() {
         <CardContent>
           {bills.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">
-              Add rent, internet, or subscriptions to auto-log them.
+              Add rent, internet, or subscriptions to auto-log them — or a bill
+              like electric that changes month to month, and we&apos;ll ask you
+              for the amount when it&apos;s due.
             </p>
           ) : (
             <ul className="divide-y">
@@ -196,8 +216,12 @@ export default function StatsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{b.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {money(b.amount)} · paid by {b.paidByName} · next{" "}
-                      {b.nextRun}
+                      {b.amountType === "variable"
+                        ? b.amount > 0
+                          ? `~${money(b.amount)}, varies`
+                          : "amount varies"
+                        : money(b.amount)}{" "}
+                      · paid by {b.paidByName} · next {b.nextRun}
                     </p>
                   </div>
                   <Badge variant="secondary" className="capitalize">
@@ -227,7 +251,8 @@ export default function StatsPage() {
           <SheetHeader className="mb-4">
             <SheetTitle>New recurring bill</SheetTitle>
             <SheetDescription>
-              Auto-logged on schedule by a daily job.
+              Fixed bills are auto-logged on schedule. Bills that change each
+              cycle ask you for the amount when they come due.
             </SheetDescription>
           </SheetHeader>
           <RecurringForm
