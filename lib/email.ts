@@ -28,6 +28,23 @@ export function emailConfigured(): boolean {
   return Boolean(RESEND_API_KEY) || Boolean(SMTP_USER && SMTP_PASS);
 }
 
+/** Which transport would be used, for operator diagnostics. */
+export function emailProvider(): "resend" | "smtp" | "none" {
+  if (RESEND_API_KEY) return "resend";
+  if (SMTP_USER && SMTP_PASS) return "smtp";
+  return "none";
+}
+
+/**
+ * Last send failure, if any. The /forgot endpoint can't report a delivery
+ * failure back to the requester without revealing that the address is
+ * registered, so it's recorded here for /api/health instead.
+ */
+let lastError: { at: string; message: string } | null = null;
+export function lastEmailError() {
+  return lastError;
+}
+
 function resetContent(link: string) {
   return {
     subject: "Reset your BillSpilt password",
@@ -104,7 +121,20 @@ export async function sendPasswordResetEmail(
   link: string,
 ): Promise<void> {
   const c = resetContent(link);
-  if (RESEND_API_KEY) return sendViaResend(to, c);
-  if (SMTP_USER && SMTP_PASS) return sendViaSmtp(to, c);
-  throw new Error("Email is not configured");
+  try {
+    if (RESEND_API_KEY) {
+      await sendViaResend(to, c);
+    } else if (SMTP_USER && SMTP_PASS) {
+      await sendViaSmtp(to, c);
+    } else {
+      throw new Error("Email is not configured");
+    }
+    lastError = null;
+  } catch (e) {
+    lastError = {
+      at: new Date().toISOString(),
+      message: e instanceof Error ? e.message : String(e),
+    };
+    throw e;
+  }
 }

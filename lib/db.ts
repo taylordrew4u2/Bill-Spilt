@@ -73,6 +73,11 @@ function makeRunner(conn: string): Runner | null {
 
 const runner = makeRunner(connectionString);
 
+/** Whether a Postgres connection string is configured at all. */
+export function dbConfigured(): boolean {
+  return runner !== null;
+}
+
 /**
  * Unified query helper. Usage:
  *   await sql`SELECT * FROM users WHERE id = ${id}`   // tagged template

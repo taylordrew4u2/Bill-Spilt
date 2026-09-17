@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
@@ -10,6 +10,16 @@ const credentialsSchema = z.object({
   password: z.string().min(1),
 });
 
+/**
+ * Wrong email/password. Returning `null` from `authorize` produces the same
+ * `CredentialsSignin` code, but throwing this explicitly keeps the "bad
+ * credentials" path distinct from the "server is broken" path below, which the
+ * login screen reports differently.
+ */
+class BadCredentials extends CredentialsSignin {
+  code = "credentials";
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
@@ -20,19 +30,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(raw) {
         const parsed = credentialsSchema.safeParse(raw);
-        if (!parsed.success) return null;
+        if (!parsed.success) throw new BadCredentials();
 
         const { email, password } = parsed.data;
-        await ensureSchema();
-        const { rows } = await sql`
-          SELECT id, email, name, password_hash
-          FROM users WHERE email = ${email.toLowerCase()} LIMIT 1
-        `;
-        const user = rows[0];
-        if (!user) return null;
+
+        let user: { id: string; email: string; name: string; password_hash: string } | undefined;
+        try {
+          await ensureSchema();
+          // Compare case-insensitively: sign-up lower-cases addresses now, but
+          // accounts created before that (or imported) may be stored with
+          // mixed case, and those users could never log back in.
+          const { rows } = await sql`
+            SELECT id, email, name, password_hash
+            FROM users WHERE lower(email) = ${email.toLowerCase()} LIMIT 1
+          `;
+          user = rows[0];
+        } catch (e) {
+          // Database unreachable/misconfigured. Let this propagate so the
+          // client sees a server error instead of "incorrect password", which
+          // sends people off resetting a password that was never wrong.
+          console.error("[auth] login failed to reach the database:", e);
+          throw new Error("Could not verify your login right now");
+        }
+
+        if (!user) throw new BadCredentials();
 
         const ok = await verifyPassword(password, user.password_hash);
-        if (!ok) return null;
+        if (!ok) throw new BadCredentials();
 
         return { id: user.id, email: user.email, name: user.name };
       },

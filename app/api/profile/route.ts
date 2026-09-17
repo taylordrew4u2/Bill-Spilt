@@ -31,7 +31,8 @@ export async function PATCH(req: Request) {
 
     // Email must stay unique across users.
     const clash = await sql`
-      SELECT 1 FROM users WHERE email = ${email} AND id <> ${userId} LIMIT 1
+      SELECT 1 FROM users
+      WHERE lower(email) = ${email.toLowerCase()} AND id <> ${userId} LIMIT 1
     `;
     if (clash.rows.length > 0) {
       throw new ApiError(409, "That email is already in use");
