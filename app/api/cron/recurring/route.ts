@@ -12,6 +12,11 @@ export const dynamic = "force-dynamic";
  * Daily Vercel Cron entry point (see vercel.json). Materialises every
  * recurring bill whose `next_run` is due, then advances its schedule.
  *
+ * Fixed-amount bills become an expense immediately. Variable-amount bills
+ * (electric, water, wifi…) instead raise a pending charge in
+ * `recurring_charges`, which the household resolves by entering the real
+ * amount from the Stats screen.
+ *
  * Protected by CRON_SECRET: Vercel Cron sends it as `Authorization: Bearer …`.
  */
 export async function GET(req: Request) {
@@ -33,29 +38,54 @@ export async function GET(req: Request) {
   `;
 
   let processed = 0;
+  let awaitingAmount = 0;
   for (const bill of due) {
     try {
-      const splits = (bill.splits as SplitInput[]) ?? [];
-      await createExpense({
-        householdId: bill.household_id,
-        description: bill.description,
-        amount: Number(bill.amount),
-        category: bill.category,
-        splitType: bill.split_type,
-        paidBy: bill.paid_by,
-        splits,
-        recurringId: bill.id,
-      });
+      // Drivers hand `next_run` back as a Date or a string; normalise to
+      // YYYY-MM-DD so both the charge row and the next schedule agree.
+      const dueDate =
+        bill.next_run instanceof Date
+          ? bill.next_run.toISOString().slice(0, 10)
+          : String(bill.next_run);
 
-      await logActivity(
-        bill.household_id,
-        null,
-        "recurring_charged",
-        `Auto-logged recurring bill “${bill.description}” (${formatCurrency(Number(bill.amount), bill.household_currency ?? "USD")})`,
-      );
+      if (bill.amount_type === "variable") {
+        // The amount changes every cycle (electric, water, wifi…), so raise a
+        // charge for someone to fill in rather than guessing a number.
+        await sql`
+          INSERT INTO recurring_charges (household_id, recurring_id, due_date)
+          VALUES (${bill.household_id}, ${bill.id}, ${dueDate})
+          ON CONFLICT (recurring_id, due_date) DO NOTHING
+        `;
+        await logActivity(
+          bill.household_id,
+          null,
+          "recurring_due",
+          `“${bill.description}” is due — add this cycle's amount`,
+        );
+        awaitingAmount++;
+      } else {
+        const splits = (bill.splits as SplitInput[]) ?? [];
+        await createExpense({
+          householdId: bill.household_id,
+          description: bill.description,
+          amount: Number(bill.amount),
+          category: bill.category,
+          splitType: bill.split_type,
+          paidBy: bill.paid_by,
+          splits,
+          recurringId: bill.id,
+        });
+
+        await logActivity(
+          bill.household_id,
+          null,
+          "recurring_charged",
+          `Auto-logged recurring bill “${bill.description}” (${formatCurrency(Number(bill.amount), bill.household_currency ?? "USD")})`,
+        );
+      }
 
       // Advance the schedule from the previous next_run to avoid drift.
-      const base = new Date(bill.next_run);
+      const base = new Date(dueDate);
       if (bill.frequency === "weekly") base.setDate(base.getDate() + 7);
       else base.setMonth(base.getMonth() + 1);
       const nextRun = base.toISOString().slice(0, 10);
@@ -67,5 +97,10 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({ processed, total: due.length, date: today });
+  return NextResponse.json({
+    processed,
+    awaitingAmount,
+    total: due.length,
+    date: today,
+  });
 }

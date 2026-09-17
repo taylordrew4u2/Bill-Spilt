@@ -15,6 +15,8 @@ export type ActivityAction =
   | "admin_transferred"
   | "recurring_added"
   | "recurring_charged"
+  | "recurring_due"
+  | "recurring_skipped"
   | "invite_regenerated";
 
 export interface ActivityEntry {

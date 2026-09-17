@@ -198,6 +198,7 @@ async function bootstrap(): Promise<void> {
       id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
       description  TEXT NOT NULL,
+      amount_type  TEXT NOT NULL DEFAULT 'fixed',
       amount       NUMERIC(12,2) NOT NULL,
       category     TEXT NOT NULL DEFAULT 'other',
       split_type   TEXT NOT NULL DEFAULT 'equal',
@@ -207,6 +208,24 @@ async function bootstrap(): Promise<void> {
       next_run     DATE NOT NULL,
       active       BOOLEAN NOT NULL DEFAULT true,
       created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
+  // For databases created before variable-amount bills existed.
+  await sql`ALTER TABLE recurring_bills ADD COLUMN IF NOT EXISTS amount_type TEXT NOT NULL DEFAULT 'fixed'`;
+
+  // Each due cycle of a variable recurring bill: raised by the daily cron and
+  // resolved once someone enters the real amount (or skips the cycle).
+  await sql`
+    CREATE TABLE IF NOT EXISTS recurring_charges (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+      recurring_id UUID NOT NULL REFERENCES recurring_bills(id) ON DELETE CASCADE,
+      due_date     DATE NOT NULL,
+      status       TEXT NOT NULL DEFAULT 'pending',
+      expense_id   UUID REFERENCES expenses(id) ON DELETE SET NULL,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (recurring_id, due_date)
     )
   `;
 
@@ -265,6 +284,7 @@ async function bootstrap(): Promise<void> {
   await sql`CREATE INDEX IF NOT EXISTS idx_settlements_household ON settlements(household_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_activity_household ON activity_log(household_id, created_at DESC)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_ads_active ON ads(active, placement)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_recurring_charges_pending ON recurring_charges(household_id, status)`;
 }
 
 /** Max members per household (the "reasonable cap" of 12). */
