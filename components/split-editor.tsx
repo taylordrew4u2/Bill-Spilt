@@ -43,13 +43,25 @@ export function SplitEditor({
   amount,
   state,
   onChange,
+  allowExact = true,
+  amountLabel,
 }: {
   members: Member[];
   currentUserId: string | null;
   amount: number;
   state: SplitState;
   onChange: (next: SplitState) => void;
+  /** Set false for a bill whose total changes each cycle — fixed dollar
+   *  shares can't describe it, so only equal and percent are offered. The
+   *  caller is responsible for not leaving "exact" selected. */
+  allowExact?: boolean;
+  /** Overrides the per-person preview when `amount` is only an estimate. */
+  amountLabel?: string;
 }) {
+  const types = allowExact
+    ? SPLIT_TYPES
+    : SPLIT_TYPES.filter((t) => t.value !== "exact");
+
   const includedCount = state.included.size;
   const equalShare =
     includedCount > 0 ? roundMoney(amount / includedCount) : 0;
@@ -70,8 +82,13 @@ export function SplitEditor({
   return (
     <div className="space-y-2">
       <Label>Split</Label>
-      <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted p-1">
-        {SPLIT_TYPES.map((s) => (
+      <div
+        className={cn(
+          "grid gap-2 rounded-xl bg-muted p-1",
+          types.length === 3 ? "grid-cols-3" : "grid-cols-2",
+        )}
+      >
+        {types.map((s) => (
           <button
             key={s.value}
             type="button"
@@ -114,7 +131,7 @@ export function SplitEditor({
               </span>
               {isIn && state.splitType === "equal" && (
                 <span className="text-sm text-muted-foreground">
-                  ${equalShare.toFixed(2)}
+                  {amountLabel ?? `$${equalShare.toFixed(2)}`}
                 </span>
               )}
               {isIn && state.splitType !== "equal" && (

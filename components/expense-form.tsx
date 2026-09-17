@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Camera, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,8 +18,9 @@ import { useOnline } from "@/lib/use-fetch";
 import { queueExpense } from "@/lib/offline-db";
 import { validateSplits } from "@/lib/settlement";
 import { SplitEditor, buildSplits, type SplitState } from "@/components/split-editor";
+import { ReceiptPicker } from "@/components/receipt-picker";
 import { CATEGORIES, type SplitType, type ExpenseCategory, type Expense } from "@/lib/types";
-import { cn, roundMoney } from "@/lib/utils";
+import { roundMoney } from "@/lib/utils";
 
 /** Reconstruct editor split state from an existing expense (for editing). */
 function splitStateFromExpense(expense: Expense): SplitState {
@@ -73,7 +74,6 @@ export function ExpenseForm({
   const [receiptUrl, setReceiptUrl] = React.useState<string | null>(
     expense?.receiptUrl ?? null,
   );
-  const [uploading, setUploading] = React.useState(false);
   const [submitting, setSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -81,34 +81,6 @@ export function ExpenseForm({
   }, [currentUserId]);
 
   const numericAmount = parseFloat(amount) || 0;
-
-  async function handleReceipt(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!online) {
-      toast({
-        title: "Receipts need a connection",
-        description: "Add the expense now; attach the photo once you're online.",
-        variant: "error",
-      });
-      return;
-    }
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        toast({ title: data.error || "Upload failed", variant: "error" });
-        return;
-      }
-      setReceiptUrl(data.url);
-      toast({ title: "Receipt attached", variant: "success" });
-    } finally {
-      setUploading(false);
-    }
-  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -281,38 +253,9 @@ export function ExpenseForm({
         onChange={setSplit}
       />
 
-      <div className="flex items-center gap-3">
-        <label
-          className={cn(
-            "flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed text-sm font-medium text-muted-foreground",
-            uploading && "opacity-60",
-          )}
-        >
-          {uploading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Camera className="h-4 w-4" />
-          )}
-          {receiptUrl ? "Receipt attached" : "Add receipt"}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={handleReceipt}
-            disabled={uploading}
-          />
-        </label>
-        {receiptUrl && (
-          <button
-            type="button"
-            onClick={() => setReceiptUrl(null)}
-            className="text-muted-foreground"
-            aria-label="Remove receipt"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        )}
+      <div className="space-y-1.5">
+        <Label>Receipt (optional)</Label>
+        <ReceiptPicker value={receiptUrl} onChange={setReceiptUrl} disabled={!online} />
       </div>
 
       <Button type="submit" className="w-full" size="lg" disabled={submitting}>

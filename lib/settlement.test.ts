@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeSplits,
   validateSplits,
+  validateSplitShape,
   minimizeTransfers,
   computeBalances,
 } from "@/lib/settlement";
@@ -97,6 +98,37 @@ describe("validateSplits", () => {
         { userId: "u2", value: 40 },
       ]),
     ).toMatch(/100/);
+  });
+});
+
+describe("validateSplitShape — variable recurring bills", () => {
+  it("rejects an empty split", () => {
+    expect(validateSplitShape("equal", [])).toMatch(/at least one/i);
+  });
+  it("rejects exact splits, which can't describe a changing total", () => {
+    expect(
+      validateSplitShape("exact", [
+        { userId: "u1", value: 5 },
+        { userId: "u2", value: 5 },
+      ]),
+    ).toMatch(/exact dollar splits/i);
+  });
+  it("accepts an equal split with no amount known yet", () => {
+    expect(validateSplitShape("equal", [{ userId: "u1" }, { userId: "u2" }])).toBeNull();
+  });
+  it("still requires percents to total 100", () => {
+    expect(
+      validateSplitShape("percent", [
+        { userId: "u1", value: 70 },
+        { userId: "u2", value: 20 },
+      ]),
+    ).toMatch(/100/);
+    expect(
+      validateSplitShape("percent", [
+        { userId: "u1", value: 70 },
+        { userId: "u2", value: 30 },
+      ]),
+    ).toBeNull();
   });
 });
 

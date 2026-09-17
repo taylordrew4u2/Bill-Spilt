@@ -33,14 +33,42 @@ export const expenseSchema = z.object({
   createdAt: z.string().datetime().optional(),
 });
 
-export const recurringSchema = z.object({
-  description: z.string().trim().min(1).max(140),
-  amount: z.number().positive().max(1_000_000),
-  category: expenseSchema.shape.category,
-  splitType: expenseSchema.shape.splitType,
-  paidBy: z.string().uuid(),
-  frequency: z.enum(["weekly", "monthly"]),
-  splits: z.array(splitInputSchema).min(1),
+export const recurringSchema = z
+  .object({
+    description: z.string().trim().min(1).max(140),
+    /** "fixed" charges the same amount every cycle; "variable" asks for the
+     *  real amount when the cycle comes due (electric, water, wifi…). */
+    amountType: z.enum(["fixed", "variable"]).default("fixed"),
+    /** Required for fixed bills; an optional typical amount for variable ones. */
+    amount: z.number().nonnegative().max(1_000_000).optional(),
+    category: expenseSchema.shape.category,
+    splitType: expenseSchema.shape.splitType,
+    paidBy: z.string().uuid(),
+    frequency: z.enum(["weekly", "monthly"]),
+    splits: z.array(splitInputSchema).min(1),
+  })
+  .superRefine((d, ctx) => {
+    if (d.amountType === "fixed" && !(d.amount && d.amount > 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["amount"],
+        message: "Amount must be positive",
+      });
+    }
+    if (d.amountType === "variable" && d.splitType === "exact") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["splitType"],
+        message:
+          "A bill that changes each time can't use exact dollar splits — use equal or percent.",
+      });
+    }
+  });
+
+/** Payload for logging a due variable bill with its real amount. */
+export const recurringChargeSchema = z.object({
+  amount: z.number().positive("Amount must be positive").max(1_000_000),
+  receiptUrl: z.string().url().nullable().optional(),
 });
 
 export const settleSchema = z.object({
@@ -115,3 +143,4 @@ export const resetSchema = z.object({
 export type AdInput = z.infer<typeof adSchema>;
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 export type RecurringInput = z.infer<typeof recurringSchema>;
+export type RecurringChargeInput = z.infer<typeof recurringChargeSchema>;
