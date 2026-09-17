@@ -30,13 +30,29 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const form = new FormData(e.currentTarget);
-      const res = await signIn("credentials", {
-        email: String(form.get("email")),
-        password: String(form.get("password")),
-        redirect: false,
-      });
+      let res;
+      try {
+        res = await signIn("credentials", {
+          email: String(form.get("email")).trim(),
+          password: String(form.get("password")),
+          redirect: false,
+        });
+      } catch {
+        setError(
+          "We couldn't reach the server. Check your connection and try again.",
+        );
+        return;
+      }
       if (res?.error) {
-        setError("Incorrect email or password");
+        // `CredentialsSignin` is the only code that means "wrong email or
+        // password". Anything else is a server-side problem (database down,
+        // AUTH_SECRET missing…) and saying "incorrect password" for those
+        // sends people off resetting a password that was never wrong.
+        setError(
+          res.error === "CredentialsSignin"
+            ? "Incorrect email or password"
+            : "Something went wrong signing you in — this is on our end, not your password. Please try again in a moment.",
+        );
         return;
       }
       // Followed an invite link → join the household once logged in.
