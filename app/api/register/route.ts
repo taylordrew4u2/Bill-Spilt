@@ -19,7 +19,11 @@ export async function POST(req: Request) {
     const { name, email, password } = parsed.data;
 
     await ensureSchema();
-    const existing = await sql`SELECT 1 FROM users WHERE email = ${email} LIMIT 1`;
+    // Case-insensitive: otherwise "Sam@x.com" and "sam@x.com" become two
+    // accounts, and only one of them can ever log in.
+    const existing = await sql`
+      SELECT 1 FROM users WHERE lower(email) = ${email} LIMIT 1
+    `;
     if (existing.rows.length > 0) {
       return NextResponse.json(
         { error: "An account with that email already exists" },

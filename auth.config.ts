@@ -32,6 +32,20 @@ export function isPublicRoute(p: string): boolean {
  * only `authorize` lives in `auth.ts`.
  */
 export const authConfig = {
+  /**
+   * Trust the Host header when building callback URLs.
+   *
+   * Auth.js only trusts it automatically on Vercel (`VERCEL=1`) or in dev.
+   * Anywhere else — a self-hosted box, Docker, a plain `npm start`, or Vercel
+   * behind a proxy that rewrites the host — every sign-in attempt fails with
+   * `UntrustedHost`, which reaches the browser as a generic "server
+   * configuration" error and looks exactly like a wrong password.
+   *
+   * Safe here: auth is credentials-only (no OAuth provider to redirect a
+   * spoofed host back to) and Auth.js still confines post-login redirects to
+   * its own origin. Setting `AUTH_URL` to the canonical origin pins it further.
+   */
+  trustHost: true,
   pages: {
     signIn: "/login",
   },

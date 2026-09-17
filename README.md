@@ -163,7 +163,7 @@ Every dependency is free and Vercel-native — the whole app runs at $0.
 | Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected by host |
 | File storage | **Vercel Blob** (receipt photos and PDFs) |
 | Cache | **Vercel KV** — optional, degrades gracefully |
-| Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) + SMTP password reset (**nodemailer**) |
+| Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) + password reset over Resend or SMTP (**nodemailer**) |
 | Background jobs | **Vercel Cron** (`vercel.json`) |
 | Offline / PWA | **Serwist** service worker · **Dexie.js** (IndexedDB) |
 | Monetization | **Google AdSense** (Auto ads) with a self-served house-ad fallback |
@@ -194,8 +194,30 @@ Copy `.env.example` → `.env.local`. The Postgres / Blob / KV variables are inj
 
 - `AUTH_SECRET` — `openssl rand -base64 32`
 - `CRON_SECRET` — any random string; protects the cron endpoint.
+- `RESEND_API_KEY` (or `SMTP_USER` + `SMTP_PASS`) — **required for password-reset emails.** Without one of these, `/forgot` has nothing to send with and says so instead of pretending a link is on its way.
 
 The database **schema creates itself** on first request via `ensureSchema()` — no migrations to run.
+
+### Can't log in or reset a password?
+
+Login needs a reachable database plus `AUTH_SECRET`; password reset needs an email provider on top. When any of those is missing the symptom looks like a wrong password, so check the deployment first:
+
+```bash
+curl -s https://your-app.example.com/api/health | jq
+# → login.ready / login.database / login.authSecret
+#   passwordReset.ready / passwordReset.email
+# add: -H "Authorization: Bearer $CRON_SECRET"   for the underlying error text
+```
+
+Locked out with no working email? Set a password straight against the database:
+
+```bash
+vercel env pull .env.local            # or copy POSTGRES_URL from your provider
+POSTGRES_URL='postgres://…' npm run set-password -- you@example.com 'new-password'
+# omit the password to have a strong one generated and printed
+```
+
+It matches the address case-insensitively, invalidates outstanding reset links, and lists the accounts it *can* see if there's no match — which is also how you catch `POSTGRES_URL` pointing at the wrong database.
 
 ---
 
@@ -232,6 +254,7 @@ lib/
   offline-db.ts · sync.ts               IndexedDB queue & sync
 public/                                 manifest.json · generated icons · service worker
 scripts/generate-icons.mjs             Zero-dependency PNG icon generator
+scripts/set-password.mjs               Out-of-band password reset (locked-out escape hatch)
 scripts/test_utils.py                  Python bill-splitting utility (split_bill helper)
 ```
 
