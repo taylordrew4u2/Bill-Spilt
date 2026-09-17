@@ -77,8 +77,11 @@ export const viewport: Viewport = {
   themeColor: "#2563eb",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Pinch-zoom stays enabled: locking it (maximumScale/userScalable) fails
+  // WCAG 2.1 SC 1.4.4 and takes zoom away from exactly the people who need
+  // it most. The usual reason to lock it — iOS Safari zooming in when a form
+  // field is focused — is already handled by giving every input a 16px font
+  // (see components/ui/input.tsx), so nothing is lost by allowing zoom.
   viewportFit: "cover",
 };
 

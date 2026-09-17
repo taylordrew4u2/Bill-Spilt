@@ -200,18 +200,18 @@ export default async function LandingPage() {
       {/* AdSense — the landing is public, content-rich, and ad-appropriate. */}
       <AdSenseScript />
       {/* Nav */}
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 safe-top">
+      <header className="mx-auto flex max-w-5xl items-center justify-between px-gutter py-4 safe-top">
         <Brand size="sm" />
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="flex h-10 items-center rounded-md px-4 text-sm font-medium hover:bg-accent"
+            className="flex h-11 items-center rounded-md px-4 text-sm font-medium hover:bg-accent"
           >
             Log in
           </Link>
           <Link
             href="/register"
-            className="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
+            className="flex h-11 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
           >
             Get started
           </Link>
@@ -219,7 +219,7 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-10 text-center sm:pt-16">
+      <section className="mx-auto max-w-3xl px-gutter pb-16 pt-10 text-center sm:pt-16">
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
           Split bills with your roommates.
           <br />
@@ -255,7 +255,7 @@ export default async function LandingPage() {
 
       {/* How it works */}
       <section className="border-t bg-card/40 py-16">
-        <div className="mx-auto max-w-5xl px-5">
+        <div className="mx-auto max-w-5xl px-gutter">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
             How it works
           </h2>
@@ -275,7 +275,7 @@ export default async function LandingPage() {
 
       {/* Features */}
       <section className="py-16">
-        <div className="mx-auto max-w-5xl px-5">
+        <div className="mx-auto max-w-5xl px-gutter">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
             Everything roommates need
           </h2>
@@ -302,7 +302,7 @@ export default async function LandingPage() {
 
       {/* FAQ */}
       <section className="border-t bg-card/40 py-16">
-        <div className="mx-auto max-w-2xl px-5">
+        <div className="mx-auto max-w-2xl px-gutter">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
             Frequently asked questions
           </h2>
@@ -328,7 +328,7 @@ export default async function LandingPage() {
 
       {/* Guides */}
       <section className="py-16">
-        <div className="mx-auto max-w-5xl px-5">
+        <div className="mx-auto max-w-5xl px-gutter">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
             Guides for splitting bills with roommates
           </h2>
@@ -356,7 +356,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="px-5 pb-16">
+      <section className="px-gutter pb-16">
         <div className="mx-auto max-w-3xl rounded-2xl bg-primary px-6 py-12 text-center text-primary-foreground">
           <h2 className="text-2xl font-bold sm:text-3xl">
             Stop chasing your roommates for money.

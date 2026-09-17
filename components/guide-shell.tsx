@@ -27,11 +27,11 @@ export function GuideShell({
       <AdSenseScript />
       <MarketingHeader />
 
-      <article className="mx-auto max-w-2xl px-5 pb-16 pt-6">{children}</article>
+      <article className="mx-auto max-w-2xl px-gutter pb-16 pt-6">{children}</article>
 
       {related.length > 0 && (
         <section className="border-t bg-card/40 py-10">
-          <div className="mx-auto max-w-2xl px-5">
+          <div className="mx-auto max-w-2xl px-gutter">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               More guides
             </h2>

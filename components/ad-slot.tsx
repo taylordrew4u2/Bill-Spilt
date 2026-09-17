@@ -32,7 +32,7 @@ export function AdSlot({ placement }: { placement: AdPlacement }) {
 
   return (
     <Card className="relative overflow-hidden border-dashed">
-      <span className="absolute left-2 top-2 z-10 rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="absolute left-2 top-2 z-10 rounded bg-background/80 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         Sponsored
       </span>
       <button

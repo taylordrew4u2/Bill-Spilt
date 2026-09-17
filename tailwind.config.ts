@@ -14,6 +14,16 @@ const config: Config = {
       screens: { "2xl": "1400px" },
     },
     extend: {
+      // Lift the small end of the type ramp. 12px/14px is below a comfortable
+      // reading size on a phone, and those two steps carry most of the app's
+      // body copy, so raising them here fixes every usage at once. Line
+      // heights are >= 1.5x per WCAG 1.4.12. `base` stays at 16px so form
+      // inputs never trip iOS Safari's auto-zoom-on-focus.
+      fontSize: {
+        xs: ["0.8125rem", { lineHeight: "1.25rem" }],
+        sm: ["0.9375rem", { lineHeight: "1.5rem" }],
+        base: ["1rem", { lineHeight: "1.625rem" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

@@ -26,7 +26,7 @@ export function AdArea({
     if (!resolvedSlot) return null; // Auto ads handle placement page-wide.
     return (
       <Card className="overflow-hidden border-dashed p-2">
-        <p className="px-1 pb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        <p className="px-1 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Advertisement
         </p>
         <div className="min-h-[90px]">
