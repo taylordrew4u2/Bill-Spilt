@@ -39,10 +39,14 @@ export async function POST(req: Request) {
     const { email } = parsed.data;
 
     await ensureSchema();
-    // Case-insensitive so accounts stored with mixed-case emails can still
-    // recover their password.
+    // Case-insensitive (and whitespace-tolerant) so accounts stored with
+    // mixed-case or padded emails can still recover their password. Must match
+    // what login uses — see auth.ts / lib/credentials.ts.
     const { rows } = await sql`
-      SELECT id, email FROM users WHERE lower(email) = ${email} LIMIT 1
+      SELECT id, email FROM users
+      WHERE lower(btrim(email)) = ${email}
+      ORDER BY created_at ASC
+      LIMIT 1
     `;
 
     if (rows.length > 0) {

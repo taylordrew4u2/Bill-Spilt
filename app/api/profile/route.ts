@@ -29,10 +29,12 @@ export async function PATCH(req: Request) {
     const { name, email, paymentMethods, currentPassword, newPassword } =
       parsed.data;
 
-    // Email must stay unique across users.
+    // Email must stay unique across users. Matched the same way login matches
+    // it (lower-cased, whitespace-trimmed) so a near-duplicate can't slip in
+    // for an account stored with mixed case or stray space.
     const clash = await sql`
       SELECT 1 FROM users
-      WHERE lower(email) = ${email.toLowerCase()} AND id <> ${userId} LIMIT 1
+      WHERE lower(btrim(email)) = ${email} AND id <> ${userId} LIMIT 1
     `;
     if (clash.rows.length > 0) {
       throw new ApiError(409, "That email is already in use");

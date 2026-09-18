@@ -1,26 +1,9 @@
 import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
 import { authConfig } from "@/auth.config";
 import { sql, ensureSchema } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
-
-/**
- * Sign-up and password recovery both trim and lower-case the address before
- * touching the database; login has to normalise it exactly the same way or an
- * account is reachable by one door and not the other. Phone keyboards and
- * autofill routinely append a space after an email, and an untrimmed value
- * fails `.email()` outright — which surfaced as "Incorrect email or password"
- * on a password that was perfectly correct.
- *
- * The password is deliberately left alone: a space is a legitimate character
- * in one, and trimming would lock out anyone whose password starts or ends
- * with one.
- */
-const credentialsSchema = z.object({
-  email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(1),
-});
+import { credentialsSchema, findUserForPassword } from "@/lib/credentials";
 
 /**
  * Wrong email/password. Returning `null` from `authorize` produces the same
@@ -46,17 +29,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { email, password } = parsed.data;
 
-        let user: { id: string; email: string; name: string; password_hash: string } | undefined;
+        let candidates: {
+          id: string;
+          email: string;
+          name: string;
+          password_hash: string;
+        }[] = [];
         try {
           await ensureSchema();
-          // Compare case-insensitively: sign-up lower-cases addresses now, but
-          // accounts created before that (or imported) may be stored with
-          // mixed case, and those users could never log back in.
+          // Match the way every other door normalises the address: trimmed and
+          // lower-cased. `btrim` on the stored side also rescues rows that were
+          // imported with stray whitespace, which `lower(email) = ...` could
+          // never match.
+          //
+          // Deliberately no `LIMIT 1`: `users.email` is UNIQUE only
+          // case-sensitively, so the same address can exist as both
+          // "Sam@x.com" and "sam@x.com". A reset or `set-password` updates one
+          // row by id, and an unordered `LIMIT 1` may hand back the other —
+          // which is how a perfectly correct password got rejected.
           const { rows } = await sql`
             SELECT id, email, name, password_hash
-            FROM users WHERE lower(email) = ${email} LIMIT 1
+            FROM users WHERE lower(btrim(email)) = ${email}
           `;
-          user = rows[0];
+          candidates = rows;
         } catch (e) {
           // Database unreachable/misconfigured. Let this propagate so the
           // client sees a server error instead of "incorrect password", which
@@ -65,10 +60,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Could not verify your login right now");
         }
 
+        const user = await findUserForPassword(
+          candidates,
+          password,
+          verifyPassword,
+        );
         if (!user) throw new BadCredentials();
-
-        const ok = await verifyPassword(password, user.password_hash);
-        if (!ok) throw new BadCredentials();
 
         return { id: user.id, email: user.email, name: user.name };
       },
