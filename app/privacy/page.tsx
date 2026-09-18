@@ -111,8 +111,8 @@ export default function PrivacyPage() {
           <p>
             We rely on trusted infrastructure providers to run the app:{" "}
             <strong>Vercel</strong> (hosting), our managed{" "}
-            <strong>Postgres database</strong> (data storage),{" "}
-            <strong>Vercel Blob</strong> (receipt photos),{" "}
+            <strong>Postgres database</strong> (data storage, including
+            receipt photos),{" "}
             <strong>Google AdSense</strong> (advertising), and an email provider
             (<strong>Resend</strong> or SMTP) for transactional emails such as
             password resets.

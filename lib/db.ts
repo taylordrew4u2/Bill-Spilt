@@ -283,6 +283,23 @@ async function bootstrap(): Promise<void> {
     )
   `;
 
+  // Receipt bytes live in Postgres rather than an object store, so the app
+  // needs exactly one free storage product instead of two. Stored as BYTEA and
+  // moved in and out as base64 (`decode`/`encode`) so the same code works on
+  // the Neon HTTP driver and on `pg` over TCP, neither of which agrees on how
+  // to hand back raw binary.
+  await sql`
+    CREATE TABLE IF NOT EXISTS receipts (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      household_id UUID NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+      uploaded_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+      content_type TEXT NOT NULL,
+      byte_size    INT NOT NULL,
+      data         BYTEA NOT NULL,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
   await sql`CREATE INDEX IF NOT EXISTS idx_expenses_household ON expenses(household_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_splits_expense ON expense_splits(expense_id)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_members_user ON household_members(user_id)`;
@@ -290,6 +307,7 @@ async function bootstrap(): Promise<void> {
   await sql`CREATE INDEX IF NOT EXISTS idx_activity_household ON activity_log(household_id, created_at DESC)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_ads_active ON ads(active, placement)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_recurring_charges_pending ON recurring_charges(household_id, status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_receipts_household ON receipts(household_id, created_at DESC)`;
 }
 
 /** Max members per household (the "reasonable cap" of 12). */
