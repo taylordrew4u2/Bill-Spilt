@@ -3,6 +3,7 @@ import { sql, ensureSchema } from "@/lib/db";
 import { createExpense } from "@/lib/expenses";
 import { logActivity } from "@/lib/activity";
 import { formatCurrency } from "@/lib/utils";
+import { pruneOrphanReceipts } from "@/lib/receipts";
 import type { SplitInput } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -97,10 +98,20 @@ export async function GET(req: Request) {
     }
   }
 
+  // Receipt bytes share the database's free-tier quota, so the daily run also
+  // clears uploads no expense ever ended up pointing at.
+  let prunedReceipts = 0;
+  try {
+    prunedReceipts = await pruneOrphanReceipts();
+  } catch (e) {
+    console.error("[cron] failed to prune orphaned receipts:", e);
+  }
+
   return NextResponse.json({
     processed,
     awaitingAmount,
     total: due.length,
+    prunedReceipts,
     date: today,
   });
 }

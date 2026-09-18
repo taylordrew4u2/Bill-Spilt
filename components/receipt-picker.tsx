@@ -9,7 +9,53 @@ import { cn } from "@/lib/utils";
 /** Types the upload route accepts, mirrored here for a friendlier client-side error. */
 const ACCEPT_IMAGE = "image/jpeg,image/png,image/webp,image/heic,image/heif,image/gif";
 const ACCEPT_ANY = `${ACCEPT_IMAGE},application/pdf`;
-const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_BYTES = 5 * 1024 * 1024;
+
+/** Longest edge kept when downscaling. Plenty to read a receipt's totals. */
+const MAX_EDGE = 1600;
+
+/**
+ * Shrink a camera photo before uploading it.
+ *
+ * Receipts are stored in the app's database now, not an object store, so every
+ * byte counts against the same free tier the rest of the app shares. A modern
+ * phone photo is 3–8 MB; the same receipt at 1600px JPEG is a couple hundred
+ * KB and just as readable.
+ *
+ * Returns the original file whenever it can't do better — a PDF, a format the
+ * browser can't decode (HEIC on most desktops), a canvas that comes back
+ * empty, or a result that isn't actually smaller.
+ */
+async function downscaleImage(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || typeof createImageBitmap !== "function") {
+    return file;
+  }
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close?.();
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.82),
+    );
+    if (!blob || blob.size >= file.size) return file;
+
+    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", {
+      type: "image/jpeg",
+    });
+  } catch {
+    return file;
+  }
+}
 
 /** A receipt stored as a PDF rather than a photo. */
 export function isPdfReceipt(url: string): boolean {
@@ -56,15 +102,18 @@ export function ReceiptPicker({
       });
       return;
     }
-    if (file.size > MAX_BYTES) {
-      toast({ title: "That file is too big (max 10 MB)", variant: "error" });
-      return;
-    }
-
     setUploading(true);
     try {
+      // Shrink first: a 9 MB photo is usually well under the cap afterwards,
+      // so this rejects far fewer real receipts than checking up front did.
+      const toSend = await downscaleImage(file);
+      if (toSend.size > MAX_BYTES) {
+        toast({ title: "That file is too big (max 5 MB)", variant: "error" });
+        return;
+      }
+
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", toSend);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -152,7 +201,8 @@ export function ReceiptPicker({
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        Photo or file (JPG, PNG, HEIC, or PDF) — up to 10 MB.
+        Photo or file (JPG, PNG, HEIC, or PDF) — up to 5 MB. Photos are
+        shrunk before upload.
       </p>
     </div>
   );
