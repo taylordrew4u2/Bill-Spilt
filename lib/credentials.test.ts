@@ -1,14 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { z } from "zod";
-
-/**
- * Mirrors the schema `authorize` uses in auth.ts. Kept here because importing
- * auth.ts pulls in NextAuth (and next/server) for what is a pure input rule.
- */
-const credentialsSchema = z.object({
-  email: z.string().trim().toLowerCase().email(),
-  password: z.string().min(1),
-});
+import { credentialsSchema, findUserForPassword } from "@/lib/credentials";
 
 const parse = (email: string, password = "pw") =>
   credentialsSchema.safeParse({ email, password });
@@ -42,5 +33,41 @@ describe("login credentials", () => {
       password: "  pass word  ",
     });
     expect(got.success && got.data.password).toBe("  pass word  ");
+  });
+});
+
+describe("findUserForPassword", () => {
+  // Stand-in for bcrypt: the rule under test is *which account* gets picked,
+  // not the hashing itself.
+  const verify = (plain: string, hash: string) =>
+    Promise.resolve(hash === `hashed:${plain}`);
+
+  // One address stored twice, in two casings, with different passwords — the
+  // shape imported data (or a row written before the case-insensitive checks
+  // landed) leaves behind, since `users.email` is UNIQUE only case-sensitively.
+  const rows = [
+    { id: "a", email: "Dup@example.com", password_hash: "hashed:oldpass" },
+    { id: "b", email: "dup@example.com", password_hash: "hashed:newpass" },
+  ];
+
+  it("picks the account whose hash matches, not just the first row", async () => {
+    // Regression: an unordered `LIMIT 1` could hand back row a, so a password
+    // set on row b — by a reset or `set-password` — was reported as wrong.
+    const found = await findUserForPassword(rows, "newpass", verify);
+    expect(found?.id).toBe("b");
+  });
+
+  it("still finds a password set on the first row", async () => {
+    const found = await findUserForPassword(rows, "oldpass", verify);
+    expect(found?.id).toBe("a");
+  });
+
+  it("returns undefined when no candidate holds the password", async () => {
+    expect(await findUserForPassword(rows, "nope", verify)).toBeUndefined();
+  });
+
+  it("returns undefined for no candidates at all", async () => {
+    const none: { password_hash: string }[] = [];
+    expect(await findUserForPassword(none, "pw", verify)).toBeUndefined();
   });
 });

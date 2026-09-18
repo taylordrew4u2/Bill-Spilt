@@ -77,9 +77,10 @@ describe("POST /api/auth/forgot", () => {
     const res = await POST(request("SAM@example.com"));
 
     await expect(res.json()).resolves.toEqual({ ok: true, delivery: "sent" });
-    // The lookup is lower-cased and compared with lower(email).
+    // The lookup is lower-cased, whitespace-trimmed, and compared with the
+    // same normalisation login uses.
     const [strings, ...values] = sql.mock.calls[0];
-    expect((strings as string[]).join("?")).toContain("lower(email)");
+    expect((strings as string[]).join("?")).toContain("lower(btrim(email))");
     expect(values).toEqual(["sam@example.com"]);
     expect(sendPasswordResetEmail).toHaveBeenCalledWith(
       "Sam@Example.com",

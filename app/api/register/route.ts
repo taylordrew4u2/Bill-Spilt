@@ -20,9 +20,10 @@ export async function POST(req: Request) {
 
     await ensureSchema();
     // Case-insensitive: otherwise "Sam@x.com" and "sam@x.com" become two
-    // accounts, and only one of them can ever log in.
+    // accounts, and only one of them can ever log in. `btrim` also catches a
+    // row imported with stray whitespace (see auth.ts / lib/credentials.ts).
     const existing = await sql`
-      SELECT 1 FROM users WHERE lower(email) = ${email} LIMIT 1
+      SELECT 1 FROM users WHERE lower(btrim(email)) = ${email} LIMIT 1
     `;
     if (existing.rows.length > 0) {
       return NextResponse.json(
