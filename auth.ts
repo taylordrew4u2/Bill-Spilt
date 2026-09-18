@@ -5,8 +5,20 @@ import { authConfig } from "@/auth.config";
 import { sql, ensureSchema } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
 
+/**
+ * Sign-up and password recovery both trim and lower-case the address before
+ * touching the database; login has to normalise it exactly the same way or an
+ * account is reachable by one door and not the other. Phone keyboards and
+ * autofill routinely append a space after an email, and an untrimmed value
+ * fails `.email()` outright — which surfaced as "Incorrect email or password"
+ * on a password that was perfectly correct.
+ *
+ * The password is deliberately left alone: a space is a legitimate character
+ * in one, and trimming would lock out anyone whose password starts or ends
+ * with one.
+ */
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1),
 });
 
@@ -42,7 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // mixed case, and those users could never log back in.
           const { rows } = await sql`
             SELECT id, email, name, password_hash
-            FROM users WHERE lower(email) = ${email.toLowerCase()} LIMIT 1
+            FROM users WHERE lower(email) = ${email} LIMIT 1
           `;
           user = rows[0];
         } catch (e) {
