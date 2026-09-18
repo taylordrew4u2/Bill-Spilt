@@ -81,7 +81,7 @@ It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-de
 | 🔑 **Invite code (admin-only)** | Only admins can see and regenerate the invite code, invalidating the old link at any time. |
 | 🔒 **Private split breakdown** | The person who added an expense sees the full per-person breakdown. Everyone else sees just the total and their own share. |
 | 🔁 **Recurring bills** | Fixed bills (rent, subscriptions) auto-logged daily by a Vercel Cron job; bills that change each cycle (electric, wifi) prompt for the real amount when they come due. |
-| 📸 **Receipts** | Attach a camera photo, a picture from the library, or a file — including a PDF statement (Vercel Blob). |
+| 📸 **Receipts** | Attach a camera photo, a picture from the library, or a file — including a PDF statement. Stored in Postgres, no object store to provision. |
 | 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; download the full ledger any time. |
 | 🔐 **Auth + password reset** | Credentials auth with a self-serve email reset flow (SMTP). |
 | 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
@@ -114,7 +114,6 @@ flowchart TD
 
     subgraph Vercel["☁️ Vercel-native services (free tier)"]
         PG["Postgres<br/>Neon · Prisma · any"]
-        BLOB["Blob<br/>receipts"]
         KV["KV (optional)<br/>settlement cache"]
         CRON["Cron<br/>daily recurring bills"]
     end
@@ -123,7 +122,6 @@ flowchart TD
     IDB -->|sync on reconnect| API
     API --> SET
     API --> DB --> PG
-    API --> BLOB
     API -.-> KV
     CRON --> API
 ```
@@ -144,10 +142,13 @@ Expenses created offline are written to **IndexedDB** (Dexie) and flagged unsync
 ### 4. A data layer that doesn't care who hosts Postgres
 Managed Postgres providers disagree on connection semantics (Neon speaks HTTP, others want TCP; pooled vs. direct strings). Instead of locking to one, the `sql` helper in [`lib/db.ts`](lib/db.ts) **selects a backend from the connection host** — Neon's serverless HTTP driver for `*.neon.tech`, standard `pg` over TCP for everything else — behind one tagged-template interface returning `{ rows, rowCount }`. The same build runs on Neon, Prisma Postgres, Supabase, or RDS unchanged.
 
-### 5. Atomic writes without interactive transactions
+### 5. Receipts without a second storage product
+Receipt photos and PDF statements are stored **in Postgres**, not an object store, so the whole app runs on one free tier instead of two. Bytes travel as base64 and are kept as `BYTEA` (`decode()` in, `encode()` out) — compact on disk, and never asking a driver to marshal raw binary, which is where the Neon HTTP and `pg` TCP paths part ways. They're served from [`/api/receipts/[key]`](app/api/receipts/[key]/route.ts) to **members of the owning household only**, an improvement on the public object URLs they replaced; the picker downscales photos to 1600px before upload, and the daily cron drops uploads no expense ever claimed, so the quota stays small.
+
+### 6. Atomic writes without interactive transactions
 The HTTP SQL path runs one statement per request, so there's no `BEGIN`/`COMMIT`. An expense + its N splits are written **atomically in a single CTE statement** that `INSERT … RETURNING`s the new expense id and fans it out across `jsonb_to_recordset` for the split rows — one round trip, all-or-nothing.
 
-### 6. Auth and security
+### 7. Auth and security
 NextAuth v5 (Credentials) with **bcrypt-hashed passwords**, stateless **JWT sessions**, and an **Edge middleware** gate that's intentionally scoped to page routes only — API routes self-authorize and return JSON `401`s rather than HTML redirects. Every query is parameterized; the schema **bootstraps itself idempotently** on first request (no migration step to forget). The cron endpoint is protected by a bearer secret.
 
 ---
@@ -161,14 +162,14 @@ Every dependency is free and Vercel-native — the whole app runs at $0.
 | Framework | **Next.js 16** (App Router) · **React 19** · **TypeScript** (strict) |
 | UI | **Tailwind CSS** · **shadcn/ui** · **Framer Motion** (swipe gestures, sheets) |
 | Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected by host |
-| File storage | **Vercel Blob** (receipt photos and PDFs) |
+| File storage | **Postgres** — receipt bytes live beside the data (no second storage product) |
 | Cache | **Vercel KV** — optional, degrades gracefully |
 | Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) + password reset over Resend or SMTP (**nodemailer**) |
 | Background jobs | **Vercel Cron** (`vercel.json`) |
 | Offline / PWA | **Serwist** service worker · **Dexie.js** (IndexedDB) |
 | Monetization | **Google AdSense** (Auto ads) with a self-served house-ad fallback |
 
-No Supabase, Stripe, Resend, or Firebase — email uses your own mailbox over SMTP.
+No object store, Supabase, Stripe, or Firebase. Postgres holds the data *and* the receipts; email is Resend's free tier or your own mailbox over SMTP.
 
 ---
 
@@ -190,7 +191,7 @@ npm run icons        # regenerate PWA icons (dependency-free generator)
 
 ### Environment
 
-Copy `.env.example` → `.env.local`. The Postgres / Blob / KV variables are injected automatically when you link those stores in the Vercel dashboard. Set by hand:
+Copy `.env.example` → `.env.local`. The Postgres / KV variables are injected automatically when you link those stores in the Vercel dashboard. Set by hand:
 
 - `AUTH_SECRET` — `openssl rand -base64 32`
 - `CRON_SECRET` — any random string; protects the cron endpoint.
@@ -219,12 +220,23 @@ POSTGRES_URL='postgres://…' npm run set-password -- you@example.com 'new-passw
 
 It matches the address case-insensitively, invalidates outstanding reset links, and lists the accounts it *can* see if there's no match — which is also how you catch `POSTGRES_URL` pointing at the wrong database.
 
+### Moving off an object store
+
+Receipts used to live in Vercel Blob. If this database still has expenses whose receipt is an `https://…` URL, pull them in **before** deleting the Blob store — afterwards those links are dead:
+
+```bash
+POSTGRES_URL='postgres://…' npm run migrate-receipts -- --dry-run   # look first
+POSTGRES_URL='postgres://…' npm run migrate-receipts
+```
+
+It downloads each one, stores the bytes, and repoints the expense at `/api/receipts/<id>.<ext>`. Re-running is safe: rows already moved are skipped.
+
 ---
 
 ## Deploying to Vercel
 
 1. Import the repo in Vercel.
-2. **Storage** → add **Postgres** and **Blob** (and optionally **KV**); env vars are wired in automatically.
+2. **Storage** → add **Postgres** (and optionally **KV**); env vars are wired in automatically. Receipts need no separate store.
 3. Add `AUTH_SECRET` and `CRON_SECRET`.
 4. Deploy. `vercel.json` registers a daily run of `/api/cron/recurring`.
 
@@ -246,6 +258,7 @@ components/
   *                                     Feature components (sheets, swipe rows, charts)
 lib/
   settlement.ts                         Min-cash-flow + split math
+  receipts.ts                           Receipt bytes in Postgres (store, read, prune)
   db.ts                                 Provider-agnostic SQL layer
   invite.ts                             Shared join-by-code logic (link + API)
   site.ts                               Canonical SEO metadata (URL, keywords, …)
@@ -255,6 +268,7 @@ lib/
 public/                                 manifest.json · generated icons · service worker
 scripts/generate-icons.mjs             Zero-dependency PNG icon generator
 scripts/set-password.mjs               Out-of-band password reset (locked-out escape hatch)
+scripts/migrate-blob-receipts.mjs      One-off: pulls old object-store receipts into Postgres
 scripts/test_utils.py                  Python bill-splitting utility (split_bill helper)
 ```
 
