@@ -7,6 +7,20 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters").max(200),
 });
 
+/**
+ * A receipt reference. Receipts are stored in Postgres and served from
+ * `/api/receipts/<id>.<ext>`, kept relative so they survive a domain change.
+ * Absolute URLs are still accepted: expenses created while receipts lived in
+ * Vercel Blob hold one, and editing such an expense must not fail validation.
+ */
+const receiptPath = /^\/api\/receipts\/[0-9a-f-]{36}\.[a-z0-9]+$/i;
+export const receiptUrlSchema = z
+  .string()
+  .refine(
+    (v) => receiptPath.test(v) || z.string().url().safeParse(v).success,
+    "Invalid receipt link",
+  );
+
 export const splitInputSchema = z.object({
   userId: z.string().uuid(),
   value: z.number().nonnegative().optional(),
@@ -27,7 +41,7 @@ export const expenseSchema = z.object({
   ]),
   splitType: z.enum(["equal", "exact", "percent"]),
   paidBy: z.string().uuid(),
-  receiptUrl: z.string().url().nullable().optional(),
+  receiptUrl: receiptUrlSchema.nullable().optional(),
   splits: z.array(splitInputSchema).min(1, "Include at least one person"),
   // Optional client timestamp for offline-created expenses.
   createdAt: z.string().datetime().optional(),
@@ -68,7 +82,7 @@ export const recurringSchema = z
 /** Payload for logging a due variable bill with its real amount. */
 export const recurringChargeSchema = z.object({
   amount: z.number().positive("Amount must be positive").max(1_000_000),
-  receiptUrl: z.string().url().nullable().optional(),
+  receiptUrl: receiptUrlSchema.nullable().optional(),
 });
 
 export const settleSchema = z.object({
