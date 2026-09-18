@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -84,7 +85,11 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  // Imported (not `require`d): Next 16 loads this TS config as an ES module on
+  // Node 22.12+/24, where `require` is undefined — a `require()` here threw
+  // "ReferenceError: require is not defined" and took the dev server down with
+  // it, so no page (the login screen included) could render.
+  plugins: [tailwindcssAnimate],
 };
 
 export default config;
