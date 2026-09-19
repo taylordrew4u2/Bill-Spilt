@@ -15,7 +15,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type Result = "sent" | "unconfigured" | "error";
+type Result = "sent" | "unconfigured" | "provider-error" | "error";
+
+/**
+ * What to show when a reset link can't be sent. `unconfigured` and
+ * `provider-error` are provider-level facts — the same for every address — which
+ * is why the server can report them without revealing whether an address has an
+ * account. The third case is our own bug and says so.
+ */
+const REASON = {
+  unconfigured: {
+    title: "Reset emails aren't set up yet",
+    body: "This deployment has no email provider configured, so no reset link can be sent. Contact the person who runs this site.",
+  },
+  "provider-error": {
+    title: "Our email provider is refusing us",
+    body: "The mailbox this site sends from was rejected by the provider, so no reset link can be sent right now. Your password is fine — the mailer is not. Contact the person who runs this site.",
+  },
+  error: {
+    title: "We couldn't send that reset link",
+    body: "Something went wrong on our end. Please try again in a moment.",
+  },
+} as const;
 
 export default function ForgotPage() {
   const [loading, setLoading] = React.useState(false);
@@ -39,7 +60,9 @@ export default function ForgotPage() {
           ? "sent"
           : body?.delivery === "unconfigured"
             ? "unconfigured"
-            : "error",
+            : body?.delivery === "provider-error"
+              ? "provider-error"
+              : "error",
       );
     } catch {
       setResult("error");
@@ -47,6 +70,10 @@ export default function ForgotPage() {
       setLoading(false);
     }
   }
+
+  // "sent" renders its own panel; anything else is a failure with a
+  // provider-level explanation.
+  const reason = result && result !== "sent" ? REASON[result] : null;
 
   return (
     <>
@@ -72,21 +99,15 @@ export default function ForgotPage() {
                 link. It expires in 1 hour.
               </p>
             </div>
-          ) : result ? (
+          ) : reason ? (
             <div className="py-4 text-center">
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                 <TriangleAlert className="h-6 w-6 text-destructive" aria-hidden />
               </div>
               <p className="font-medium" role="alert">
-                {result === "unconfigured"
-                  ? "Reset emails aren't set up yet"
-                  : "We couldn't send that reset link"}
+                {reason.title}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {result === "unconfigured"
-                  ? "This deployment has no email provider configured, so no reset link can be sent. Contact the person who runs this site."
-                  : "Something went wrong on our end. Please try again in a moment."}
-              </p>
+              <p className="mt-1 text-sm text-muted-foreground">{reason.body}</p>
               <Button
                 variant="outline"
                 className="mt-4 w-full"

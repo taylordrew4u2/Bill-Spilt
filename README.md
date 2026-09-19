@@ -195,7 +195,7 @@ Copy `.env.example` → `.env.local`. The Postgres / KV variables are injected a
 
 - `AUTH_SECRET` — `openssl rand -base64 32`
 - `CRON_SECRET` — any random string; protects the cron endpoint.
-- `RESEND_API_KEY` (or `SMTP_USER` + `SMTP_PASS`) — **required for password-reset emails.** Without one of these, `/forgot` has nothing to send with and says so instead of pretending a link is on its way.
+- `RESEND_API_KEY` (or `SMTP_USER` + `SMTP_PASS`) — **required for password-reset emails.** Without one of these, `/forgot` has nothing to send with and says so instead of pretending a link is on its way. A provider that is configured but *rejecting* the credentials — a revoked Gmail app password, a deleted Resend key — counts as broken too: `/forgot` says the mailer refused us rather than telling people to check an inbox, and `/api/health` reports it. That judgement is recorded in the database, so it is visible from any instance, not just the one that tried to send.
 
 The database **schema creates itself** on first request via `ensureSchema()` — no migrations to run.
 
@@ -216,9 +216,15 @@ Locked out with no working email? Set a password straight against the database:
 vercel env pull .env.local            # or copy POSTGRES_URL from your provider
 POSTGRES_URL='postgres://…' npm run set-password -- you@example.com 'new-password'
 # omit the password to have a strong one generated and printed
+# ask what this database actually holds, before changing anything:
+POSTGRES_URL='postgres://…' npm run set-password -- --list
 ```
 
-It matches the address case-insensitively, invalidates outstanding reset links, and lists the accounts it *can* see if there's no match — which is also how you catch `POSTGRES_URL` pointing at the wrong database.
+It prints the database it is about to touch (host and name, never credentials), matches the address case-insensitively, invalidates outstanding reset links, and lists the accounts it *can* see if there's no match.
+
+If login keeps saying the password is wrong for one you know is right, `--list` is the tiebreaker: an account that isn't listed is not in the database the app is reading, so no amount of resetting will help. `POSTGRES_URL` pointing at the wrong store — after a provider move, say — looks exactly like a bad password.
+
+A reset email that never arrives is now visible too. `/api/health` reports the last provider failure recorded in the database (`passwordReset.lastSendFailedAt`, and `passwordReset.ready: false`), so a revoked Gmail app password no longer reads as healthy configuration.
 
 ### Moving off an object store
 
