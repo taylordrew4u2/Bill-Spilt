@@ -283,6 +283,18 @@ async function bootstrap(): Promise<void> {
     )
   `;
 
+  // Operator diagnostics that have to outlive a single request: the last
+  // password-reset provider check (see lib/email-health.ts). Stored as TEXT
+  // rather than JSONB because the Neon HTTP driver and `pg` disagree about
+  // whether jsonb comes back parsed — the same reason receipts are base64.
+  await sql`
+    CREATE TABLE IF NOT EXISTS app_health (
+      key        TEXT PRIMARY KEY,
+      value      TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
   // Receipt bytes live in Postgres rather than an object store, so the app
   // needs exactly one free storage product instead of two. Stored as BYTEA and
   // moved in and out as base64 (`decode`/`encode`) so the same code works on

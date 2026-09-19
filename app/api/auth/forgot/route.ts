@@ -3,7 +3,17 @@ import { randomBytes, createHash } from "node:crypto";
 import { sql, ensureSchema } from "@/lib/db";
 import { handle } from "@/lib/api";
 import { forgotSchema } from "@/lib/validation";
-import { emailConfigured, sendPasswordResetEmail } from "@/lib/email";
+import {
+  emailConfigured,
+  emailProviderHealthy,
+  sendPasswordResetEmail,
+} from "@/lib/email";
+import {
+  forgotDelivery,
+  readEmailHealth,
+  recordEmailHealth,
+  shouldProbeProvider,
+} from "@/lib/email-health";
 
 export const runtime = "nodejs";
 
@@ -18,18 +28,45 @@ const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
  *
  *   "sent"         — a reset link was mailed if that account exists.
  *   "unconfigured" — no email provider is set up, so nobody can be mailed.
+ *   "provider-error" — a provider is configured but refusing our credentials
+ *                      (revoked app password, deleted API key), so nobody can
+ *                      be mailed either. Reported instead of "sent" because
+ *                      the alternative is telling people to check an inbox
+ *                      nothing will ever reach.
  *
- * `unconfigured` is decided before the account is looked up, so it reveals
- * nothing about whether the address is registered.
+ * `unconfigured` and `provider-error` are both decided before the account is
+ * looked up: each is a provider-level fact, identical for every address, so
+ * neither reveals whether a given one is registered.
  */
 export async function POST(req: Request) {
   return handle(async () => {
-    if (!emailConfigured()) {
+    const configured = emailConfigured();
+    if (!configured) {
       console.error(
         "[forgot] password reset requested but no email provider is configured " +
           "(set RESEND_API_KEY, or SMTP_USER + SMTP_PASS)",
       );
       return NextResponse.json({ ok: true, delivery: "unconfigured" });
+    }
+
+    // A provider that refuses our credentials fails the same way for every
+    // address, so this runs before the account lookup and says nothing about
+    // who is registered. Re-probing a recorded failure — rather than trusting
+    // it forever — is what makes recovery automatic once the credentials are
+    // fixed, instead of the deployment staying wedged on "sending failed".
+    let health = await readEmailHealth();
+    if (shouldProbeProvider(health)) {
+      const probe = await emailProviderHealthy();
+      const message = probe.ok ? null : probe.error;
+      await recordEmailHealth(probe.ok, message);
+      health = { ok: probe.ok, at: new Date().toISOString(), message };
+    }
+    if (forgotDelivery(configured, health) === "provider-error") {
+      console.error(
+        "[forgot] the email provider rejected our credentials, so no reset " +
+          `link can be sent: ${health?.message ?? "unknown error"}`,
+      );
+      return NextResponse.json({ ok: true, delivery: "provider-error" });
     }
 
     const parsed = forgotSchema.safeParse(await req.json());

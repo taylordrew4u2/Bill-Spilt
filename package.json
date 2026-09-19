@@ -14,6 +14,7 @@
     "migrate-receipts": "node scripts/migrate-blob-receipts.mjs"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "@neondatabase/serverless": "^0.9.5",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",

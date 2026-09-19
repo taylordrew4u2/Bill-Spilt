@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql, dbConfigured } from "@/lib/db";
-import { emailConfigured, emailProvider, lastEmailError } from "@/lib/email";
+import { emailConfigured, emailProvider } from "@/lib/email";
+import { readEmailHealth } from "@/lib/email-health";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,11 @@ export const dynamic = "force-dynamic";
  * It returns booleans and status words only — never a connection string, key,
  * or address. Send `Authorization: Bearer $CRON_SECRET` to additionally get the
  * last email/database error message for debugging.
+ *
+ * `passwordReset` reflects the last provider failure *recorded in the database*
+ * rather than this instance's memory (see lib/email-health.ts): a revoked app
+ * password leaves every environment variable in place, so configuration alone
+ * cannot tell you whether mail is actually being delivered.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -37,18 +43,22 @@ export async function GET(req: Request) {
   }
 
   const authSecret = Boolean(process.env.AUTH_SECRET);
-  const emailErr = lastEmailError();
+  // Read from Postgres rather than this instance's memory: the lambda that
+  // serves this request is almost never the one that tried to send, which is
+  // how a revoked app password went unnoticed (see lib/email-health.ts).
+  const emailHealth = await readEmailHealth();
+  const emailFailure = emailHealth && !emailHealth.ok ? emailHealth : null;
 
   // Login needs a database and AUTH_SECRET; password reset needs email on top.
   const canLogIn = database === "ok" && authSecret;
-  const canResetPassword = canLogIn && emailConfigured();
+  const canResetPassword = canLogIn && emailConfigured() && !emailFailure;
 
   return NextResponse.json(
     {
       // A configured-but-rejected provider (expired API key, revoked app
       // password) is the failure mode that looks like nothing at all, so a
-      // recorded send failure counts against `ok` until one succeeds.
-      ok: canLogIn && canResetPassword && !emailErr,
+      // recorded provider failure counts against `ok` until one succeeds.
+      ok: canLogIn && canResetPassword,
       login: {
         ready: canLogIn,
         database,
@@ -57,13 +67,16 @@ export async function GET(req: Request) {
       passwordReset: {
         ready: canResetPassword,
         email: emailConfigured() ? emailProvider() : "unconfigured",
-        lastSendFailedAt: emailErr?.at ?? null,
+        // Last failure anyone recorded, or null if the provider is untested
+        // or last passed. A non-null value here means resets are NOT being
+        // delivered, whatever `ready` says about configuration.
+        lastSendFailedAt: emailFailure?.at ?? null,
       },
       ...(detailed
         ? {
             detail: {
               databaseError: dbError,
-              emailError: emailErr?.message ?? null,
+              emailError: emailFailure?.message ?? null,
             },
           }
         : {}),
