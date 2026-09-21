@@ -20,17 +20,13 @@ import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { formatDate } from "@/lib/utils";
-import { PAYMENT_METHODS, type Balance, type SettlementTransfer } from "@/lib/types";
-
-interface SettlementRecord {
-  id: string;
-  from: string;
-  fromName: string;
-  to: string;
-  toName: string;
-  amount: number;
-  settledAt: string;
-}
+import {
+  PAYMENT_METHODS,
+  type Balance,
+  type SettlementRecord,
+  type SettlementTransfer,
+} from "@/lib/types";
+import { Amount } from "@/components/amount";
 
 export default function SettlePage() {
   const { version, mutate, currentUserId, isAdmin, members } = useAppData();
@@ -88,6 +84,7 @@ export default function SettlePage() {
   }
 
   async function shareReminder(t: SettlementTransfer) {
+    if (t.amount === null) return;
     const me = members.find((m) => m.id === t.to);
     const myMethods = me?.paymentMethods ?? [];
     const ways = myMethods
@@ -129,6 +126,9 @@ export default function SettlePage() {
   }
 
   async function markPaid(t: SettlementTransfer) {
+    // Only the two people involved (and the admin) get the figure, and only
+    // they may record the payment — the API enforces the same rule.
+    if (t.amount === null) return;
     const key = `${t.from}-${t.to}-${t.amount}`;
     setSettling(key);
     try {
@@ -224,12 +224,14 @@ export default function SettlePage() {
                       <span className="text-sm font-medium">
                         {t.to === currentUserId ? "You" : t.toName}
                       </span>
-                      <span className="ml-auto text-lg font-bold text-primary">
-                        {money(t.amount)}
-                      </span>
+                      <Amount
+                        value={t.amount}
+                        className="ml-auto text-lg font-bold text-primary"
+                        hiddenClassName="ml-auto text-lg font-bold text-muted-foreground"
+                      />
                     </div>
 
-                    {showPay && (
+                    {showPay && t.amount !== null && (
                       <div className="mt-3 rounded-lg bg-muted/60 p-3">
                         <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                           Pay {t.toName} with
@@ -237,7 +239,7 @@ export default function SettlePage() {
                         <PaymentMethodsList
                           methods={payee!.paymentMethods}
                           linkContext={{
-                            amount: t.amount,
+                            amount: t.amount!,
                             note: payerName
                               ? `BillSpilt — from ${payerName}`
                               : "BillSpilt",
@@ -246,32 +248,41 @@ export default function SettlePage() {
                       </div>
                     )}
 
-                    <div className="mt-3 flex gap-2">
-                      {owedToYou && (
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => shareReminder(t)}
-                        >
-                          <Bell className="h-4 w-4" />
-                          Remind
-                        </Button>
-                      )}
-                      <Button
-                        variant="success"
-                        className="flex-1"
-                        onClick={() => markPaid(t)}
-                        disabled={settling === key}
-                      >
-                        {settling === key && (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        )}
-                        Mark as paid
-                      </Button>
-                    </div>
-                    <p className="mt-1.5 text-center text-xs text-muted-foreground">
-                      Paid in cash or another way? Mark it as paid here too.
-                    </p>
+                    {t.amount === null ? (
+                      <p className="mt-3 text-center text-xs text-muted-foreground">
+                        Between {t.fromName} and {t.toName} — the amount is
+                        theirs to see.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="mt-3 flex gap-2">
+                          {owedToYou && (
+                            <Button
+                              variant="outline"
+                              className="flex-1"
+                              onClick={() => shareReminder(t)}
+                            >
+                              <Bell className="h-4 w-4" />
+                              Remind
+                            </Button>
+                          )}
+                          <Button
+                            variant="success"
+                            className="flex-1"
+                            onClick={() => markPaid(t)}
+                            disabled={settling === key}
+                          >
+                            {settling === key && (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            )}
+                            Mark as paid
+                          </Button>
+                        </div>
+                        <p className="mt-1.5 text-center text-xs text-muted-foreground">
+                          Paid in cash or another way? Mark it as paid here too.
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </li>
@@ -304,19 +315,23 @@ export default function SettlePage() {
                       · {formatDate(s.settledAt)}
                     </span>
                   </div>
-                  <span className="font-semibold">{money(s.amount)}</span>
-                  <button
-                    onClick={() => undoSettlement(s.id)}
-                    disabled={undoing === s.id}
-                    aria-label="Undo settlement"
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-                  >
-                    {undoing === s.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Undo2 className="h-4 w-4" />
-                    )}
-                  </button>
+                  <Amount value={s.amount} className="font-semibold" />
+                  {/* Undoing re-opens a balance, so it stays with the two
+                      people in it (and the admin). */}
+                  {s.amount !== null && (
+                    <button
+                      onClick={() => undoSettlement(s.id)}
+                      disabled={undoing === s.id}
+                      aria-label="Undo settlement"
+                      className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                    >
+                      {undoing === s.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Undo2 className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

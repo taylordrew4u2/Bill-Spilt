@@ -28,7 +28,7 @@ import {
 import { colorForId } from "@/lib/utils";
 
 export default function StatsPage() {
-  const { version, mutate } = useAppData();
+  const { version, mutate, currentUserId, isAdmin } = useAppData();
   const money = useMoney();
   const { toast } = useToast();
   const expensesQ = useFetch<{ expenses: Expense[] }>("/api/expenses");
@@ -53,21 +53,30 @@ export default function StatsPage() {
   const bills = recurringQ.data?.bills ?? [];
   const pending = recurringQ.data?.pending ?? [];
 
+  /**
+   * The admin keeps the books, so they see what the house spent. Everyone
+   * else sees their own share — the number they are actually on the hook for —
+   * and, for the record of who is pulling their weight, how many expenses each
+   * person has paid for. No household totals either way for a member.
+   */
   const { total, byCategory, byPayer } = React.useMemo(() => {
     let total = 0;
     const byCategory: Record<string, number> = {};
-    const byPayer = new Map<string, { name: string; amount: number }>();
+    const byPayer = new Map<string, { name: string; count: number; amount: number }>();
     for (const e of expenses) {
-      total += e.amount;
-      byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
+      const mine = e.splits.find((s) => s.userId === currentUserId)?.amount ?? 0;
+      const value = isAdmin ? (e.amount ?? 0) : mine;
+      total += value;
+      byCategory[e.category] = (byCategory[e.category] ?? 0) + value;
       const prev = byPayer.get(e.paidBy);
       byPayer.set(e.paidBy, {
         name: e.paidByName,
-        amount: (prev?.amount ?? 0) + e.amount,
+        count: (prev?.count ?? 0) + 1,
+        amount: (prev?.amount ?? 0) + (e.amount ?? 0),
       });
     }
     return { total, byCategory, byPayer };
-  }, [expenses]);
+  }, [expenses, currentUserId, isAdmin]);
 
   const breakdown = CATEGORIES.map((c) => ({
     ...c,
@@ -78,7 +87,7 @@ export default function StatsPage() {
 
   const payers = Array.from(byPayer.entries())
     .map(([id, v]) => ({ id, ...v }))
-    .sort((a, b) => b.amount - a.amount);
+    .sort((a, b) => (isAdmin ? b.amount - a.amount : b.count - a.count));
 
   async function deleteBill(id: string) {
     setDeleting(id);
@@ -98,6 +107,11 @@ export default function StatsPage() {
   return (
     <div className="space-y-5 duration-500 animate-in fade-in slide-in-from-bottom-3">
       <h1 className="text-lg font-bold">Stats</h1>
+      {!isAdmin && (
+        <p className="-mt-3 text-sm text-muted-foreground">
+          Your own numbers. What the house spends overall stays with the admin.
+        </p>
+      )}
 
       <PendingBillsCard
         pending={pending}
@@ -110,7 +124,9 @@ export default function StatsPage() {
       <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Total spent</p>
+            <p className="text-xs text-muted-foreground">
+              {isAdmin ? "Total spent" : "Your share"}
+            </p>
             {expensesQ.loading && !expensesQ.data ? (
               <Skeleton className="mt-1 h-8 w-24" />
             ) : (
@@ -128,7 +144,9 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">By category</CardTitle>
+          <CardTitle className="text-base">
+            {isAdmin ? "By category" : "Your share by category"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {breakdown.length === 0 ? (
@@ -178,12 +196,22 @@ export default function StatsPage() {
                 <li key={p.id} className="flex items-center gap-3 py-2.5">
                   <MemberAvatar id={p.id} name={p.name} className="h-8 w-8" />
                   <span className="flex-1 truncate text-sm">{p.name}</span>
-                  <span className="text-sm font-medium">
-                    {money(p.amount)}
-                  </span>
-                  <span className="w-12 text-right text-xs text-muted-foreground">
-                    {total > 0 ? Math.round((p.amount / total) * 100) : 0}%
-                  </span>
+                  {isAdmin ? (
+                    <>
+                      <span className="text-sm font-medium">
+                        {money(p.amount)}
+                      </span>
+                      <span className="w-12 text-right text-xs text-muted-foreground">
+                        {total > 0 ? Math.round((p.amount / total) * 100) : 0}%
+                      </span>
+                    </>
+                  ) : (
+                    // Members see that everyone is covering bills, not how
+                    // much each of them has spent.
+                    <span className="text-sm text-muted-foreground">
+                      {p.count} {p.count === 1 ? "expense" : "expenses"}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -216,12 +244,8 @@ export default function StatsPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{b.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {b.amountType === "variable"
-                        ? b.amount > 0
-                          ? `~${money(b.amount)}, varies`
-                          : "amount varies"
-                        : money(b.amount)}{" "}
-                      · paid by {b.paidByName} · next {b.nextRun}
+                      {billAmountLabel(b, money)} · paid by {b.paidByName} ·
+                      next {b.nextRun}
                     </p>
                   </div>
                   <Badge variant="secondary" className="capitalize">
@@ -266,4 +290,22 @@ export default function StatsPage() {
       </Sheet>
     </div>
   );
+}
+
+/**
+ * How a recurring bill's cost reads in the list. `amount` is `null` when the
+ * viewer isn't the admin, in which case the bill still shows — just without
+ * what it costs.
+ */
+function billAmountLabel(
+  bill: RecurringBill,
+  money: (amount: number) => string,
+): string {
+  if (bill.amount === null) {
+    return bill.amountType === "variable" ? "amount varies" : "amount hidden";
+  }
+  if (bill.amountType === "variable") {
+    return bill.amount > 0 ? `~${money(bill.amount)}, varies` : "amount varies";
+  }
+  return money(bill.amount);
 }

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trash2, Paperclip, Package } from "lucide-react";
-import { MemberAvatar } from "@/components/member-avatar";
+import { Amount } from "@/components/amount";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -118,11 +118,26 @@ export function ExpenseItem({
           </p>
         </div>
         <div className="text-right">
-          <p className="font-semibold">{money(expense.amount)}</p>
-          {yourShare && (
-            <p className="text-xs text-muted-foreground">
-              your share {money(yourShare.amount)}
-            </p>
+          {/* The total is only sent to people allowed to see it; everyone
+              else gets their own share and nothing more. */}
+          {expense.amount !== null ? (
+            <>
+              <p className="font-semibold">
+                <Amount value={expense.amount} />
+              </p>
+              {yourShare && (
+                <p className="text-xs text-muted-foreground">
+                  your share {money(yourShare.amount)}
+                </p>
+              )}
+            </>
+          ) : yourShare ? (
+            <>
+              <p className="font-semibold">{money(yourShare.amount)}</p>
+              <p className="text-xs text-muted-foreground">your share</p>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">not your split</p>
           )}
         </div>
       </motion.div>

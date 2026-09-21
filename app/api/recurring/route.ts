@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { requireHousehold, handle, ApiError } from "@/lib/api";
+import { requireHousehold, requireViewer, handle, ApiError } from "@/lib/api";
 import {
   getRecurringBills,
   getPendingRecurringCharges,
@@ -9,25 +9,30 @@ import {
 import { recurringSchema } from "@/lib/validation";
 import { validateSplits, validateSplitShape } from "@/lib/settlement";
 import { logActivity } from "@/lib/activity";
-import { formatCurrency } from "@/lib/utils";
+import { redactPendingCharges, redactRecurringBills } from "@/lib/visibility";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { householdId, viewer } = await requireViewer();
     const [bills, pending] = await Promise.all([
       getRecurringBills(householdId),
       getPendingRecurringCharges(householdId),
     ]);
-    return NextResponse.json({ bills, pending });
+    // A bill's amount is a household cost, so only the admin gets the figure.
+    // Everyone still sees the bill, who pays it and when it runs.
+    return NextResponse.json({
+      bills: redactRecurringBills(bills, viewer),
+      pending: redactPendingCharges(pending, viewer),
+    });
   });
 }
 
 export async function POST(req: Request) {
   return handle(async () => {
-    const { userId, householdId, currency } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
     const body = await req.json();
     const parsed = recurringSchema.safeParse(body);
     if (!parsed.success) {
@@ -71,7 +76,8 @@ export async function POST(req: Request) {
       "recurring_added",
       isVariable
         ? `Added recurring bill “${data.description}” (amount varies, asked each ${per === "wk" ? "week" : "month"})`
-        : `Added recurring bill “${data.description}” (${formatCurrency(amount, currency)}/${per})`,
+        : `Added recurring bill “${data.description}” (per ${per === "wk" ? "week" : "month"})`,
+      isVariable ? null : amount,
     );
     return NextResponse.json({ id: rows[0].id }, { status: 201 });
   });

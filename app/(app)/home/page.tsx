@@ -16,9 +16,13 @@ import type { Balance } from "@/lib/types";
 export default function HomePage() {
   const { currentUserId, household, version } = useAppData();
   const { toast } = useToast();
-  const { data, loading, refetch } = useFetch<{ balances: Balance[] }>(
-    "/api/balances",
-  );
+  // The server decides what this user may see: the admin gets household-wide
+  // balances, everyone else gets what's between them and each roommate.
+  const { data, loading, refetch } = useFetch<{
+    scope: "household" | "personal";
+    balances: Balance[];
+    yourNet: number;
+  }>("/api/balances");
   const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -26,7 +30,7 @@ export default function HomePage() {
   }, [version, refetch]);
 
   const balances = data?.balances ?? [];
-  const mine = balances.find((b) => b.userId === currentUserId);
+  const scope = data?.scope ?? "household";
 
   async function share() {
     if (!household) return;
@@ -45,12 +49,14 @@ export default function HomePage() {
       {loading && !data ? (
         <Skeleton className="h-32 w-full rounded-xl" />
       ) : (
-        <NetSummary net={mine?.net ?? 0} />
+        <NetSummary net={data?.yourNet ?? 0} />
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Balances</CardTitle>
+          <CardTitle className="text-base">
+            {scope === "personal" ? "You and your roommates" : "Balances"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading && !data ? (
@@ -64,15 +70,24 @@ export default function HomePage() {
               No balances yet. Add your first expense with the + button.
             </p>
           ) : (
-            <ul className="divide-y">
-              {balances.map((b) => (
-                <BalanceRow
-                  key={b.userId}
-                  balance={b}
-                  isCurrentUser={b.userId === currentUserId}
-                />
-              ))}
-            </ul>
+            <>
+              <ul className="divide-y">
+                {balances.map((b) => (
+                  <BalanceRow
+                    key={b.userId}
+                    balance={b}
+                    isCurrentUser={b.userId === currentUserId}
+                    scope={scope}
+                  />
+                ))}
+              </ul>
+              {scope === "personal" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  What&apos;s between you and each roommate. Nobody sees what
+                  the house spends overall except the admin.
+                </p>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

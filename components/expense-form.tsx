@@ -22,18 +22,22 @@ import { ReceiptPicker } from "@/components/receipt-picker";
 import { CATEGORIES, type SplitType, type ExpenseCategory, type Expense } from "@/lib/types";
 import { roundMoney } from "@/lib/utils";
 
-/** Reconstruct editor split state from an existing expense (for editing). */
+/**
+ * Reconstruct editor split state from an existing expense (for editing).
+ *
+ * Editing is only offered when the viewer may see the figures, so `amount`
+ * is present here; the fallback just keeps the maths total-safe.
+ */
 function splitStateFromExpense(expense: Expense): SplitState {
   const included = new Set(expense.splits.map((s) => s.userId));
   const values: Record<string, string> = {};
+  const total = expense.amount ?? 0;
   if (expense.splitType === "exact") {
     for (const s of expense.splits) values[s.userId] = s.amount.toFixed(2);
   } else if (expense.splitType === "percent") {
     for (const s of expense.splits) {
       values[s.userId] =
-        expense.amount > 0
-          ? String(Math.round((s.amount / expense.amount) * 100))
-          : "0";
+        total > 0 ? String(Math.round((s.amount / total) * 100)) : "0";
     }
   }
   return { splitType: expense.splitType, included, values };
@@ -54,7 +58,7 @@ export function ExpenseForm({
 
   const [description, setDescription] = React.useState(expense?.description ?? "");
   const [amount, setAmount] = React.useState(
-    expense ? String(expense.amount) : "",
+    expense?.amount != null ? String(expense.amount) : "",
   );
   const [category, setCategory] = React.useState<ExpenseCategory>(
     expense?.category ?? "groceries",

@@ -52,8 +52,12 @@ function PendingRow({
   onResolved: () => void;
 }) {
   const { toast } = useToast();
+  // The typical amount is a pre-fill hint and only reaches the admin; for
+  // everyone else it arrives as null and the field just starts empty.
   const [amount, setAmount] = React.useState(
-    charge.estimatedAmount > 0 ? charge.estimatedAmount.toFixed(2) : "",
+    charge.estimatedAmount && charge.estimatedAmount > 0
+      ? charge.estimatedAmount.toFixed(2)
+      : "",
   );
   const [receiptUrl, setReceiptUrl] = React.useState<string | null>(null);
   const [showReceipt, setShowReceipt] = React.useState(false);
