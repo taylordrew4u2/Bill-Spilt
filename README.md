@@ -73,16 +73,16 @@ It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-de
 | | |
 |---|---|
 | 🧾 **Log expenses in seconds** | Description, amount, category, and a split type — equal, exact, or percentage. |
-| ⚖️ **Instant balances** | Home screen shows each person's net position (green = owed, red = owes), plus pairwise "what you owe X". |
+| ⚖️ **Instant balances** | Home screen shows your own position up top. Admins see every member's net; everyone else sees what's between them and each roommate — "you owe X", "Y owes you". |
 | 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list, with history + undo. |
 | 💳 **Ways to pay** | Each roommate shares Venmo / Cash App handles — shown (with deep links + copy) when you owe them. |
 | 👑 **Multiple admins** | Any leaseholder can be an admin. Admins can rename the household, manage members, promote others, and settle everyone in one tap. Activity log included. |
 | 🔗 **One-tap invite links** | Share a link via the native share sheet — your roommate taps it and is dropped straight into the household. No code to type, no "Create vs. Join" decision: logged-in users join instantly; new users are auto-joined the moment they sign up. The raw code stays as a manual fallback. |
 | 🔑 **Invite code (admin-only)** | Only admins can see and regenerate the invite code, invalidating the old link at any time. |
-| 🔒 **Private split breakdown** | The person who added an expense sees the full per-person breakdown. Everyone else sees just the total and their own share. |
+| 🔒 **Amounts are private** | The house doesn't publish what it spends. Admins see every figure; everyone else sees only money that's theirs — their share of an expense, their balance, and payments they're part of. Household totals and other people's spend never leave the server ([`lib/visibility.ts`](lib/visibility.ts)). |
 | 🔁 **Recurring bills** | Fixed bills (rent, subscriptions) auto-logged daily by a Vercel Cron job; bills that change each cycle (electric, wifi) prompt for the real amount when they come due. |
 | 📸 **Receipts** | Attach a camera photo, a picture from the library, or a file — including a PDF statement. Stored in Postgres, no object store to provision. |
-| 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; download the full ledger any time. |
+| 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; export any time — the full ledger for admins, your own shares for everyone else. |
 | 🔐 **Auth + password reset** | Credentials auth with a self-serve email reset flow (SMTP). |
 | 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
 | 📲 **Installable PWA** | Standalone display, app icons, dark mode, install prompt, home-screen shortcuts. |
@@ -150,6 +150,9 @@ The HTTP SQL path runs one statement per request, so there's no `BEGIN`/`COMMIT`
 
 ### 7. Auth and security
 NextAuth v5 (Credentials) with **bcrypt-hashed passwords**, stateless **JWT sessions**, and an **Edge middleware** gate that's intentionally scoped to page routes only — API routes self-authorize and return JSON `401`s rather than HTML redirects. Every query is parameterized; the schema **bootstraps itself idempotently** on first request (no migration step to forget). The cron endpoint is protected by a bearer secret.
+
+### 8. Amounts are private by default
+The ledger exists to document that everyone paid up, not to broadcast what the house spends — so money is scoped to whoever it belongs to. [`lib/visibility.ts`](lib/visibility.ts) holds the whole rule in one place (admin sees all; a member sees their own share, their own balances, and transfers they're a party to) and the API routes redact **before the JSON leaves the server**, so a hidden figure never reaches a browser that could read it out of the network tab. Hidden amounts come back as `null`, not `0`, so the UI can say "—" instead of quietly showing a wrong number. The rules that could leak a figure indirectly are closed too: recording or undoing a payment is limited to the two people in it, which stops the "that's more than they owe" validation from being used to binary-search a balance.
 
 ---
 
@@ -270,6 +273,7 @@ lib/
   site.ts                               Canonical SEO metadata (URL, keywords, …)
   expenses.ts                           Atomic expense + splits write
   queries.ts                            Read models & balance aggregation
+  visibility.ts                         Who may see which amount (server-side redaction)
   offline-db.ts · sync.ts               IndexedDB queue & sync
 public/                                 manifest.json · generated icons · service worker
 scripts/generate-icons.mjs             Zero-dependency PNG icon generator

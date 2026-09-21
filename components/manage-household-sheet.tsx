@@ -25,7 +25,7 @@ import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { MemberDetailSheet } from "@/components/member-detail-sheet";
 import { useToast } from "@/components/ui/toaster";
 import { CURRENCIES, type Member } from "@/lib/types";
-import { useAppData } from "@/components/app-data";
+import { useAppData, useMoney } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { timeAgo, shareInvite } from "@/lib/utils";
 
@@ -34,6 +34,8 @@ interface ActivityEntry {
   actorName: string;
   action: string;
   detail: string | null;
+  /** `null` when the entry had no money, or when this viewer may not see it. */
+  amount: number | null;
   createdAt: string;
 }
 
@@ -47,6 +49,7 @@ export function ManageHouseholdSheet({
   const { household, members, currentUserId, isAdmin, version, refresh, mutate } =
     useAppData();
   const { toast } = useToast();
+  const money = useMoney();
 
   // Only fetch activity while the sheet is open.
   const activityQ = useFetch<{ activity: ActivityEntry[] }>(
@@ -413,6 +416,7 @@ export function ManageHouseholdSheet({
                     <span className="font-medium">{a.actorName}</span>{" "}
                     <span className="text-muted-foreground">
                       {a.detail ?? a.action.replace(/_/g, " ")}
+                      {a.amount !== null && ` (${money(a.amount)})`}
                     </span>
                   </span>
                   <span className="flex-shrink-0 text-xs text-muted-foreground">

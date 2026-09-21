@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { requireHousehold, handle, ApiError } from "@/lib/api";
+import { requireHousehold, requireViewer, handle, ApiError } from "@/lib/api";
 import { updateExpense } from "@/lib/expenses";
 import { findNonMembers } from "@/lib/queries";
 import { expenseSchema } from "@/lib/validation";
 import { invalidatePlan } from "@/lib/cache";
 import { logActivity } from "@/lib/activity";
-import { formatCurrency } from "@/lib/utils";
+import { canSeeExpenseTotal } from "@/lib/visibility";
 
 export const runtime = "nodejs";
 
@@ -43,7 +43,27 @@ export async function PATCH(
 ) {
   return handle(async () => {
     const { id: expenseId } = await params;
-    const { userId, householdId, currency } = await requireHousehold();
+    const { userId, householdId, viewer } = await requireViewer();
+
+    // Editing rewrites every figure on the expense, so it's limited to the
+    // people who can see them: the admin, the payer, and whoever logged it.
+    const { rows: existing } = await sql`
+      SELECT paid_by, created_by FROM expenses
+      WHERE id = ${expenseId} AND household_id = ${householdId}
+      LIMIT 1
+    `;
+    if (existing.length === 0) throw new ApiError(404, "Expense not found");
+    const editable = canSeeExpenseTotal(
+      { paidBy: existing[0].paid_by, createdBy: existing[0].created_by ?? null },
+      viewer,
+    );
+    if (!editable) {
+      throw new ApiError(
+        403,
+        "Only the household admin, the payer, or whoever logged this can edit it",
+      );
+    }
+
     const body = await req.json();
     const parsed = expenseSchema.safeParse(body);
     if (!parsed.success) {
@@ -72,7 +92,8 @@ export async function PATCH(
       householdId,
       userId,
       "expense_edited",
-      `Edited “${data.description}” (${formatCurrency(data.amount, currency)})`,
+      `Edited “${data.description}”`,
+      data.amount,
     );
     return NextResponse.json({ ok: true });
   });

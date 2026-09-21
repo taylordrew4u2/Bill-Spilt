@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { sql, ensureSchema } from "@/lib/db";
 import { createExpense } from "@/lib/expenses";
 import { logActivity } from "@/lib/activity";
-import { formatCurrency } from "@/lib/utils";
 import { pruneOrphanReceipts } from "@/lib/receipts";
 import type { SplitInput } from "@/lib/types";
 
@@ -81,7 +80,8 @@ export async function GET(req: Request) {
           bill.household_id,
           null,
           "recurring_charged",
-          `Auto-logged recurring bill “${bill.description}” (${formatCurrency(Number(bill.amount), bill.household_currency ?? "USD")})`,
+          `Auto-logged recurring bill “${bill.description}”`,
+          Number(bill.amount),
         );
       }
 

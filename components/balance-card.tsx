@@ -40,18 +40,38 @@ export function NetSummary({ net }: { net: number }) {
   );
 }
 
-/** Per-member net balance row. */
+/**
+ * Per-member balance row.
+ *
+ * "household" scope is the admin's view: each member's net across the whole
+ * house. "personal" scope is what everyone else sees: the balance strictly
+ * between them and that roommate — their own money, and no house totals.
+ */
 export function BalanceRow({
   balance,
   isCurrentUser,
+  scope = "household",
 }: {
   balance: Balance;
   isCurrentUser: boolean;
+  scope?: "household" | "personal";
 }) {
   const money = useMoney();
   const { net } = balance;
   const owed = net > 0.005;
   const owes = net < -0.005;
+  const label =
+    scope === "personal"
+      ? owed
+        ? "owes you"
+        : owes
+          ? "you owe"
+          : "settled up with you"
+      : owed
+        ? "gets back"
+        : owes
+          ? "owes"
+          : "settled up";
   return (
     <li className="flex items-center gap-3 py-3">
       <MemberAvatar id={balance.userId} name={balance.name} />
@@ -62,9 +82,7 @@ export function BalanceRow({
             <span className="ml-1 text-xs text-muted-foreground">(you)</span>
           )}
         </p>
-        <p className="text-xs text-muted-foreground">
-          {owed ? "gets back" : owes ? "owes" : "settled up"}
-        </p>
+        <p className="text-xs text-muted-foreground">{label}</p>
       </div>
       <div
         className={cn(

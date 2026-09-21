@@ -56,9 +56,11 @@ export function ExpenseDetailSheet({
                     {cat?.label ?? "Other"} · {formatDate(expense.createdAt)}
                   </SheetDescription>
                 </div>
-                <span className="ml-auto text-2xl font-extrabold">
-                  {money(expense.amount)}
-                </span>
+                {expense.amount !== null && (
+                  <span className="ml-auto text-2xl font-extrabold">
+                    {money(expense.amount)}
+                  </span>
+                )}
               </div>
             </SheetHeader>
 
@@ -77,7 +79,10 @@ export function ExpenseDetailSheet({
 
             <Separator className="my-4" />
 
-            {expense.createdBy !== null && expense.createdBy === currentUserId ? (
+            {/* The server only sends the full split to people allowed to see
+                it (the admin, the payer, whoever logged it). Everyone else
+                gets their own row, so show that instead. */}
+            {expense.amount !== null ? (
               <>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Split between
@@ -109,6 +114,10 @@ export function ExpenseDetailSheet({
                     <p className="text-sm text-muted-foreground">You&apos;re not in this split</p>
                   );
                 })()}
+                <p className="mt-2 text-xs text-muted-foreground">
+                  What this came to in total is between the person who paid it
+                  and the household admin.
+                </p>
               </>
             )}
 
@@ -154,7 +163,9 @@ export function ExpenseDetailSheet({
               </>
             )}
 
-            {onEdit && (
+            {/* Editing rewrites every figure, so it's offered only to those
+                who can see them — the server enforces the same rule. */}
+            {onEdit && expense.amount !== null && (
               <Button
                 variant="outline"
                 className="mt-5 w-full"

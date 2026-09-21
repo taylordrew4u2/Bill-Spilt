@@ -1,25 +1,26 @@
 import { NextResponse } from "next/server";
-import { requireHousehold, handle, ApiError } from "@/lib/api";
+import { requireHousehold, requireViewer, handle, ApiError } from "@/lib/api";
 import { getExpenses, findNonMembers } from "@/lib/queries";
 import { createExpense } from "@/lib/expenses";
 import { expenseSchema } from "@/lib/validation";
 import { logActivity } from "@/lib/activity";
-import { formatCurrency } from "@/lib/utils";
+import { redactExpenses } from "@/lib/visibility";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   return handle(async () => {
-    const { householdId } = await requireHousehold();
+    const { householdId, viewer } = await requireViewer();
     const expenses = await getExpenses(householdId);
-    return NextResponse.json({ expenses });
+    // Totals and other people's shares are stripped here, not in the UI.
+    return NextResponse.json({ expenses: redactExpenses(expenses, viewer) });
   });
 }
 
 export async function POST(req: Request) {
   return handle(async () => {
-    const { userId, householdId, currency } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
     const body = await req.json();
     const parsed = expenseSchema.safeParse(body);
     if (!parsed.success) {
@@ -49,7 +50,8 @@ export async function POST(req: Request) {
       householdId,
       userId,
       "expense_added",
-      `Added “${data.description}” (${formatCurrency(data.amount, currency)})`,
+      `Added “${data.description}”`,
+      data.amount,
     );
     return NextResponse.json({ id }, { status: 201 });
   });
