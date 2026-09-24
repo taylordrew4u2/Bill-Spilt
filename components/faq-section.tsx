@@ -1,3 +1,5 @@
+import { ChevronDown } from "lucide-react";
+
 export interface FaqItem {
   q: string;
   a: string;
@@ -15,17 +17,36 @@ export function faqJsonLd(faq: FaqItem[]) {
   };
 }
 
-/** The "Frequently asked questions" card list shared by every guide page. */
-export function FaqSection({ faq }: { faq: FaqItem[] }) {
+/**
+ * The "Frequently asked questions" list shared by every guide page: one
+ * grouped card of native disclosure rows. Each question is a full-width,
+ * 56px+ tap target; answers stay in the HTML (and in search results) while
+ * collapsed, and it all works without JavaScript.
+ */
+export function FaqSection({
+  faq,
+  title = "Frequently asked questions",
+}: {
+  faq: FaqItem[];
+  title?: string;
+}) {
   return (
-    <section className="mt-12">
-      <h2 className="text-2xl font-bold">Frequently asked questions</h2>
-      <div className="mt-5 space-y-4">
+    <section className="mt-12 md:mt-14">
+      <h2 className="text-balance text-2xl font-bold tracking-tight">{title}</h2>
+      <div className="mt-4 divide-y overflow-hidden rounded-2xl border bg-card">
         {faq.map((item) => (
-          <div key={item.q} className="rounded-xl border bg-card p-5">
-            <h3 className="font-semibold">{item.q}</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">{item.a}</p>
-          </div>
+          <details key={item.q} className="group">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent [&::-webkit-details-marker]:hidden">
+              <h3 className="min-w-0 flex-1 text-base font-semibold leading-snug">
+                {item.q}
+              </h3>
+              <ChevronDown
+                className="h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+                aria-hidden
+              />
+            </summary>
+            <p className="px-4 pb-4 text-base/relaxed text-foreground/85">{item.a}</p>
+          </details>
         ))}
       </div>
     </section>

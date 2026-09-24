@@ -132,9 +132,11 @@ export function ExpenseItem({
 
         <div className="min-w-0 flex-1">
           {/* The description gets the whole line except the amount, and may
-              wrap to two lines rather than truncate to a few characters. */}
-          <div className="flex items-start gap-3">
-            <p className="line-clamp-2 min-w-0 flex-1 text-base font-medium leading-snug">
+              wrap to two lines rather than truncate to a few characters. A
+              wide amount (e.g. "CHF 12,345.67" on a 320px phone) drops onto
+              its own line instead of squeezing the description. */}
+          <div className="flex flex-wrap items-start justify-end gap-x-3">
+            <p className="line-clamp-2 min-w-0 grow basis-24 break-words text-base font-medium leading-snug">
               {expense.description}
             </p>
             <p className="flex-shrink-0 whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
@@ -151,7 +153,7 @@ export function ExpenseItem({
                     <span className="sr-only">Receipt attached. </span>
                   </>
                 )}
-                <span className="truncate">
+                <span className="line-clamp-2 min-w-0 break-words">
                   {paidByYou ? "You" : expense.paidByName} paid
                 </span>
               </MetaPart>

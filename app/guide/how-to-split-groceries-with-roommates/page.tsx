@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  GuideShell,
+  NumberedSections,
+  Paragraph,
+  proseLink,
+} from "@/components/guide-shell";
 import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
@@ -80,31 +87,17 @@ const JSON_LD = {
 export default function SplitGroceriesGuide() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        How to split groceries with roommates fairly
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader eyebrow="Guide" title="How to split groceries with roommates fairly">
         Rent is one number a month. Groceries are a dozen small trips, mixed
         carts, and the eternal question of who finished the milk. That&apos;s why
         food is where shared-household budgets quietly go wrong. Here are four
         systems that work — pick the one that fits how your house actually eats.
-      </p>
+      </ArticleHeader>
 
-      <div className="mt-10 space-y-8">
-        {SYSTEMS.map((s, i) => (
-          <section key={s.name}>
-            <h2 className="flex items-baseline gap-2 text-xl font-bold">
-              <span className="text-primary">{i + 1}.</span> {s.name}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{s.text}</p>
-          </section>
-        ))}
-      </div>
+      <NumberedSections items={SYSTEMS} className="mt-10" />
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">A worked example</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="A worked example">
+        <Paragraph>
           Three roommates run the shared-staples system. This week Maya does the
           big shop: <strong>$96 total</strong>, of which <strong>$60</strong> is
           shared staples (oil, coffee, eggs, cleaning supplies) and{" "}
@@ -112,31 +105,24 @@ export default function SplitGroceriesGuide() {
           a $60 shared expense split three ways — <strong>$20 each</strong> — and
           leaves her $36 off the ledger. The other two owe her $20 apiece;
           she&apos;s already covered her own share by paying the bill.
-        </p>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <Paragraph>
           Need to divide a mixed cart quickly?{" "}
-          <Link href="/split-calculator" className="font-medium text-primary hover:underline">
+          <Link href="/split-calculator" className={proseLink}>
             The free split calculator
           </Link>{" "}
           handles even and custom splits with no sign-up.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12 rounded-2xl border bg-card p-6">
-        <h2 className="text-xl font-bold">Keep the grocery ledger effortless</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleCta title="Keep the grocery ledger effortless" cta="Start splitting groceries — free">
+        <Paragraph>
           Snap the receipt, enter the shared amount, and split it evenly or by
           exact amounts — BillSpilt keeps a running balance so groceries settle
           up alongside rent and utilities in the fewest payments. Free forever,
           no paywall, no credit card.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Start splitting groceries — free <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+        </Paragraph>
+      </ArticleCta>
 
       <FaqSection faq={FAQ} />
     </GuideShell>
