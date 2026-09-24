@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { CookieConsent } from "@/components/cookie-consent";
-import { ZoomHint } from "@/components/zoom-hint";
 import { ADSENSE_CLIENT } from "@/lib/ads-config";
 import { getNonce } from "@/lib/nonce";
+import { VIEWPORT_FIX_SCRIPT } from "@/lib/viewport-fix";
 import {
   SITE_URL,
   SITE_NAME,
@@ -102,6 +102,9 @@ export default async function RootLayout({
             __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`,
           }}
         />
+        {/* Keep phones in "Desktop site" mode on the phone layout, at phone
+            size — see lib/viewport-fix.ts. Before paint, so no flash. */}
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: VIEWPORT_FIX_SCRIPT }} />
         {/* AdSense site verification (meta tag). The ad *script* loads only on
             authenticated content pages — see components/app-shell.tsx — so ads
             never appear on the login/empty screens (AdSense inventory policy). */}
@@ -109,7 +112,6 @@ export default async function RootLayout({
       <body className="min-h-[100dvh] antialiased">
         <Providers>{children}</Providers>
         <CookieConsent />
-        <ZoomHint />
       </body>
     </html>
   );
