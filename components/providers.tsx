@@ -10,10 +10,21 @@ import { syncPending } from "@/lib/sync";
  * trigger that flushes queued offline expenses whenever the app comes online.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  // Re-apply the desktop-mode phone fix once React owns the page: a client
-  // re-render of <html> can drop the attributes the <head> script set.
-  React.useEffect(() => {
+  // Re-apply what the <head> scripts put on <html> — the desktop-mode phone
+  // fix and the dark theme — once React owns the page, before paint: a
+  // client re-render of <html> (e.g. recovering from a hydration error) drops
+  // those attributes.
+  React.useLayoutEffect(() => {
     (window as Window & { __bbViewportFix?: () => void }).__bbViewportFix?.();
+    try {
+      const t = localStorage.getItem("theme");
+      const dark =
+        t === "dark" ||
+        (!t && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.classList.toggle("dark", dark);
+    } catch {
+      /* storage unavailable */
+    }
   }, []);
 
   React.useEffect(() => {

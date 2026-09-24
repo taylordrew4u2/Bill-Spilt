@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 // `box` sets the rendered size in rem so the badge scales with the rest of
 // the UI (see lib/viewport-fix.ts); `px` is only the intrinsic image size.
 const SIZES = {
-  sm: { px: 28, box: "h-7 w-7", text: "text-base", radius: "rounded-lg" },
+  sm: { px: 28, box: "h-7 w-7", text: "text-base", radius: "rounded-[0.5rem]" },
   md: { px: 36, box: "h-9 w-9", text: "text-xl", radius: "rounded-[0.625rem]" },
   lg: { px: 48, box: "h-12 w-12", text: "text-3xl", radius: "rounded-xl" },
 } as const;

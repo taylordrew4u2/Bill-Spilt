@@ -42,7 +42,7 @@ export function AdSenseUnit({
 
   return (
     <ins
-      className={`adsbygoogle block ${className ?? ""}`}
+      className={`adsbygoogle bb-ad block ${className ?? ""}`}
       style={{ display: "block" }}
       data-ad-client={ADSENSE_CLIENT}
       data-ad-slot={adSlot}

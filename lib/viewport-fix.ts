@@ -19,28 +19,61 @@
  * variants follow the phone's width rather than the 980px layout.
  *
  * The layout width comes from documentElement.clientWidth, which pinch-zoom
- * doesn't change (iOS's innerWidth does). 1.5x targets desktop mode (2.3–2.7x
- * on phones) and leaves a user's own mild page zoom alone. Re-evaluated on
- * resize and rotation, and exposed as window.__bbViewportFix so the app can
- * re-apply it if React ever resets <html>. Plain ES5, and wrapped so a
- * failure can't block the page.
+ * doesn't change (iOS's innerWidth does). A layout at least 960px wide is
+ * desktop mode, where any real shrink (>= 1.15x) is corrected — that covers
+ * small phones in landscape and foldables (1.3–1.5x). Narrower layouts are
+ * page zoom, corrected only from 1.5x so a user's own mild zoom-out is left
+ * alone. Orientation comes from the device (window.orientation, else the
+ * screen's own shape), not the viewport's aspect, which differs from the
+ * device's in a split-screen window; a window
+ * narrower than the screen is measured by its visual viewport. Re-evaluated
+ * on resize, rotation and load — skipped when nothing changed, since mobile
+ * browsers fire resize while the URL bar hides on scroll — and exposed as
+ * window.__bbViewportFix so the app can force a re-apply if React ever resets
+ * <html>. Plain ES5, and wrapped so a failure can't block the page.
  */
+
+/** Breakpoints (px) shared with the Tailwind config's responsive variants.
+ *  Under the fix each one the real screen width meets sets `bb-w<N>`. */
+export const BREAKPOINTS = {
+  xs: 360,
+  w400: 400,
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  "2xl": 1536,
+} as const;
+
+// The fix only applies below 768px, so only the breakpoints under that can
+// ever be met.
+const PHONE_BREAKPOINTS = Object.values(BREAKPOINTS).filter((px) => px < 768);
+
 export const VIEWPORT_FIX_SCRIPT = `(function(){try{
-var d=document.documentElement,mq=window.matchMedia,BP=[360,400,640,768,1024,1280,1536];
-function run(){
-  var on=false,r=1,dw=0;
+var d=document.documentElement,mq=window.matchMedia,BP=${JSON.stringify(PHONE_BREAKPOINTS)},last='';
+function run(force){
+  var on=false,r=1,dw=0,lw=d.clientWidth||window.innerWidth;
   if(mq&&mq('(pointer: coarse)').matches){
-    var land=mq('(orientation: landscape)').matches;
+    var wo=window.orientation;
+    var land=typeof wo==='number'?(wo===90||wo===-90):screen.width>screen.height;
     dw=land?Math.max(screen.width,screen.height):Math.min(screen.width,screen.height);
-    var lw=d.clientWidth||window.innerWidth;
-    if(dw&&dw<768&&lw/dw>=1.5){on=true;r=Math.round(lw/dw*1000)/1000;}
+    var vv=window.visualViewport;
+    if(vv&&vv.scale<1){var pw=vv.width*vv.scale;if(pw>100&&pw<dw-1){dw=pw;}}
+    var ratio=dw?lw/dw:1;
+    if(dw&&dw<768&&ratio>=(lw>=960?1.15:1.5)){on=true;r=Math.round(ratio*1000)/1000;}
   }
+  var key=on+'|'+r+'|'+dw;
+  if(!force&&key===last){return;}
+  last=key;
   d.classList.toggle('bb-phone-fix',on);
   for(var i=0;i<BP.length;i++){d.classList.toggle('bb-w'+BP[i],on&&dw>=BP[i]);}
   d.style.fontSize=on?(r*100)+'%':'';
+  d.style.setProperty('--bb-r',String(r));
 }
-window.__bbViewportFix=run;
-run();
-window.addEventListener('resize',run);
-window.addEventListener('orientationchange',run);
+window.__bbViewportFix=function(){run(true);};
+run(true);
+window.addEventListener('resize',function(){run();});
+window.addEventListener('orientationchange',function(){run();});
+window.addEventListener('load',function(){run();});
+if(window.visualViewport){window.visualViewport.addEventListener('resize',function(){run();});}
 }catch(e){}})();`;
