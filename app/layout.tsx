@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { CookieConsent } from "@/components/cookie-consent";
+import { ZoomHint } from "@/components/zoom-hint";
 import { ADSENSE_CLIENT } from "@/lib/ads-config";
 import { getNonce } from "@/lib/nonce";
 import {
@@ -108,6 +109,7 @@ export default async function RootLayout({
       <body className="min-h-[100dvh] antialiased">
         <Providers>{children}</Providers>
         <CookieConsent />
+        <ZoomHint />
       </body>
     </html>
   );
