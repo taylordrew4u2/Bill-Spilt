@@ -33,7 +33,8 @@ function snapshot(build: string): Snapshot {
     standalone:
       matchMedia("(display-mode: standalone)").matches || nav.standalone === true,
     bodyFontPx: parseFloat(getComputedStyle(document.body).fontSize),
-    htmlZoom: getComputedStyle(document.documentElement).zoom || null,
+    phoneFix: document.documentElement.classList.contains("bb-phone-fix"),
+    htmlFontPx: parseFloat(getComputedStyle(document.documentElement).fontSize),
     viewportMeta: meta?.getAttribute("content") ?? null,
     swControlled: !!navigator.serviceWorker?.controller,
     uaMobile: nav.userAgentData?.mobile ?? null,
@@ -74,11 +75,13 @@ export function DisplayCheck({ build }: { build: string }) {
     return () => clearTimeout(t);
   }, [build, send]);
 
+  // Same measure the fix uses (lib/viewport-fix.ts): layout width from
+  // clientWidth, which pinch-zoom doesn't change.
   const shrunk =
     snap &&
-    typeof snap.innerWidth === "number" &&
+    typeof snap.clientWidth === "number" &&
     typeof snap.screenWidth === "number" &&
-    snap.innerWidth > snap.screenWidth * 1.15;
+    snap.clientWidth > snap.screenWidth * 1.15;
 
   return (
     <main className="mx-auto min-h-[100dvh] max-w-lg px-gutter py-8 safe-top safe-bottom">
@@ -96,17 +99,21 @@ export function DisplayCheck({ build }: { build: string }) {
         ) : (
           <>
             <p className="text-lg font-semibold">
-              {shrunk
-                ? "Your phone is showing the wide desktop layout."
-                : "Your phone is showing the phone layout."}
+              {snap.phoneFix
+                ? "Your browser is in desktop mode — BillSpilt switched it back to the phone layout."
+                : shrunk
+                  ? "Your phone is showing the wide desktop layout."
+                  : "Your phone is showing the phone layout."}
             </p>
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               <dt className="text-muted-foreground">Page width</dt>
-              <dd className="tabular-nums">{String(snap.innerWidth)}</dd>
+              <dd className="tabular-nums">{String(snap.clientWidth)}</dd>
               <dt className="text-muted-foreground">Screen width</dt>
               <dd className="tabular-nums">{String(snap.screenWidth)}</dd>
               <dt className="text-muted-foreground">Zoom</dt>
               <dd className="tabular-nums">{String(snap.vvScale)}</dd>
+              <dt className="text-muted-foreground">Auto-fix on</dt>
+              <dd>{snap.phoneFix ? "Yes" : "No"}</dd>
               <dt className="text-muted-foreground">Installed app</dt>
               <dd>{snap.standalone ? "Yes" : "No"}</dd>
               <dt className="text-muted-foreground">Version</dt>

@@ -155,7 +155,7 @@ export function ExpenseDetailSheet({
                       <MemberAvatar
                         id={s.userId}
                         name={s.name}
-                        className="hidden h-10 w-10 min-[360px]:flex"
+                        className="hidden h-10 w-10 xs:flex"
                       />
                       <span className="line-clamp-2 min-w-0 flex-1 basis-40 break-words text-base font-medium">
                         {s.name}
@@ -180,7 +180,7 @@ export function ExpenseDetailSheet({
                       <MemberAvatar
                         id={myShare.userId}
                         name={myShare.name}
-                        className="hidden h-10 w-10 min-[360px]:flex"
+                        className="hidden h-10 w-10 xs:flex"
                       />
                       <span className="min-w-0 flex-1 truncate text-base font-medium">
                         You

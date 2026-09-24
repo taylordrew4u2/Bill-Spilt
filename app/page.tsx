@@ -240,12 +240,12 @@ export default async function LandingPage() {
           className="absolute inset-x-0 top-0 -z-10 h-[34rem] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"
         />
         <div className="mx-auto max-w-3xl px-gutter pb-14 pt-10 text-center sm:pb-20 sm:pt-20">
-          <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight min-[400px]:text-4xl sm:text-5xl sm:leading-[1.08] md:text-6xl">
+          <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight w400:text-4xl sm:text-5xl sm:leading-[1.08] md:text-6xl">
             Split bills with your roommates.
             <br />
             <span className="text-primary">Settle up in seconds.</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-pretty text-base text-muted-foreground min-[400px]:text-lg sm:text-xl sm:leading-8">
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-base text-muted-foreground w400:text-lg sm:text-xl sm:leading-8">
             BillSpilt is the free roommate bill splitter: log shared expenses,
             see who owes what instantly, and clear every debt in the fewest
             payments.
@@ -438,10 +438,10 @@ export default async function LandingPage() {
           </p>
           <Link
             href="/register"
-            className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary-foreground px-4 text-lg font-semibold text-primary shadow-sm transition-transform active:scale-[0.98] max-[359px]:text-base sm:w-auto sm:px-8"
+            className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary-foreground px-4 text-lg font-semibold text-primary shadow-sm transition-transform active:scale-[0.98] max-xs:text-base sm:w-auto sm:px-8"
           >
             Create your free account{" "}
-            <ArrowRight className="h-5 w-5 flex-shrink-0 max-[359px]:hidden" aria-hidden />
+            <ArrowRight className="h-5 w-5 flex-shrink-0 max-xs:hidden" aria-hidden />
           </Link>
           <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm font-medium text-primary-foreground/90">
             {["Takes a minute", "No credit card", "Works on every phone"].map((t) => (

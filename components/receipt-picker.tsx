@@ -141,7 +141,7 @@ export function ReceiptPicker({
           className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-1 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {pdf ? (
-            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:h-16 min-[360px]:w-16">
+            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground xs:h-16 xs:w-16">
               <FileText className="h-7 w-7" aria-hidden />
             </span>
           ) : (
@@ -150,7 +150,7 @@ export function ReceiptPicker({
               alt="Receipt preview"
               width={64}
               height={64}
-              className="h-12 w-12 flex-shrink-0 rounded-xl border object-cover min-[360px]:h-16 min-[360px]:w-16"
+              className="h-12 w-12 flex-shrink-0 rounded-xl border object-cover xs:h-16 xs:w-16"
               unoptimized
             />
           )}

@@ -146,3 +146,19 @@
     padding-bottom: 0.75rem;
   }
 }
+/* Same on a desktop-mode phone under the fix (lib/viewport-fix.ts), where
+   the 980px layout fails the media query but the tab bar still shows. */
+.bb-phone-fix body:has([data-app-shell]) [data-cookie-consent] {
+  bottom: calc(theme("spacing.tabbar") + env(safe-area-inset-bottom));
+  padding-bottom: 0.75rem;
+}
+
+/*
+ * Ad iframes are sized in px, which the fix's root-font scaling can't reach:
+ * under it they would pick a desktop-size ad and show it at ~40%. Zoom just
+ * the ad container by the same ratio so it gets a phone-size ad at phone
+ * size. (Zoom is safe on this small, gesture-free subtree.)
+ */
+.bb-phone-fix .bb-ad {
+  zoom: var(--bb-r, 1);
+}

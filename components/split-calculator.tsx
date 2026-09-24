@@ -181,13 +181,13 @@ export function SplitCalculator() {
               <Label>Who owes what</Label>
               {currencySelect}
             </div>
-            <ul className="space-y-5 min-[360px]:space-y-3">
+            <ul className="space-y-5 xs:space-y-3">
               {rows.map((r, i) => (
                 // One row from 360px up; on the narrowest phones the amount
                 // drops under the name instead of squeezing both.
                 <li
                   key={r.key}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_7.5rem_auto]"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 xs:grid-cols-[minmax(0,1fr)_7.5rem_auto]"
                 >
                   <Input
                     value={r.name}
@@ -197,7 +197,7 @@ export function SplitCalculator() {
                     className="min-w-0 px-3"
                     maxLength={24}
                   />
-                  <div className="order-last col-span-2 min-[360px]:order-none min-[360px]:col-span-1">
+                  <div className="order-last col-span-2 xs:order-none xs:col-span-1">
                     <CurrencyInput
                       currency={currency}
                       value={r.amount}

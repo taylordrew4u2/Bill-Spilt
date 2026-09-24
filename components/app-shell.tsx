@@ -43,7 +43,7 @@ function TopBar() {
             aria-hidden
             width={28}
             height={28}
-            className="flex-shrink-0 rounded-lg md:hidden"
+            className="h-7 w-7 flex-shrink-0 rounded-lg md:hidden"
           />
           <span className="truncate text-base font-semibold">
             {household?.name ?? "BillSpilt"}
