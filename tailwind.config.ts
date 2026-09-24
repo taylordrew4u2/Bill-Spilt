@@ -10,9 +10,9 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}",
   ],
   theme: {
-    // The responsive variants (sm/md/lg/xl/2xl) are defined by the plugin at
-    // the bottom instead, so they can be switched off on phones that render
-    // the page desktop-wide (see components/viewport-fix.tsx).
+    // The responsive variants are defined by the plugin at the bottom instead,
+    // so they can follow a phone's real width when it renders the page
+    // desktop-wide (see lib/viewport-fix.ts).
     screens: {},
     container: {
       center: true,
@@ -128,15 +128,32 @@ const config: Config = {
   // it, so no page (the login screen included) could render.
   plugins: [
     tailwindcssAnimate,
-    // Standard min-width breakpoints, except when <html> carries
-    // `bb-phone-fix`: a phone in "Desktop site" mode lays the page out 980px
-    // wide, which would otherwise switch on the tablet/desktop layout. There
-    // the page is scaled back to phone size and must keep the phone layout.
+    // Min-width breakpoints (Tailwind's sm–2xl plus two phone widths, `xs`
+    // at 360px and `w400` at 400px, and `max-xs` below 360px). Normally plain
+    // media queries. When <html> carries `bb-phone-fix` — a phone in "Desktop
+    // site" mode, laid out 980px wide and scaled back to phone size — they
+    // follow the phone's real width instead, via the `bb-w<N>` classes the
+    // fix sets. `:where()` keeps specificity identical to core's variants.
     plugin(({ addVariant }) => {
-      const breakpoints = { sm: 640, md: 768, lg: 1024, xl: 1280, "2xl": 1536 };
+      const breakpoints = {
+        xs: 360,
+        w400: 400,
+        sm: 640,
+        md: 768,
+        lg: 1024,
+        xl: 1280,
+        "2xl": 1536,
+      };
       for (const [name, px] of Object.entries(breakpoints)) {
-        addVariant(name, `@media (min-width: ${px}px) { :root:not(.bb-phone-fix) & }`);
+        addVariant(name, [
+          `@media (min-width: ${px}px) { :where(:root:not(.bb-phone-fix)) & }`,
+          `:where(:root.bb-phone-fix.bb-w${px}) &`,
+        ]);
       }
+      addVariant("max-xs", [
+        "@media (max-width: 359px) { :where(:root:not(.bb-phone-fix)) & }",
+        ":where(:root.bb-phone-fix:not(.bb-w360)) &",
+      ]);
     }),
   ],
 };

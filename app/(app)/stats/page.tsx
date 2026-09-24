@@ -85,7 +85,7 @@ function IconTile({ icon: Icon }: { icon: LucideIcon }) {
 /** A leading icon or avatar that gives way on a narrow screen, where the
  *  row's text needs the width more than a picture of what it already says. */
 function Leading({ children }: { children: React.ReactNode }) {
-  return <span className="hidden flex-shrink-0 min-[360px]:block">{children}</span>;
+  return <span className="hidden flex-shrink-0 xs:block">{children}</span>;
 }
 
 function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -213,7 +213,7 @@ function SpendingSkeleton() {
           <ul className="divide-y">
             {[0, 1, 2].map((i) => (
               <li key={i} className="flex items-center gap-3 px-4 py-3">
-                <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl min-[360px]:block" />
+                <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl xs:block" />
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between gap-3">
                     <Skeleton className="h-4 w-24" />
@@ -237,7 +237,7 @@ function RecurringSkeleton() {
       <ul className="divide-y" aria-hidden>
         {[0, 1].map((i) => (
           <li key={i} className="flex items-center gap-3 px-4 py-3">
-            <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl min-[360px]:block" />
+            <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl xs:block" />
             <div className="min-w-0 flex-1 space-y-2">
               <Skeleton className="h-4 w-36" />
               <Skeleton className="h-4 w-28" />
@@ -383,7 +383,7 @@ function RecurringBillSheet({
             <MemberAvatar
               id={bill.paidBy}
               name={bill.paidByName}
-              className="hidden h-7 w-7 flex-shrink-0 min-[360px]:flex"
+              className="hidden h-7 w-7 flex-shrink-0 xs:flex"
             />
           </DetailRow>
           <DetailRow label="Category">
@@ -547,7 +547,7 @@ export default function StatsPage() {
                   <p className="text-sm text-muted-foreground">Total spent</p>
                   {/* One notch smaller on a narrow phone so a six-figure
                       total still sits on one line. */}
-                  <p className="mt-1 break-words text-3xl font-bold tabular-nums tracking-tight min-[360px]:text-4xl">
+                  <p className="mt-1 break-words text-3xl font-bold tabular-nums tracking-tight xs:text-4xl">
                     {money(total)}
                   </p>
                 </div>
@@ -655,7 +655,7 @@ export default function StatsPage() {
                   <Leading>
                     <IconTile icon={Plus} />
                   </Leading>
-                  <Plus className="h-5 w-5 flex-shrink-0 min-[360px]:hidden" aria-hidden />
+                  <Plus className="h-5 w-5 flex-shrink-0 xs:hidden" aria-hidden />
                   Add recurring bill
                 </button>
               </Card>

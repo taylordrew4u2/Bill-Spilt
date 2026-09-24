@@ -108,7 +108,7 @@ export function InstallPrompt() {
               aria-hidden
               width={44}
               height={44}
-              className="flex-shrink-0 rounded-xl"
+              className="h-11 w-11 flex-shrink-0 rounded-xl"
             />
             <div className="min-w-0 flex-1">
               <p className="font-semibold">Install BillSpilt</p>

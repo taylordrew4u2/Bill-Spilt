@@ -250,7 +250,7 @@ export function ProfileSheet({
               <Card className="overflow-hidden">
                 {methods.length === 0 ? (
                   <div className="flex items-center gap-3 px-4 py-4">
-                    <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:flex">
+                    <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground xs:flex">
                       <Wallet className="h-5 w-5" aria-hidden />
                     </span>
                     <p className="min-w-0 text-sm text-muted-foreground">
@@ -263,7 +263,7 @@ export function ProfileSheet({
                       const def = PAYMENT_METHODS.find((p) => p.value === m.type);
                       const label = def?.label ?? m.type;
                       return (
-                        <li key={m.key} className="space-y-3 p-3 min-[360px]:p-4">
+                        <li key={m.key} className="space-y-3 p-3 xs:p-4">
                           <div className="flex gap-2">
                             <Select
                               value={m.type}

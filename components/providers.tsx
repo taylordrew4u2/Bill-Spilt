@@ -10,6 +10,12 @@ import { syncPending } from "@/lib/sync";
  * trigger that flushes queued offline expenses whenever the app comes online.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
+  // Re-apply the desktop-mode phone fix once React owns the page: a client
+  // re-render of <html> can drop the attributes the <head> script set.
+  React.useEffect(() => {
+    (window as Window & { __bbViewportFix?: () => void }).__bbViewportFix?.();
+  }, []);
+
   React.useEffect(() => {
     const onOnline = () => {
       void syncPending();

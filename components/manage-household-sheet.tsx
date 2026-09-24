@@ -302,7 +302,7 @@ export function ManageHouseholdSheet({
       <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
         <SheetHeader className="mb-6">
           <div className="flex items-center gap-3">
-            <span className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary min-[360px]:flex">
+            <span className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary xs:flex">
               <Home className="h-6 w-6" aria-hidden />
             </span>
             <div className="min-w-0">
@@ -349,7 +349,7 @@ export function ManageHouseholdSheet({
                   disabled={regenBusy}
                   className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
                 >
-                  <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:flex">
+                  <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground xs:flex">
                     {regenBusy ? (
                       <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
                     ) : (
@@ -362,7 +362,7 @@ export function ManageHouseholdSheet({
                           so the busy spinner moves next to the label there. */}
                       {regenBusy && (
                         <Loader2
-                          className="h-5 w-5 animate-spin text-muted-foreground min-[360px]:hidden"
+                          className="h-5 w-5 animate-spin text-muted-foreground xs:hidden"
                           aria-hidden
                         />
                       )}
@@ -398,7 +398,7 @@ export function ManageHouseholdSheet({
                         <MemberAvatar
                           id={m.id}
                           name={m.name}
-                          className="hidden h-10 w-10 min-[360px]:flex"
+                          className="hidden h-10 w-10 xs:flex"
                         />
                         <span className="min-w-0 flex-1">
                           <span className="line-clamp-2 break-words text-base font-medium leading-snug">
@@ -528,7 +528,7 @@ export function ManageHouseholdSheet({
               <Card className="divide-y overflow-hidden">
                 {[0, 1, 2].map((i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-3">
-                    <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl min-[360px]:block" />
+                    <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl xs:block" />
                     <div className="min-w-0 flex-1 space-y-2">
                       <Skeleton className="h-4 w-4/5" />
                       <Skeleton className="h-3.5 w-1/2" />
@@ -549,7 +549,7 @@ export function ManageHouseholdSheet({
                         <li key={a.id} className="flex items-start gap-3 px-4 py-3">
                           {/* The entry already says what happened ("Added…",
                               "Deleted…"), so the icon goes on narrow screens. */}
-                          <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:flex">
+                          <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground xs:flex">
                             <Icon className="h-5 w-5" aria-hidden />
                           </span>
                           <div className="min-w-0 flex-1">
@@ -588,7 +588,7 @@ export function ManageHouseholdSheet({
                 disabled={!!busyId}
                 className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
               >
-                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive min-[360px]:flex">
+                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive xs:flex">
                   {busyId === me.id ? (
                     <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
                   ) : (
@@ -598,7 +598,7 @@ export function ManageHouseholdSheet({
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2 text-base font-semibold text-destructive">
                     {busyId === me.id && (
-                      <Loader2 className="h-5 w-5 animate-spin min-[360px]:hidden" aria-hidden />
+                      <Loader2 className="h-5 w-5 animate-spin xs:hidden" aria-hidden />
                     )}
                     Leave household
                   </span>

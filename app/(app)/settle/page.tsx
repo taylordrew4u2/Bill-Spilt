@@ -460,7 +460,7 @@ export default function SettlePage() {
               </section>
             ) : (
               <Card className="flex items-center gap-3 p-4">
-                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-positive-soft text-positive min-[360px]:flex">
+                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-positive-soft text-positive xs:flex">
                   <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden />
                 </span>
                 <div className="min-w-0">
@@ -493,7 +493,7 @@ export default function SettlePage() {
             <SectionLabel id="settle-admin">Admin</SectionLabel>
             <Card className="p-4">
               <div className="flex items-start gap-3">
-                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex">
+                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary xs:flex">
                   <ShieldCheck className="h-5 w-5" aria-hidden />
                 </span>
                 <div className="min-w-0">
@@ -555,7 +555,7 @@ export default function SettlePage() {
                       <MemberAvatar
                         id={s.from}
                         name={s.fromName}
-                        className="hidden h-10 w-10 flex-shrink-0 min-[360px]:flex"
+                        className="hidden h-10 w-10 flex-shrink-0 xs:flex"
                       />
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-3 text-base font-medium leading-snug">
