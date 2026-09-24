@@ -196,7 +196,7 @@ export function AdsAdminSheet({
         <div ref={topRef} />
         <SheetHeader className="mb-6">
           <div className="flex items-center gap-3">
-            <span className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary min-[360px]:flex">
+            <span className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary xs:flex">
               <Megaphone className="h-6 w-6" aria-hidden />
             </span>
             <div className="min-w-0">

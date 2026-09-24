@@ -210,7 +210,7 @@ export function ArticleCta({
         aria-hidden
         width={48}
         height={48}
-        className="rounded-xl shadow-sm"
+        className="h-12 w-12 rounded-xl shadow-sm"
       />
       <h2 className="mt-4 text-balance text-xl font-bold tracking-tight md:text-2xl">
         {title}

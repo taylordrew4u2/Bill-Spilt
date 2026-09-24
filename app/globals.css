@@ -137,39 +137,6 @@
 }
 
 /*
- * Under the desktop-mode phone fix (lib/viewport-fix.ts) the root is zoomed,
- * and zoom scales viewport units too, so a full-screen box would be several
- * screens tall. Divide those heights back down by the same factor.
- */
-.bb-phone-fix .min-h-\[100dvh\] {
-  min-height: calc(100dvh / var(--bb-zoom, 1));
-}
-.bb-phone-fix .h-\[100dvh\] {
-  height: calc(100dvh / var(--bb-zoom, 1));
-}
-.bb-phone-fix .max-h-\[92dvh\] {
-  max-height: calc(92dvh / var(--bb-zoom, 1));
-}
-/*
- * Radix positions dropdowns (Select) from getBoundingClientRect, which
- * reports zoomed pixels, then places them inside the zoomed root, where
- * they get zoomed again: the list opens off-screen, 2.4x too wide. Run the
- * positioning wrapper unzoomed so its coordinates line up, re-zoom the list
- * inside it, and scale the trigger-sized limits it copies back down.
- */
-.bb-phone-fix [data-radix-popper-content-wrapper] {
-  zoom: calc(1 / var(--bb-zoom, 1));
-}
-.bb-phone-fix [data-radix-popper-content-wrapper] > * {
-  zoom: var(--bb-zoom, 1);
-  max-height: min(24rem, calc(var(--radix-select-content-available-height, 100dvh) / var(--bb-zoom, 1))) !important;
-}
-.bb-phone-fix [data-radix-select-viewport] {
-  min-width: calc(var(--radix-select-trigger-width) / var(--bb-zoom, 1)) !important;
-  height: calc(var(--radix-select-trigger-height) / var(--bb-zoom, 1)) !important;
-}
-
-/*
  * Inside the signed-in app the tab bar owns the bottom of the screen, so the
  * cookie notice floats above it instead of covering the navigation.
  */
@@ -178,4 +145,10 @@
     bottom: calc(theme("spacing.tabbar") + env(safe-area-inset-bottom));
     padding-bottom: 0.75rem;
   }
+}
+/* Same on a desktop-mode phone under the fix (lib/viewport-fix.ts), where
+   the 980px layout fails the media query but the tab bar still shows. */
+.bb-phone-fix body:has([data-app-shell]) [data-cookie-consent] {
+  bottom: calc(theme("spacing.tabbar") + env(safe-area-inset-bottom));
+  padding-bottom: 0.75rem;
 }

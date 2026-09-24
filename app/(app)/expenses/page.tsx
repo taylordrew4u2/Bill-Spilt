@@ -397,7 +397,7 @@ function ListSkeleton() {
         <Skeleton className="h-12 w-full rounded-xl" />
         <div className="flex gap-2 overflow-hidden">
           {[56, 104, 72, 88].map((w) => (
-            <Skeleton key={w} className="h-11 flex-shrink-0 rounded-full" style={{ width: w }} />
+            <Skeleton key={w} className="h-11 flex-shrink-0 rounded-full" style={{ width: `${w / 16}rem` }} />
           ))}
         </div>
       </div>
