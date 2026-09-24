@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { CircleAlert, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { acceptInvite } from "@/lib/use-invite";
 
 /**
@@ -38,16 +39,17 @@ export function JoinInvite({
 
   if (error) {
     return (
-      <div className="space-y-4">
-        <p role="alert" className="text-sm font-medium text-destructive">
-          {error}
-        </p>
-        <Link
-          href="/home"
-          className="inline-flex h-11 items-center justify-center rounded-lg border px-6 text-sm font-semibold hover:bg-accent"
+      <div className="w-full space-y-6">
+        <div
+          role="alert"
+          className="flex gap-2.5 rounded-xl bg-destructive/10 px-4 py-3 text-left text-sm font-medium text-destructive"
         >
-          Go to the app
-        </Link>
+          <CircleAlert className="mt-0.5 h-5 w-5 flex-shrink-0" aria-hidden />
+          <p>{error}</p>
+        </div>
+        <Button asChild size="lg" className="w-full">
+          <Link href="/home">Go to the app</Link>
+        </Button>
       </div>
     );
   }
@@ -55,10 +57,10 @@ export function JoinInvite({
   return (
     <div
       role="status"
-      className="flex items-center gap-2 text-sm text-muted-foreground"
+      className="flex items-center justify-center gap-2.5 text-base text-muted-foreground"
     >
-      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-      Adding you to {householdName}…
+      <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-primary" aria-hidden />
+      <span>Adding you to {householdName}…</span>
     </div>
   );
 }
