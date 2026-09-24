@@ -181,7 +181,7 @@ export function SplitCalculator() {
               <Label>Who owes what</Label>
               {currencySelect}
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-5 min-[360px]:space-y-3">
               {rows.map((r, i) => (
                 // One row from 360px up; on the narrowest phones the amount
                 // drops under the name instead of squeezing both.
@@ -408,7 +408,7 @@ function CurrencyInput({
         autoFocus={autoFocus}
         className={cn(
           "h-full min-w-0 flex-1 rounded-none border-0 bg-transparent p-0 font-semibold tabular-nums [appearance:textfield] focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-          lg ? "text-3xl font-bold tracking-tight" : "text-right text-base",
+          lg ? "text-3xl font-bold tracking-tight" : "text-base",
         )}
       />
     </label>
