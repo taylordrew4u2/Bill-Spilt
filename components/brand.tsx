@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
+// `box` sets the rendered size in rem so the badge scales with the rest of
+// the UI (see lib/viewport-fix.ts); `px` is only the intrinsic image size.
 const SIZES = {
-  sm: { px: 28, text: "text-base", radius: "rounded-[8px]" },
-  md: { px: 36, text: "text-xl", radius: "rounded-[10px]" },
-  lg: { px: 48, text: "text-3xl", radius: "rounded-xl" },
+  sm: { px: 28, box: "h-7 w-7", text: "text-base", radius: "rounded-[0.5rem]" },
+  md: { px: 36, box: "h-9 w-9", text: "text-xl", radius: "rounded-[0.625rem]" },
+  lg: { px: 48, box: "h-12 w-12", text: "text-3xl", radius: "rounded-xl" },
 } as const;
 
 /** The BillSpilt wordmark + app-icon badge, used on auth screens, the header,
@@ -17,7 +19,7 @@ export function Brand({
   size?: keyof typeof SIZES;
   className?: string;
 }) {
-  const { px, text, radius } = SIZES[size];
+  const { px, box, text, radius } = SIZES[size];
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <Image
@@ -26,7 +28,7 @@ export function Brand({
         aria-hidden
         width={px}
         height={px}
-        className={cn("flex-shrink-0 shadow-sm", radius)}
+        className={cn("flex-shrink-0 shadow-sm", box, radius)}
       />
       <span
         className={cn(

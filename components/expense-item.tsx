@@ -6,14 +6,22 @@ import { Trash2, Paperclip, Package } from "lucide-react";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
 
+/** Swipe distances, in phone pixels at the default 16px root size. */
 const DELETE_THRESHOLD = -96;
+const DRAG_LIMIT = -160;
 
 /**
- * One piece of a row's secondary line. Pieces wrap onto a new line when they
- * don't fit (so "your share" drops below the payer on a 320px phone instead of
- * squeezing the description), and the leading "·" of whichever piece starts a
- * line is clipped off by the parent's negative margin + overflow-hidden.
+ * How many CSS px make one "phone" px. 1 normally; larger when the root font
+ * is scaled up — by the desktop-mode phone fix (lib/viewport-fix.ts), where a
+ * CSS px is ~0.4 screen px, or by the user's own text-size setting — so a
+ * swipe has to travel the same physical distance to delete.
  */
+function pxScale(): number {
+  if (typeof window === "undefined") return 1;
+  const root = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return root > 0 ? root / 16 : 1;
+}
+
 /**
  * A single expense row with swipe-to-delete (drag left to reveal/confirm
  * delete). Powered by framer-motion drag. Tapping the row opens its details
@@ -38,11 +46,15 @@ export function ExpenseItem({
   const cat = CATEGORIES.find((c) => c.value === expense.category);
   const CatIcon = cat?.icon ?? Package;
 
+  const [scale, setScale] = React.useState(1);
+  React.useEffect(() => setScale(pxScale()), []);
+  const threshold = DELETE_THRESHOLD * scale;
+
   // Reveal the red delete affordance as the user drags left.
-  const bgOpacity = useTransform(x, [DELETE_THRESHOLD, 0], [1, 0]);
+  const bgOpacity = useTransform(x, (v) => Math.min(1, Math.max(0, v / threshold)));
 
   function handleDragEnd() {
-    if (x.get() <= DELETE_THRESHOLD) {
+    if (x.get() <= threshold) {
       setRemoving(true);
       // Animate off-screen, then commit the delete.
       animate(x, -window.innerWidth, {
@@ -87,7 +99,7 @@ export function ExpenseItem({
       <motion.div
         drag="x"
         style={{ x }}
-        dragConstraints={{ left: -160, right: 0 }}
+        dragConstraints={{ left: DRAG_LIMIT * scale, right: 0 }}
         dragElastic={0.05}
         onDragStart={() => {
           draggedRef.current = true;
@@ -106,11 +118,11 @@ export function ExpenseItem({
         }
         role={onOpen ? "button" : undefined}
         tabIndex={onOpen ? 0 : undefined}
-        className="relative flex min-h-14 cursor-pointer touch-pan-y items-center gap-3 bg-card px-3 py-3.5 transition-colors min-[360px]:px-4 [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
+        className="relative flex min-h-14 cursor-pointer touch-pan-y items-center gap-3 bg-card px-3 py-3.5 transition-colors xs:px-4 [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
       >
         {/* The category tile is decoration; on the narrowest screens (small
             phones, large text settings) its width goes to the description. */}
-        <div className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex">
+        <div className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary xs:flex">
           <CatIcon className="h-5 w-5" aria-hidden />
         </div>
 

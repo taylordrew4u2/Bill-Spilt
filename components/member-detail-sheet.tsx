@@ -65,7 +65,7 @@ function ActionRow({
           get the full row; the busy spinner then sits beside the label. */}
       <span
         className={cn(
-          "hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl min-[360px]:flex",
+          "hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl xs:flex",
           destructive
             ? "bg-destructive/10 text-destructive"
             : "bg-primary/10 text-primary",
@@ -85,7 +85,7 @@ function ActionRow({
           )}
         >
           {busy && (
-            <Loader2 className="h-5 w-5 animate-spin min-[360px]:hidden" aria-hidden />
+            <Loader2 className="h-5 w-5 animate-spin xs:hidden" aria-hidden />
           )}
           {label}
         </span>
@@ -264,7 +264,7 @@ export function MemberDetailSheet({
               {isSelf ? "Your ways to pay" : "Ways to pay"}
             </SectionLabel>
             {hasMethods ? (
-              <Card className="px-3 py-1 min-[360px]:px-4">
+              <Card className="px-3 py-1 xs:px-4">
                 <PaymentMethodsList
                   methods={member.paymentMethods}
                   linkContext={

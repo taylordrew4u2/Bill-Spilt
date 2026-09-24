@@ -29,7 +29,7 @@ export function AdArea({
         <p className="pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Advertisement
         </p>
-        <div className="min-h-[90px]">
+        <div className="min-h-[5.625rem]">
           <AdSenseUnit slot={resolvedSlot} />
         </div>
       </Card>

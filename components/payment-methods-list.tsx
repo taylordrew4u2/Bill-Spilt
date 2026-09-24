@@ -67,7 +67,7 @@ export function PaymentMethodsList({
             {/* The same wallet on every row, so it gives way on narrow
                 screens and leaves the width to the handle. */}
             <span
-              className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex"
+              className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary xs:flex"
               aria-hidden
             >
               <Wallet className="h-5 w-5" />

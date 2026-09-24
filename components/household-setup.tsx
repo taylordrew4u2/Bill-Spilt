@@ -117,7 +117,7 @@ export function HouseholdSetup() {
                   setValue("");
                 }}
                 className={cn(
-                  "flex min-h-[76px] w-full items-center gap-3 rounded-2xl border bg-card p-4 text-left transition-[border-color,box-shadow,background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  "flex min-h-[4.75rem] w-full items-center gap-3 rounded-2xl border bg-card p-4 text-left transition-[border-color,box-shadow,background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   active
                     ? "border-primary shadow-[0_0_0_1px_hsl(var(--primary))]"
                     : "active:bg-accent [@media(hover:hover)]:hover:bg-accent/60",

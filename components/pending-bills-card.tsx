@@ -151,7 +151,7 @@ function PendingRow({
         <div className="flex items-start gap-3">
           {/* The category tile gives way on a narrow screen so the title and
               due line get the full width. */}
-          <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex">
+          <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary xs:flex">
             <CatIcon className="h-5 w-5" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">

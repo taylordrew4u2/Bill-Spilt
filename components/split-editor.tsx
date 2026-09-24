@@ -272,13 +272,13 @@ export function SplitEditor({
                 key={m.id}
                 className={cn(
                   "flex min-h-14 items-center",
-                  showInput && "max-[359px]:flex-wrap",
+                  showInput && "max-xs:flex-wrap",
                 )}
               >
                 <label
                   className={cn(
                     "relative flex min-h-14 min-w-0 flex-1 cursor-pointer select-none items-center gap-3 py-2 pl-4 transition-colors active:bg-accent/60",
-                    showInput ? "pr-2 max-[359px]:basis-full max-[359px]:pr-4" : "pr-4",
+                    showInput ? "pr-2 max-xs:basis-full max-xs:pr-4" : "pr-4",
                   )}
                 >
                   <input
@@ -321,7 +321,7 @@ export function SplitEditor({
                   {isIn && splitType === "equal" && (
                     <span
                       className={cn(
-                        "flex-shrink-0 whitespace-nowrap tabular-nums max-[359px]:hidden",
+                        "flex-shrink-0 whitespace-nowrap tabular-nums max-xs:hidden",
                         amountLabel
                           ? "text-sm text-muted-foreground"
                           : "text-base font-semibold",
@@ -333,7 +333,7 @@ export function SplitEditor({
                   )}
                 </label>
                 {showInput && (
-                  <div className="flex-shrink-0 py-1 pr-4 max-[359px]:w-full max-[359px]:pb-3 max-[359px]:pl-14 max-[359px]:pt-0">
+                  <div className="flex-shrink-0 py-1 pr-4 max-xs:w-full max-xs:pb-3 max-xs:pl-14 max-xs:pt-0">
                     <MoneyInput
                       value={state.values[m.id] ?? ""}
                       onChange={(e) => setValue(m.id, e.target.value)}
@@ -346,8 +346,8 @@ export function SplitEditor({
                       suffix={splitType === "percent" ? "%" : undefined}
                       aria-label={`${m.name} ${splitType === "percent" ? "percentage" : "amount"}`}
                       className={cn(
-                        "w-24 max-[359px]:w-40",
-                        splitType === "exact" && "min-[360px]:w-28",
+                        "w-24 max-xs:w-40",
+                        splitType === "exact" && "xs:w-28",
                       )}
                     />
                   </div>

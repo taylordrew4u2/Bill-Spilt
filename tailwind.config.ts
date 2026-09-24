@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import plugin from "tailwindcss/plugin";
+import { BREAKPOINTS } from "./lib/viewport-fix";
 
 const config: Config = {
   darkMode: ["class"],
@@ -9,6 +11,10 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}",
   ],
   theme: {
+    // The responsive variants are defined by the plugin at the bottom instead,
+    // so they can follow a phone's real width when it renders the page
+    // desktop-wide (see lib/viewport-fix.ts).
+    screens: {},
     container: {
       center: true,
       padding: "1rem",
@@ -121,7 +127,27 @@ const config: Config = {
   // Node 22.12+/24, where `require` is undefined — a `require()` here threw
   // "ReferenceError: require is not defined" and took the dev server down with
   // it, so no page (the login screen included) could render.
-  plugins: [tailwindcssAnimate],
+  plugins: [
+    tailwindcssAnimate,
+    // Min-width breakpoints (Tailwind's sm–2xl plus two phone widths, `xs`
+    // at 360px and `w400` at 400px, and `max-xs` below 360px). Normally plain
+    // media queries. When <html> carries `bb-phone-fix` — a phone in "Desktop
+    // site" mode, laid out 980px wide and scaled back to phone size — they
+    // follow the phone's real width instead, via the `bb-w<N>` classes the
+    // fix sets. `:where()` keeps specificity identical to core's variants.
+    plugin(({ addVariant }) => {
+      for (const [name, px] of Object.entries(BREAKPOINTS)) {
+        addVariant(name, [
+          `@media (min-width: ${px}px) { :where(:root:not(.bb-phone-fix)) & }`,
+          `:where(:root.bb-phone-fix.bb-w${px}) &`,
+        ]);
+      }
+      addVariant("max-xs", [
+        "@media (max-width: 359px) { :where(:root:not(.bb-phone-fix)) & }",
+        ":where(:root.bb-phone-fix:not(.bb-w360)) &",
+      ]);
+    }),
+  ],
 };
 
 export default config;
