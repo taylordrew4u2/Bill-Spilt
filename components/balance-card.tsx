@@ -32,7 +32,7 @@ export function NetSummary({ net }: { net: number }) {
   return (
     <Card
       className={cn(
-        "p-5",
+        "p-4 sm:p-5",
         owed && "border-positive/20 bg-positive-soft",
         owes && "border-negative/20 bg-negative-soft",
       )}
@@ -98,7 +98,7 @@ export function NetSummary({ net }: { net: number }) {
 /** Placeholder shaped like <NetSummary /> while balances load. */
 export function NetSummarySkeleton() {
   return (
-    <Card className="p-5" aria-hidden>
+    <Card className="p-4 sm:p-5" aria-hidden>
       <div className="flex items-center gap-3">
         <Skeleton className="h-10 w-10 rounded-full" />
         <Skeleton className="h-5 w-28" />
@@ -132,27 +132,32 @@ export function BalanceRow({
         name={balance.name}
         className="h-10 w-10"
       />
-      <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 break-words text-base font-medium leading-snug">
-          {balance.name}
-          {isCurrentUser && (
-            <span className="font-normal text-muted-foreground"> (you)</span>
+      {/* The name keeps at least ~7rem; when the amount doesn't fit beside it
+          (narrow phone, large text setting, big balance) the amount drops to
+          its own line instead of cutting the name down to a few letters. */}
+      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
+        <div className="min-w-0 grow basis-28">
+          <p className="line-clamp-2 break-words text-base font-medium leading-snug">
+            {balance.name}
+            {isCurrentUser && (
+              <span className="font-normal text-muted-foreground"> (you)</span>
+            )}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {owed ? "Gets back" : owes ? "Owes" : "Settled up"}
+          </p>
+        </div>
+        <p
+          className={cn(
+            "whitespace-nowrap text-base font-semibold tabular-nums",
+            owed && "text-positive",
+            owes && "text-negative",
+            !owed && !owes && "text-muted-foreground",
           )}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {owed ? "Gets back" : owes ? "Owes" : "Settled up"}
+        >
+          {net === 0 ? "—" : money(Math.abs(net))}
         </p>
       </div>
-      <p
-        className={cn(
-          "flex-shrink-0 whitespace-nowrap text-base font-semibold tabular-nums",
-          owed && "text-positive",
-          owes && "text-negative",
-          !owed && !owes && "text-muted-foreground",
-        )}
-      >
-        {net === 0 ? "—" : money(Math.abs(net))}
-      </p>
     </li>
   );
 }
