@@ -34,22 +34,28 @@ export function CookieConsent() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[60] border-t bg-card/95 backdrop-blur safe-bottom">
-      <div className="mx-auto flex max-w-3xl flex-col gap-3 px-gutter py-4 sm:flex-row sm:items-center">
-        <p className="flex-1 text-sm text-muted-foreground">
-          We use cookies — including from Google for ads — to keep BillSpilt
-          free. By using the app you agree to this.{" "}
-          <Link href="/privacy" className="font-medium text-primary hover:underline">
-            Privacy Policy
+    // A compact floating card rather than a full-width slab: it covers as
+    // little of the screen as possible, and inside the app it sits above the
+    // tab bar (see globals.css) so navigation stays reachable.
+    <div
+      data-cookie-consent
+      role="region"
+      aria-label="Cookie notice"
+      className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+    >
+      <div className="mx-auto flex max-w-lg items-center gap-3 rounded-2xl border bg-card p-3 pl-4 shadow-xl">
+        <p className="min-w-0 flex-1 text-sm">
+          We use cookies, including Google ads, to keep BillSpilt free.{" "}
+          <Link href="/privacy" className="font-semibold text-primary underline-offset-2 hover:underline">
+            Privacy
           </Link>
-          .
         </p>
         <button
           type="button"
           onClick={accept}
-          className="h-11 flex-shrink-0 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground active:scale-95"
+          className="h-11 flex-shrink-0 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground active:scale-95"
         >
-          Got it
+          OK
         </button>
       </div>
     </div>
