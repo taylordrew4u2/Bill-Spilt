@@ -9,7 +9,6 @@ import {
   LogOut,
   ShieldPlus,
   UserMinus,
-  UserRound,
 } from "lucide-react";
 import {
   Sheet,
@@ -62,9 +61,11 @@ function ActionRow({
       disabled={disabled}
       className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
     >
+      {/* The tile is hidden on the narrowest screens so the label and hint
+          get the full row; the busy spinner then sits beside the label. */}
       <span
         className={cn(
-          "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl",
+          "hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl min-[360px]:flex",
           destructive
             ? "bg-destructive/10 text-destructive"
             : "bg-primary/10 text-primary",
@@ -79,10 +80,13 @@ function ActionRow({
       <span className="min-w-0 flex-1">
         <span
           className={cn(
-            "block text-base font-semibold",
+            "flex items-center gap-2 text-base font-semibold",
             destructive && "text-destructive",
           )}
         >
+          {busy && (
+            <Loader2 className="h-5 w-5 animate-spin min-[360px]:hidden" aria-hidden />
+          )}
           {label}
         </span>
         <span className="block text-sm text-muted-foreground">{hint}</span>
@@ -166,49 +170,40 @@ export function MemberDetailSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
-        <SheetHeader className="mb-6">
-          <div className="flex items-center gap-4">
-            <MemberAvatar
-              id={member.id}
-              name={member.name}
-              className="h-14 w-14 [&>span]:text-lg"
-            />
-            <div className="min-w-0 flex-1">
-              <SheetTitle className="line-clamp-2 break-words leading-tight">
-                {member.name}
-              </SheetTitle>
-              <SheetDescription className="truncate">{member.email}</SheetDescription>
-              {(member.role === "owner" || isSelf) && (
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {member.role === "owner" && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
-                      <Crown className="h-3.5 w-3.5" aria-hidden /> Admin
-                    </span>
-                  )}
-                  {isSelf && (
-                    <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
-                      You
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+        {/* A centered contact card: the avatar sits clear of the close
+            button, so the name below gets the sheet's full width. */}
+        <SheetHeader className="mb-6 items-center pr-0 text-center">
+          <MemberAvatar
+            id={member.id}
+            name={member.name}
+            className="h-16 w-16 [&>span]:text-xl"
+          />
+          <div className="mt-2 w-full min-w-0">
+            <SheetTitle className="line-clamp-2 break-words leading-tight">
+              {member.name}
+            </SheetTitle>
+            <SheetDescription className="mt-0.5 break-words">{member.email}</SheetDescription>
+            {(member.role === "owner" || isSelf) && (
+              <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                {member.role === "owner" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    <Crown className="h-3.5 w-3.5" aria-hidden /> Admin
+                  </span>
+                )}
+                {isSelf && (
+                  <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                    You
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </SheetHeader>
 
         <div className="space-y-6">
-          {/* Balance with you */}
-          {isSelf ? (
-            <Card className="flex items-center gap-3 p-4">
-              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <UserRound className="h-5 w-5" aria-hidden />
-              </span>
-              <p className="min-w-0 text-sm text-muted-foreground">
-                This is you. Edit your details and ways to pay from Profile
-                in the account menu.
-              </p>
-            </Card>
-          ) : balanceQ.loading && !balanceQ.data ? (
+          {/* Balance with you — there's none with yourself; the "You" badge
+              and the note under your ways to pay cover that case. */}
+          {isSelf ? null : balanceQ.loading && !balanceQ.data ? (
             <Card role="status" className="p-4">
               <span className="sr-only">Loading balance…</span>
               <Skeleton className="h-5 w-40" />
@@ -222,7 +217,8 @@ export function MemberDetailSheet({
               )}
             >
               <p className="text-sm font-medium text-muted-foreground">
-                {theyOweYou ? `${member.name} owes you` : `You owe ${member.name}`}
+                {/* The name is right above in the header. */}
+                {theyOweYou ? "Owes you" : "You owe"}
               </p>
               <p
                 className={cn(
@@ -265,10 +261,10 @@ export function MemberDetailSheet({
           {/* Ways to pay */}
           <section aria-labelledby="member-ways-to-pay">
             <SectionLabel id="member-ways-to-pay">
-              {isSelf ? "Your ways to pay" : `Pay ${member.name} with`}
+              {isSelf ? "Your ways to pay" : "Ways to pay"}
             </SectionLabel>
             {hasMethods ? (
-              <Card className="px-4 py-1">
+              <Card className="px-3 py-1 min-[360px]:px-4">
                 <PaymentMethodsList
                   methods={member.paymentMethods}
                   linkContext={
@@ -289,6 +285,11 @@ export function MemberDetailSheet({
                     : `${member.name} hasn't added any ways to pay yet.`}
                 </p>
               </Card>
+            )}
+            {isSelf && (
+              <p className="mt-2 px-1 text-sm text-muted-foreground">
+                Edit your details and ways to pay from Profile in the account menu.
+              </p>
             )}
           </section>
 

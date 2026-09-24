@@ -302,7 +302,7 @@ export function ManageHouseholdSheet({
       <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
         <SheetHeader className="mb-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <span className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary min-[360px]:flex">
               <Home className="h-6 w-6" aria-hidden />
             </span>
             <div className="min-w-0">
@@ -349,7 +349,7 @@ export function ManageHouseholdSheet({
                   disabled={regenBusy}
                   className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
                 >
-                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:flex">
                     {regenBusy ? (
                       <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
                     ) : (
@@ -357,7 +357,17 @@ export function ManageHouseholdSheet({
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-medium">Get a new code</span>
+                    <span className="flex items-center gap-2 text-base font-medium">
+                      {/* The icon tile is hidden on the narrowest screens,
+                          so the busy spinner moves next to the label there. */}
+                      {regenBusy && (
+                        <Loader2
+                          className="h-5 w-5 animate-spin text-muted-foreground min-[360px]:hidden"
+                          aria-hidden
+                        />
+                      )}
+                      Get a new code
+                    </span>
                     <span className="block text-sm text-muted-foreground">
                       The current code and link stop working.
                     </span>
@@ -383,7 +393,13 @@ export function ManageHouseholdSheet({
                         onClick={() => openDetail(m)}
                         className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent"
                       >
-                        <MemberAvatar id={m.id} name={m.name} className="h-10 w-10" />
+                        {/* The avatar only repeats the name, so the narrowest
+                            screens give its width to the name and email. */}
+                        <MemberAvatar
+                          id={m.id}
+                          name={m.name}
+                          className="hidden h-10 w-10 min-[360px]:flex"
+                        />
                         <span className="min-w-0 flex-1">
                           <span className="line-clamp-2 break-words text-base font-medium leading-snug">
                             {m.name}
@@ -394,7 +410,7 @@ export function ManageHouseholdSheet({
                               </span>
                             )}
                           </span>
-                          <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+                          <span className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
                             {m.role === "owner" && (
                               <span className="inline-flex flex-shrink-0 items-center gap-1 font-semibold text-primary">
                                 <Crown className="h-4 w-4" aria-hidden /> Admin
@@ -403,7 +419,7 @@ export function ManageHouseholdSheet({
                                 </span>
                               </span>
                             )}
-                            <span className="truncate">{m.email}</span>
+                            <span className="min-w-0 max-w-full truncate">{m.email}</span>
                           </span>
                         </span>
                         <ChevronRight
@@ -418,8 +434,8 @@ export function ManageHouseholdSheet({
             </Card>
             <p className="mt-2 px-1 text-sm text-muted-foreground">
               {isAdmin
-                ? "Tap someone to see your balance, how to pay them, or to make them an admin."
-                : "Tap someone to see your balance and how to pay them."}
+                ? "Tap someone for your balance, ways to pay, or admin options."
+                : "Tap someone for your balance and ways to pay them."}
             </p>
           </section>
 
@@ -429,9 +445,25 @@ export function ManageHouseholdSheet({
               <SectionLabel id="household-settings">Settings</SectionLabel>
               <Card className="space-y-5 p-4">
                 <div className="space-y-2">
-                  <Label htmlFor={editingName ? "household-name" : undefined}>
-                    Household name
-                  </Label>
+                  {/* Rename sits on the label's row, so the name below gets
+                      the card's full width instead of a squeezed column. */}
+                  <div className="flex min-h-6 items-center justify-between gap-3">
+                    <Label htmlFor={editingName ? "household-name" : undefined}>
+                      Household name
+                    </Label>
+                    {!editingName && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="-my-2.5 -mr-3 flex-shrink-0 px-3 text-primary hover:text-primary"
+                        onClick={() => setEditingName(true)}
+                        aria-label="Rename household"
+                      >
+                        <Pencil aria-hidden /> Rename
+                      </Button>
+                    )}
+                  </div>
                   {editingName ? (
                     <form
                       onSubmit={(e) => {
@@ -459,21 +491,7 @@ export function ManageHouseholdSheet({
                       </div>
                     </form>
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <p className="min-w-0 flex-1 break-words text-base font-medium">
-                        {household?.name}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="flex-shrink-0"
-                        onClick={() => setEditingName(true)}
-                        aria-label="Rename household"
-                      >
-                        <Pencil aria-hidden /> Rename
-                      </Button>
-                    </div>
+                    <p className="break-words text-base font-medium">{household?.name}</p>
                   )}
                 </div>
 
@@ -510,7 +528,7 @@ export function ManageHouseholdSheet({
               <Card className="divide-y overflow-hidden">
                 {[0, 1, 2].map((i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-3">
-                    <Skeleton className="h-10 w-10 flex-shrink-0 rounded-xl" />
+                    <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl min-[360px]:block" />
                     <div className="min-w-0 flex-1 space-y-2">
                       <Skeleton className="h-4 w-4/5" />
                       <Skeleton className="h-3.5 w-1/2" />
@@ -529,7 +547,9 @@ export function ManageHouseholdSheet({
                       const Icon = ACTIVITY_ICONS[a.action] ?? Activity;
                       return (
                         <li key={a.id} className="flex items-start gap-3 px-4 py-3">
-                          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                          {/* The entry already says what happened ("Added…",
+                              "Deleted…"), so the icon goes on narrow screens. */}
+                          <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:flex">
                             <Icon className="h-5 w-5" aria-hidden />
                           </span>
                           <div className="min-w-0 flex-1">
@@ -568,7 +588,7 @@ export function ManageHouseholdSheet({
                 disabled={!!busyId}
                 className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
               >
-                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive min-[360px]:flex">
                   {busyId === me.id ? (
                     <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
                   ) : (
@@ -576,7 +596,10 @@ export function ManageHouseholdSheet({
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-base font-semibold text-destructive">
+                  <span className="flex items-center gap-2 text-base font-semibold text-destructive">
+                    {busyId === me.id && (
+                      <Loader2 className="h-5 w-5 animate-spin min-[360px]:hidden" aria-hidden />
+                    )}
                     Leave household
                   </span>
                   <span className="block text-sm text-muted-foreground">
