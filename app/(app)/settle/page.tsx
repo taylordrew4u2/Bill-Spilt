@@ -113,9 +113,12 @@ function TransferCard({
         mine && "border-primary/40 shadow-md shadow-primary/5",
       )}
     >
-      <div className="flex items-center gap-3">
+      {/* The sentence sits beside the avatars when it fits there on one
+          line, and otherwise drops under them at full width instead of
+          being squeezed into a narrow column. */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <AvatarPair t={t} />
-        <p className="min-w-0 flex-1 text-base leading-snug">
+        <p className="min-w-0 flex-auto text-balance text-base leading-snug">
           <span className="font-semibold">{fromLabel}</span>{" "}
           {youPay ? "pay" : "pays"}{" "}
           <span className="font-semibold">{toLabel}</span>
@@ -418,7 +421,7 @@ export default function SettlePage() {
           onRemind={() => shareReminder(t)}
         >
           {showPay && (
-            <div className="mt-4 rounded-xl bg-muted/60 px-3 pt-2.5">
+            <div className="mt-4 border-t pt-3">
               <p className="text-sm font-semibold text-muted-foreground">
                 Pay {firstName(t.toName)} with
               </p>
@@ -457,7 +460,7 @@ export default function SettlePage() {
               </section>
             ) : (
               <Card className="flex items-center gap-3 p-4">
-                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-positive-soft text-positive">
+                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-positive-soft text-positive min-[360px]:flex">
                   <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden />
                 </span>
                 <div className="min-w-0">
@@ -490,7 +493,7 @@ export default function SettlePage() {
             <SectionLabel id="settle-admin">Admin</SectionLabel>
             <Card className="p-4">
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex">
                   <ShieldCheck className="h-5 w-5" aria-hidden />
                 </span>
                 <div className="min-w-0">
@@ -526,7 +529,11 @@ export default function SettlePage() {
     <div className="duration-500 animate-in fade-in slide-in-from-bottom-3">
       <PageHeader
         title="Settle up"
-        subtitle="The fewest payments to clear all debts."
+        subtitle={
+          <span className="block text-balance">
+            The fewest payments to clear all debts.
+          </span>
+        }
       />
 
       <div className="space-y-6">
@@ -548,7 +555,7 @@ export default function SettlePage() {
                       <MemberAvatar
                         id={s.from}
                         name={s.fromName}
-                        className="h-10 w-10"
+                        className="hidden h-10 w-10 flex-shrink-0 min-[360px]:flex"
                       />
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-3 text-base font-medium leading-snug">

@@ -22,7 +22,7 @@ export function PageHeader({
       <div className="min-w-0">
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         {subtitle && (
-          <p className="mt-1 text-base text-muted-foreground">{subtitle}</p>
+          <p className="mt-1 text-balance text-base text-muted-foreground">{subtitle}</p>
         )}
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}

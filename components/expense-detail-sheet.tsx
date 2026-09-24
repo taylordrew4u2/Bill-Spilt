@@ -114,23 +114,25 @@ export function ExpenseDetailSheet({
               {amountText}
             </p>
 
-            <dl className="mt-5 divide-y rounded-2xl border">
-              <div className="flex min-h-14 items-center justify-between gap-3 px-4 py-2.5">
-                <dt className="flex-shrink-0 text-sm text-muted-foreground">Paid by</dt>
-                <dd className="flex min-w-0 items-center gap-2 text-base font-medium">
+            {/* Two short facts side by side; they only stack when a long
+                payer name needs the room. */}
+            <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
+              <div className="min-w-0 max-w-full">
+                <dt className="text-sm text-muted-foreground">Paid by</dt>
+                <dd className="mt-1 flex min-w-0 items-center gap-2 text-base font-medium">
                   <MemberAvatar
                     id={expense.paidBy}
                     name={expense.paidByName}
-                    className="h-8 w-8"
+                    className="h-7 w-7"
                   />
                   <span className="line-clamp-2 min-w-0 break-words">
                     {expense.paidBy === currentUserId ? "You" : expense.paidByName}
                   </span>
                 </dd>
               </div>
-              <div className="flex min-h-14 items-center justify-between gap-3 px-4 py-2.5">
-                <dt className="flex-shrink-0 text-sm text-muted-foreground">Split</dt>
-                <dd className="text-right text-base font-medium">
+              <div className="min-w-0">
+                <dt className="text-sm text-muted-foreground">Split</dt>
+                <dd className="mt-1 flex min-h-7 items-center text-base font-medium">
                   {SPLIT_LABEL[expense.splitType]}
                 </dd>
               </div>
@@ -146,16 +148,22 @@ export function ExpenseDetailSheet({
                   {expense.splits.map((s) => (
                     <li
                       key={s.userId}
-                      className="flex min-h-14 items-center gap-3 px-4 py-2.5"
+                      className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-0.5 px-4 py-2.5"
                     >
-                      <MemberAvatar id={s.userId} name={s.name} className="h-10 w-10" />
-                      <span className="line-clamp-2 min-w-0 flex-1 break-words text-base font-medium">
+                      {/* The avatar only repeats the name, so the narrowest
+                          screens give its width to the name instead. */}
+                      <MemberAvatar
+                        id={s.userId}
+                        name={s.name}
+                        className="hidden h-10 w-10 min-[360px]:flex"
+                      />
+                      <span className="line-clamp-2 min-w-0 flex-1 basis-40 break-words text-base font-medium">
                         {s.name}
                         {s.userId === currentUserId && (
                           <span className="font-normal text-muted-foreground"> (you)</span>
                         )}
                       </span>
-                      <span className="flex-shrink-0 whitespace-nowrap text-base font-semibold tabular-nums">
+                      <span className="ml-auto flex-shrink-0 whitespace-nowrap text-base font-semibold tabular-nums">
                         {money(s.amount)}
                       </span>
                     </li>
@@ -172,7 +180,7 @@ export function ExpenseDetailSheet({
                       <MemberAvatar
                         id={myShare.userId}
                         name={myShare.name}
-                        className="h-10 w-10"
+                        className="hidden h-10 w-10 min-[360px]:flex"
                       />
                       <span className="min-w-0 flex-1 truncate text-base font-medium">
                         You
