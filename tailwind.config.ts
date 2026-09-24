@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 import plugin from "tailwindcss/plugin";
+import { BREAKPOINTS } from "./lib/viewport-fix";
 
 const config: Config = {
   darkMode: ["class"],
@@ -135,16 +136,7 @@ const config: Config = {
     // follow the phone's real width instead, via the `bb-w<N>` classes the
     // fix sets. `:where()` keeps specificity identical to core's variants.
     plugin(({ addVariant }) => {
-      const breakpoints = {
-        xs: 360,
-        w400: 400,
-        sm: 640,
-        md: 768,
-        lg: 1024,
-        xl: 1280,
-        "2xl": 1536,
-      };
-      for (const [name, px] of Object.entries(breakpoints)) {
+      for (const [name, px] of Object.entries(BREAKPOINTS)) {
         addVariant(name, [
           `@media (min-width: ${px}px) { :where(:root:not(.bb-phone-fix)) & }`,
           `:where(:root.bb-phone-fix.bb-w${px}) &`,
