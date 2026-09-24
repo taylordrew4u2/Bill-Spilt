@@ -23,13 +23,13 @@ const OPTIONS: {
   {
     value: "create",
     title: "Create a household",
-    body: "Start fresh and invite your roommates.",
+    body: "Start one and invite others.",
     icon: House,
   },
   {
     value: "join",
     title: "Join with a code",
-    body: "A roommate already set one up.",
+    body: "Use a roommate's invite code.",
     icon: Users,
   },
 ];
@@ -96,8 +96,7 @@ export function HouseholdSetup() {
           Set up your household
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
-          Bills are shared inside a household. Start one, or join your
-          roommates with their invite code.
+          A household is where you and your roommates share bills.
         </p>
 
         <div
@@ -118,7 +117,7 @@ export function HouseholdSetup() {
                   setValue("");
                 }}
                 className={cn(
-                  "flex min-h-[76px] w-full items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-[border-color,box-shadow,background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  "flex min-h-[76px] w-full items-center gap-3 rounded-2xl border bg-card p-4 text-left transition-[border-color,box-shadow,background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   active
                     ? "border-primary shadow-[0_0_0_1px_hsl(var(--primary))]"
                     : "hover:bg-accent/60 active:bg-accent",
@@ -188,7 +187,7 @@ export function HouseholdSetup() {
                 autoCorrect="off"
                 spellCheck={false}
                 aria-describedby="code-help"
-                className="h-16 text-center font-mono text-2xl font-bold uppercase tracking-[0.3em] placeholder:font-semibold placeholder:text-muted-foreground/50"
+                className="h-16 text-center indent-[0.3em] font-mono text-2xl font-bold uppercase tracking-[0.3em] placeholder:font-semibold placeholder:text-muted-foreground/50"
               />
               <p id="code-help" className="text-sm text-muted-foreground">
                 Ask a roommate — it&apos;s in their household settings. Got an
