@@ -22,7 +22,8 @@ export function isPublicRoute(p: string): boolean {
     p.startsWith("/forgot") ||
     p.startsWith("/reset") ||
     p.startsWith("/privacy") ||
-    p.startsWith("/terms")
+    p.startsWith("/terms") ||
+    p.startsWith("/check")
   );
 }
 
