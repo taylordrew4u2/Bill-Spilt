@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import plugin from "tailwindcss/plugin";
 
 const config: Config = {
   darkMode: ["class"],
@@ -9,6 +10,10 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}",
   ],
   theme: {
+    // The responsive variants (sm/md/lg/xl/2xl) are defined by the plugin at
+    // the bottom instead, so they can be switched off on phones that render
+    // the page desktop-wide (see components/viewport-fix.tsx).
+    screens: {},
     container: {
       center: true,
       padding: "1rem",
@@ -121,7 +126,19 @@ const config: Config = {
   // Node 22.12+/24, where `require` is undefined — a `require()` here threw
   // "ReferenceError: require is not defined" and took the dev server down with
   // it, so no page (the login screen included) could render.
-  plugins: [tailwindcssAnimate],
+  plugins: [
+    tailwindcssAnimate,
+    // Standard min-width breakpoints, except when <html> carries
+    // `bb-phone-fix`: a phone in "Desktop site" mode lays the page out 980px
+    // wide, which would otherwise switch on the tablet/desktop layout. There
+    // the page is scaled back to phone size and must keep the phone layout.
+    plugin(({ addVariant }) => {
+      const breakpoints = { sm: 640, md: 768, lg: 1024, xl: 1280, "2xl": 1536 };
+      for (const [name, px] of Object.entries(breakpoints)) {
+        addVariant(name, `@media (min-width: ${px}px) { :root:not(.bb-phone-fix) & }`);
+      }
+    }),
+  ],
 };
 
 export default config;
