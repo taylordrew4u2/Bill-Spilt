@@ -212,7 +212,7 @@ function SectionHeading({
         {title}
       </h2>
       {lede && (
-        <p className="mx-auto mt-3 max-w-xl text-pretty text-base text-muted-foreground sm:text-lg">
+        <p className="mx-auto mt-3 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
           {lede}
         </p>
       )}
@@ -251,16 +251,17 @@ export default async function LandingPage() {
             payments.
           </p>
 
-          {/* Stacked, full-width actions on a phone; side by side from `sm`. */}
-          <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:max-w-xl sm:flex-row sm:items-stretch">
-            <Button asChild size="lg" className="w-full sm:flex-1">
+          {/* Two stacked, full-width actions: sign up, or just use the free
+              calculator. */}
+          <div className="mx-auto mt-8 flex max-w-md flex-col gap-3">
+            <Button asChild size="lg" className="w-full">
               <Link href="/register">
                 Start splitting — it&apos;s free <ArrowRight aria-hidden />
               </Link>
             </Button>
             <Link
               href="/split-calculator"
-              className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-left transition-colors hover:bg-accent active:bg-accent sm:flex-1"
+              className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-left transition-colors hover:bg-accent active:bg-accent"
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-sm text-muted-foreground">
@@ -431,7 +432,7 @@ export default async function LandingPage() {
           <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
             Stop chasing your roommates for money.
           </h2>
-          <p className="mx-auto mt-3 max-w-md text-pretty text-lg text-primary-foreground/90">
+          <p className="mx-auto mt-3 max-w-md text-balance text-lg text-primary-foreground/90">
             Set up your household in under a minute and let BillSpilt do the
             math. Free forever — no card, no catch.
           </p>

@@ -53,7 +53,7 @@ export default function SplitCalculatorPage() {
               <br />
               <span className="text-primary">Free, instant, no math.</span>
             </h1>
-            <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
+            <p className="mt-4 text-balance text-base text-muted-foreground sm:text-lg">
               Enter the total, how many people, and an optional tip — or split it
               unevenly. We&apos;ll show exactly what each person owes.
             </p>

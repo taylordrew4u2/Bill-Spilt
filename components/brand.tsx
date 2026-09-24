@@ -2,7 +2,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
-  sm: { px: 28, text: "text-base", radius: "rounded-lg" },
+  sm: { px: 28, text: "text-base", radius: "rounded-[8px]" },
   md: { px: 36, text: "text-xl", radius: "rounded-[10px]" },
   lg: { px: 48, text: "text-3xl", radius: "rounded-xl" },
 } as const;
