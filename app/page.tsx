@@ -266,8 +266,9 @@ export default async function LandingPage() {
                 <span className="block text-sm text-muted-foreground">
                   Just need a quick split?
                 </span>
-                <span className="block text-base font-semibold leading-snug text-primary">
-                  Use the free calculator — no sign-up
+                <span className="block text-balance text-base font-semibold leading-snug text-primary">
+                  Use the free calculator —{" "}
+                  <span className="whitespace-nowrap">no sign-up</span>
                 </span>
               </span>
               <ChevronRight
@@ -277,9 +278,7 @@ export default async function LandingPage() {
             </Link>
           </div>
 
-          <ul
-            aria-label="Pricing"
-            className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm font-medium text-muted-foreground"
+          <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm font-medium text-muted-foreground"
           >
             {["Free forever", "No credit card", "No premium tier"].map((t) => (
               <li key={t} className="inline-flex items-center gap-1.5">

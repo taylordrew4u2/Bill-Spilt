@@ -163,7 +163,7 @@ export default function RegisterPage() {
         Already have an account?{" "}
         <Link
           href={withInvite("/login")}
-          className="inline-flex h-11 items-center rounded-lg px-1 font-semibold text-primary hover:underline"
+          className="inline-flex h-11 items-center rounded-lg px-0.5 font-semibold text-primary hover:underline"
         >
           Log in
         </Link>
