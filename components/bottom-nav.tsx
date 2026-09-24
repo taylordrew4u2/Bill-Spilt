@@ -39,7 +39,7 @@ function Tab({
       >
         <Icon className="h-6 w-6" strokeWidth={active ? 2.4 : 2} aria-hidden />
       </span>
-      <span className="max-w-full truncate px-0.5">{tab.label}</span>
+      <span className="max-w-full truncate tracking-tight">{tab.label}</span>
     </Link>
   );
 }
