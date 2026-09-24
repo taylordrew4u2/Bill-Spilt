@@ -90,7 +90,9 @@ export default function SplitCalculatorPage() {
               </Link>
             </Button>
             <p className="mt-3 text-sm text-muted-foreground">
-              No credit card · No premium tier · Free forever
+              <span className="whitespace-nowrap">No credit card</span> ·{" "}
+              <span className="whitespace-nowrap">No premium tier</span> ·{" "}
+              <span className="whitespace-nowrap">Free forever</span>
             </p>
           </section>
         </div>

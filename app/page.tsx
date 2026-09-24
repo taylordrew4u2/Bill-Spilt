@@ -189,10 +189,10 @@ function AppPreview() {
             </li>
           ))}
         </ul>
-        <div className="flex items-center justify-center gap-2 text-balance rounded-2xl bg-primary/10 px-3 py-3 text-center text-sm font-semibold text-primary">
-          <Check className="h-4 w-4 flex-shrink-0" strokeWidth={2.6} />
+        <p className="text-balance rounded-2xl bg-primary/10 px-3 py-3 text-center text-sm font-semibold text-primary">
+          <Check className="-mt-0.5 mr-1.5 inline h-4 w-4" strokeWidth={2.6} />
           Settle up: 2 payments clear everything
-        </div>
+        </p>
       </div>
     </div>
   );
@@ -212,7 +212,7 @@ function SectionHeading({
         {title}
       </h2>
       {lede && (
-        <p className="mx-auto mt-3 max-w-xl text-pretty text-lg text-muted-foreground">
+        <p className="mx-auto mt-3 max-w-xl text-pretty text-base text-muted-foreground sm:text-lg">
           {lede}
         </p>
       )}
@@ -419,7 +419,7 @@ export default async function LandingPage() {
 
       {/* Final CTA */}
       <section className="px-gutter pb-14 sm:pb-20">
-        <div className="relative isolate mx-auto max-w-3xl overflow-hidden rounded-3xl bg-primary px-6 py-10 text-center text-primary-foreground sm:px-12 sm:py-14">
+        <div className="relative isolate mx-auto max-w-3xl overflow-hidden rounded-3xl bg-primary px-5 py-10 text-center text-primary-foreground sm:px-12 sm:py-14">
           <div
             aria-hidden
             className="absolute -right-16 -top-20 -z-10 h-56 w-56 rounded-full bg-primary-foreground/10"
@@ -437,12 +437,15 @@ export default async function LandingPage() {
           </p>
           <Link
             href="/register"
-            className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary-foreground px-8 text-lg font-semibold text-primary shadow-sm transition-transform active:scale-[0.98] sm:w-auto"
+            className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary-foreground px-4 text-lg font-semibold text-primary shadow-sm transition-transform active:scale-[0.98] max-[359px]:text-base sm:w-auto sm:px-8"
           >
-            Create your free account <ArrowRight className="h-5 w-5" aria-hidden />
+            Create your free account{" "}
+            <ArrowRight className="h-5 w-5 flex-shrink-0 max-[359px]:hidden" aria-hidden />
           </Link>
-          <p className="mt-4 text-balance text-sm text-primary-foreground/90">
-            Takes a minute · No credit card · Works on every phone
+          <p className="mt-4 text-sm text-primary-foreground/90">
+            <span className="whitespace-nowrap">Takes a minute</span> ·{" "}
+            <span className="whitespace-nowrap">No credit card</span> ·{" "}
+            <span className="whitespace-nowrap">Works on every phone</span>
           </p>
         </div>
       </section>

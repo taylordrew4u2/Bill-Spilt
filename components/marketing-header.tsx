@@ -14,7 +14,7 @@ export function MarketingHeader() {
         <Link
           href="/"
           aria-label="BillSpilt home"
-          className="-ml-1 flex h-11 min-w-0 items-center rounded-xl px-1 max-[359px]:[&_span]:sr-only"
+          className="-ml-1 flex h-11 min-w-11 items-center rounded-xl px-1 max-[359px]:justify-center max-[359px]:[&_span]:sr-only"
         >
           <Brand size="sm" />
         </Link>
