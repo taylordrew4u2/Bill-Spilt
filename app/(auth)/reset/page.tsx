@@ -3,18 +3,43 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, CheckCircle2 } from "lucide-react";
-import { Brand } from "@/components/brand";
+import {
+  CheckCircle2,
+  CircleAlert,
+  Eye,
+  EyeOff,
+  Link2Off,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
+/** Password field with a 44px show/hide toggle inside its right edge. */
+function PasswordInput(
+  props: Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">,
+) {
+  const [shown, setShown] = React.useState(false);
+  return (
+    <div className="relative">
+      <Input {...props} type={shown ? "text" : "password"} className="pr-14" />
+      <button
+        type="button"
+        onClick={() => setShown((s) => !s)}
+        aria-label={shown ? "Hide password" : "Show password"}
+        aria-pressed={shown}
+        aria-controls={props.id}
+        className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {shown ? (
+          <EyeOff className="h-5 w-5" aria-hidden />
+        ) : (
+          <Eye className="h-5 w-5" aria-hidden />
+        )}
+      </button>
+    </div>
+  );
+}
 
 function ResetForm() {
   const params = useSearchParams();
@@ -53,100 +78,111 @@ function ResetForm() {
 
   if (!token) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Invalid link</CardTitle>
-          <CardDescription>
-            This reset link is missing or malformed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild className="w-full">
-            <Link href="/forgot">Request a new link</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <Link2Off className="h-7 w-7" aria-hidden />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Invalid link</h1>
+        <p className="mt-2 text-base text-muted-foreground">
+          This reset link is missing or malformed.
+        </p>
+        <Button asChild size="lg" className="mt-8 w-full">
+          <Link href="/forgot">Request a new link</Link>
+        </Button>
+      </>
     );
   }
 
   if (done) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center py-8 text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-            <CheckCircle2 className="h-6 w-6 text-emerald-600" />
-          </div>
-          <p className="font-medium">Password updated</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Redirecting you to log in…
-          </p>
-        </CardContent>
-      </Card>
+      <div role="status">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 text-success">
+          <CheckCircle2 className="h-7 w-7" aria-hidden />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Password updated</h1>
+        <p className="mt-2 flex items-center gap-2 text-base text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+          Redirecting you to log in…
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Set a new password</CardTitle>
-        <CardDescription>Choose a new password for your account.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="password">New password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              placeholder="At least 8 characters"
-            />
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Set a new password
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">
+          Choose a new password for your account.
+        </p>
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-5" aria-busy={loading}>
+        <div className="space-y-2">
+          <Label htmlFor="password">New password</Label>
+          <PasswordInput
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            placeholder="At least 8 characters"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm">Confirm password</Label>
+          <PasswordInput
+            id="confirm"
+            name="confirm"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            placeholder="Re-enter password"
+          />
+        </div>
+        {error && (
+          <div
+            role="alert"
+            className="flex gap-2.5 rounded-xl bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+          >
+            <CircleAlert className="mt-0.5 h-5 w-5 flex-shrink-0" aria-hidden />
+            <p>{error}</p>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="confirm">Confirm password</Label>
-            <Input
-              id="confirm"
-              name="confirm"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              placeholder="Re-enter password"
-            />
-          </div>
-          {error && (
-            <p role="alert" className="text-sm font-medium text-destructive">
-              {error}
-            </p>
-          )}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-            Update password
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        )}
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          {loading && <Loader2 className="animate-spin" aria-hidden />}
+          Update password
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-base text-muted-foreground">
+        Remembered it?{" "}
+        <Link
+          href="/login"
+          className="inline-flex h-11 items-center rounded-lg px-0.5 font-semibold text-primary hover:underline"
+        >
+          Back to log in
+        </Link>
+      </p>
+    </>
   );
 }
 
 export default function ResetPage() {
   return (
-    <>
-      <div className="mb-8 flex justify-center">
-        <Brand size="lg" />
-      </div>
-      <React.Suspense
-        fallback={
-          <div className="flex justify-center py-10">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        }
-      >
-        <ResetForm />
-      </React.Suspense>
-    </>
+    <React.Suspense
+      fallback={
+        <div className="flex justify-center py-16">
+          <Loader2
+            className="h-7 w-7 animate-spin text-muted-foreground"
+            aria-label="Loading"
+          />
+        </div>
+      }
+    >
+      <ResetForm />
+    </React.Suspense>
   );
 }

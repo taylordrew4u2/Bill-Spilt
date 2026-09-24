@@ -3,6 +3,7 @@
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, X, Share } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -98,21 +99,26 @@ export function InstallPrompt() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 34 }}
-          className="fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 px-4 md:bottom-6"
+          className="fixed inset-x-0 bottom-[calc(theme(spacing.tabbar)+env(safe-area-inset-bottom)+0.75rem)] z-40 px-3 md:bottom-6"
         >
-          <div className="mx-auto flex max-w-lg items-center gap-3 rounded-xl border bg-card p-3.5 shadow-lg">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary text-lg font-extrabold text-primary-foreground">
-              B
-            </div>
+          <div className="mx-auto flex max-w-lg items-center gap-3 rounded-2xl border bg-card p-3 pl-3.5 shadow-xl">
+            <Image
+              src="/icons/icon-192.png"
+              alt=""
+              aria-hidden
+              width={44}
+              height={44}
+              className="flex-shrink-0 rounded-xl"
+            />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">Install BillSpilt</p>
+              <p className="font-semibold">Install BillSpilt</p>
               {iosHint ? (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  Tap <Share className="inline h-3 w-3" /> then “Add to Home Screen”
+                <p className="text-sm text-muted-foreground">
+                  Tap <Share className="inline h-4 w-4 align-[-3px]" aria-label="Share" /> then “Add to Home Screen”
                 </p>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  Full-screen, works offline, one tap from your home screen.
+                <p className="text-sm text-muted-foreground">
+                  Works offline, one tap away.
                 </p>
               )}
             </div>
@@ -126,9 +132,9 @@ export function InstallPrompt() {
               type="button"
               onClick={dismiss}
               aria-label="Dismiss"
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
+              className="-mr-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
             >
-              <X className="h-4 w-4" aria-hidden />
+              <X className="h-5 w-5" aria-hidden />
             </button>
           </div>
         </motion.div>

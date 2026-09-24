@@ -1,44 +1,90 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type Theme = "light" | "dark" | "system";
+
+const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "Auto", icon: Monitor },
+];
+
+function apply(theme: Theme) {
+  const dark =
+    theme === "dark" ||
+    (theme === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.classList.toggle("dark", dark);
+}
 
 /**
- * Light/dark theme toggle. The initial class is set by a blocking script in
- * the root layout (no flash); this just flips it and persists the choice.
+ * Light / dark / follow-the-device theme picker. The initial class is set by a
+ * blocking script in the root layout (no flash); this flips it and persists
+ * the choice. "Auto" clears the stored choice so the layout script falls back
+ * to the OS setting on the next load.
  */
-export function ThemeToggle() {
-  const [dark, setDark] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+export function ThemeSelect({ className }: { className?: string }) {
+  const [theme, setTheme] = React.useState<Theme>("system");
 
   React.useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
-    setMounted(true);
+    try {
+      const t = localStorage.getItem("theme");
+      setTheme(t === "dark" || t === "light" ? t : "system");
+    } catch {
+      /* storage may be unavailable */
+    }
   }, []);
 
-  function toggle() {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
+  // While on "Auto", follow the OS if it flips (e.g. sunset dark mode).
+  React.useEffect(() => {
+    if (theme !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => apply("system");
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [theme]);
+
+  function choose(next: Theme) {
+    setTheme(next);
+    apply(next);
     try {
-      localStorage.setItem("theme", next ? "dark" : "light");
+      if (next === "system") localStorage.removeItem("theme");
+      else localStorage.setItem("theme", next);
     } catch {
       /* storage may be unavailable */
     }
   }
 
   return (
-    <button
-      onClick={toggle}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+    <div
+      role="radiogroup"
+      aria-label="Appearance"
+      className={cn("grid grid-cols-3 gap-1 rounded-xl bg-muted p-1", className)}
     >
-      {/* Render a stable icon until mounted to avoid hydration mismatch. */}
-      {mounted && dark ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
-    </button>
+      {OPTIONS.map(({ value, label, icon: Icon }) => {
+        const active = theme === value;
+        return (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => choose(value)}
+            className={cn(
+              "flex h-11 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors",
+              active
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Icon className="h-4 w-4" aria-hidden />
+            {label}
+          </button>
+        );
+      })}
+    </div>
   );
 }

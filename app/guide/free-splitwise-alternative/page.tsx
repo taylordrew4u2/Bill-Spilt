@@ -1,7 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import { Check } from "lucide-react";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  Bullet,
+  BulletList,
+  GuideShell,
+  Paragraph,
+  proseLink,
+} from "@/components/guide-shell";
+import { FaqSection } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
 const SLUG = "free-splitwise-alternative";
@@ -70,92 +80,70 @@ const JSON_LD = {
 export default function SplitwiseAlternativeGuide() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        The best free Splitwise alternative for roommates
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader eyebrow="Guide" title="The best free Splitwise alternative for roommates">
         If you&apos;ve bumped into limits or paywalls in another bill splitter,
         BillSpilt is a genuinely free alternative built for roommates — every
         feature included, no premium tier, no credit card.
-      </p>
+      </ArticleHeader>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-bold">Everything included, free</h2>
-        <ul className="mt-4 space-y-2.5">
+      <ArticleSection title="Everything included, free" className="mt-10 md:mt-12">
+        <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
           {INCLUDED.map((t) => (
-            <li key={t} className="flex items-start gap-2.5">
-              <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-              <span>{t}</span>
+            <li key={t} className="flex min-h-14 items-center gap-3 px-4 py-3">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-positive-soft text-positive">
+                <Check className="h-5 w-5" aria-hidden />
+              </span>
+              <span className="min-w-0 text-base font-medium leading-snug">{t}</span>
             </li>
           ))}
         </ul>
-      </section>
+      </ArticleSection>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-bold">What makes it a good switch</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="What makes it a good switch">
+        <Paragraph>
           BillSpilt focuses on the core job a roommate bill splitter needs to do
           and does it without nickel-and-diming: a smart settle-up that nets
           everyone&apos;s debts into the fewest payments, private per-person split
           breakdowns, multiple household admins, and offline support so you can
           log an expense on a plane. It&apos;s mobile-first and installs to your
           home screen — no app store, nothing to pay.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-bold">What to look for in a free bill splitter</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="What to look for in a free bill splitter">
+        <Paragraph>
           &ldquo;Free&rdquo; means different things across bill-splitting apps.
           Some cap how many expenses you can add each month, some lock recurring
           bills or receipt scanning behind a subscription, and some show the
           balance but leave you to work out the actual payments. Before you
           commit a whole household to one, check the things that quietly matter:
-        </p>
-        <ul className="mt-4 space-y-2 text-muted-foreground">
-          <li>• <strong>No expense or roommate caps</strong> — you shouldn&apos;t hit a wall mid-month.</li>
-          <li>• <strong>A real settle-up</strong> that reduces everyone&apos;s debts to the fewest transfers, not just a running total.</li>
-          <li>• <strong>Flexible splits</strong> — even, exact, and percentage — because not every bill divides the same way.</li>
-          <li>• <strong>Recurring bills</strong> so rent and utilities log themselves.</li>
-          <li>• <strong>Offline access</strong> for adding expenses without signal.</li>
-        </ul>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <BulletList>
+          <Bullet><strong>No expense or roommate caps</strong> — you shouldn&apos;t hit a wall mid-month.</Bullet>
+          <Bullet><strong>A real settle-up</strong> that reduces everyone&apos;s debts to the fewest transfers, not just a running total.</Bullet>
+          <Bullet><strong>Flexible splits</strong> — even, exact, and percentage — because not every bill divides the same way.</Bullet>
+          <Bullet><strong>Recurring bills</strong> so rent and utilities log themselves.</Bullet>
+          <Bullet><strong>Offline access</strong> for adding expenses without signal.</Bullet>
+        </BulletList>
+        <Paragraph>
           BillSpilt includes all of these at no cost. If you&apos;re coming from
           a paid tier elsewhere, you likely won&apos;t miss it — and you can
           sanity-check any split first with the{" "}
-          <Link href="/split-calculator" className="font-medium text-primary hover:underline">
+          <Link href="/split-calculator" className={proseLink}>
             free split calculator
           </Link>{" "}
           before you even make an account.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-10">
-        <h2 className="text-xl font-bold">FAQ</h2>
-        <div className="mt-4 space-y-4">
-          {FAQ.map((item) => (
-            <div key={item.q} className="rounded-xl border bg-card p-5">
-              <h3 className="font-semibold">{item.q}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{item.a}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <FaqSection faq={FAQ} title="FAQ" />
 
-      <section className="mt-12 rounded-2xl border bg-card p-6 text-center">
-        <h2 className="text-xl font-bold">Switch in under a minute</h2>
-        <p className="mx-auto mt-2 max-w-md text-muted-foreground">
+      <ArticleCta title="Switch in under a minute" cta={<>Get started — it&apos;s free</>}>
+        <Paragraph>
           Create your household, share a one-tap invite link, and start
           splitting. Free forever.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Get started — it&apos;s free <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+        </Paragraph>
+      </ArticleCta>
     </GuideShell>
   );
 }

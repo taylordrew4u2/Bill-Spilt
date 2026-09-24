@@ -3,17 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { Loader2, MailCheck, TriangleAlert } from "lucide-react";
-import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 type Result = "sent" | "unconfigured" | "provider-error" | "error";
 
@@ -37,6 +29,21 @@ const REASON = {
     body: "Something went wrong on our end. Please try again in a moment.",
   },
 } as const;
+
+/** The "Remembered it? Back to log in" row under each state. */
+function BackToLogin() {
+  return (
+    <p className="mt-6 text-center text-base text-muted-foreground">
+      Remembered it?{" "}
+      <Link
+        href="/login"
+        className="inline-flex h-11 items-center rounded-lg px-0.5 font-semibold text-primary hover:underline"
+      >
+        Back to log in
+      </Link>
+    </p>
+  );
+}
 
 export default function ForgotPage() {
   const [loading, setLoading] = React.useState(false);
@@ -75,75 +82,85 @@ export default function ForgotPage() {
   // provider-level explanation.
   const reason = result && result !== "sent" ? REASON[result] : null;
 
+  if (result === "sent") {
+    return (
+      <div role="status">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <MailCheck className="h-7 w-7" aria-hidden />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
+        <p className="mt-2 text-base text-muted-foreground">
+          If an account exists for that address, we&apos;ve sent a reset link.
+          It expires in 1 hour.
+        </p>
+        <Button asChild size="lg" className="mt-8 w-full">
+          <Link href="/login">Back to log in</Link>
+        </Button>
+        <Button
+          variant="ghost"
+          className="mt-2 w-full text-primary hover:text-primary"
+          onClick={() => setResult(null)}
+        >
+          Use a different email
+        </Button>
+      </div>
+    );
+  }
+
+  if (reason) {
+    return (
+      <>
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <TriangleAlert className="h-7 w-7" aria-hidden />
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight" role="alert">
+          {reason.title}
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">{reason.body}</p>
+        <Button
+          variant="outline"
+          size="lg"
+          className="mt-8 w-full"
+          onClick={() => setResult(null)}
+        >
+          Try again
+        </Button>
+        <BackToLogin />
+      </>
+    );
+  }
+
   return (
     <>
-      <div className="mb-8 flex justify-center">
-        <Brand size="lg" />
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Reset your password
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">
+          Enter your email and we&apos;ll send you a reset link.
+        </p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">Reset your password</CardTitle>
-          <CardDescription>
-            Enter your email and we&apos;ll send you a reset link.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {result === "sent" ? (
-            <div className="flex flex-col items-center py-4 text-center">
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <MailCheck className="h-6 w-6 text-primary" />
-              </div>
-              <p className="font-medium">Check your email</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                If an account exists for that address, we&apos;ve sent a reset
-                link. It expires in 1 hour.
-              </p>
-            </div>
-          ) : reason ? (
-            <div className="py-4 text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                <TriangleAlert className="h-6 w-6 text-destructive" aria-hidden />
-              </div>
-              <p className="font-medium" role="alert">
-                {reason.title}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">{reason.body}</p>
-              <Button
-                variant="outline"
-                className="mt-4 w-full"
-                onClick={() => setResult(null)}
-              >
-                Try again
-              </Button>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  required
-                  placeholder="you@example.com"
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Send reset link
-              </Button>
-            </form>
-          )}
-        </CardContent>
-      </Card>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        Remembered it?{" "}
-        <Link href="/login" className="font-semibold text-primary">
-          Back to log in
-        </Link>
-      </p>
+
+      <form onSubmit={onSubmit} className="space-y-5" aria-busy={loading}>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            required
+            placeholder="you@example.com"
+          />
+        </div>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          {loading && <Loader2 className="animate-spin" aria-hidden />}
+          Send reset link
+        </Button>
+      </form>
+
+      <BackToLogin />
     </>
   );
 }

@@ -9,15 +9,19 @@ const UPDATED = "June 20, 2026";
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto min-h-[100dvh] max-w-2xl px-5 py-10 safe-top safe-bottom">
-      <Link href="/login" className="inline-block">
+    <div className="mx-auto min-h-[100dvh] max-w-2xl px-gutter py-8 safe-top safe-bottom">
+      <Link
+        href="/login"
+        aria-label="BillSpilt"
+        className="-ml-2 inline-flex h-11 items-center rounded-xl px-2"
+      >
         <Brand size="sm" />
       </Link>
 
-      <h1 className="mt-8 text-2xl font-bold">Privacy Policy</h1>
+      <h1 className="mt-6 text-3xl font-bold tracking-tight">Privacy Policy</h1>
       <p className="mt-1 text-sm text-muted-foreground">Last updated {UPDATED}</p>
 
-      <div className="mt-6 space-y-6 text-sm leading-relaxed text-foreground/90">
+      <div className="mt-6 max-w-[65ch] space-y-8 text-base leading-relaxed text-foreground/90">
         <section className="space-y-2">
           <p>
             BillSpilt (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is a bill-splitting
@@ -28,7 +32,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Information we collect</h2>
+          <h2 className="text-xl font-semibold">Information we collect</h2>
           <ul className="list-disc space-y-1 pl-5">
             <li>
               <strong>Account info</strong> — your name and email, and a securely
@@ -48,7 +52,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">How we use it</h2>
+          <h2 className="text-xl font-semibold">How we use it</h2>
           <p>
             To provide the service (accounts, balances, settle-up, reminders,
             recurring bills), to keep it secure, and to display advertising that
@@ -57,7 +61,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Cookies &amp; advertising</h2>
+          <h2 className="text-xl font-semibold">Cookies &amp; advertising</h2>
           <p>
             We use a cookie to keep you signed in. We also use{" "}
             <strong>Google AdSense</strong> to show ads. Third-party vendors,
@@ -107,7 +111,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Service providers</h2>
+          <h2 className="text-xl font-semibold">Service providers</h2>
           <p>
             We rely on trusted infrastructure providers to run the app:{" "}
             <strong>Vercel</strong> (hosting), our managed{" "}
@@ -120,7 +124,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Your choices &amp; rights</h2>
+          <h2 className="text-xl font-semibold">Your choices &amp; rights</h2>
           <p>
             You can edit your profile, leave a household, and request deletion of
             your account and associated data by contacting us. To exercise any
@@ -136,7 +140,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Children</h2>
+          <h2 className="text-xl font-semibold">Children</h2>
           <p>
             BillSpilt is not directed to children under 13, and we do not
             knowingly collect personal information from them.
@@ -144,7 +148,7 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-lg font-semibold">Changes &amp; contact</h2>
+          <h2 className="text-xl font-semibold">Changes &amp; contact</h2>
           <p>
             We may update this policy; material changes will be reflected by the
             &ldquo;last updated&rdquo; date above. Questions? Email{" "}
@@ -159,11 +163,17 @@ export default function PrivacyPage() {
         </section>
       </div>
 
-      <div className="mt-10 flex gap-4 text-sm text-muted-foreground">
-        <Link href="/login" className="font-medium text-primary hover:underline">
+      <div className="mt-10 flex flex-wrap gap-x-2 text-base text-muted-foreground">
+        <Link
+          href="/login"
+          className="-ml-2 inline-flex h-11 items-center rounded-xl px-2 font-semibold text-primary hover:underline"
+        >
           ← Back to app
         </Link>
-        <Link href="/terms" className="hover:underline">
+        <Link
+          href="/terms"
+          className="inline-flex h-11 items-center rounded-xl px-2 hover:underline"
+        >
           Terms of Service
         </Link>
       </div>
