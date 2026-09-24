@@ -266,11 +266,19 @@ export function SplitEditor({
             const showInput = isIn && splitType !== "equal";
             const pct = splitType === "percent" && isIn ? numberFor(m.id) : 0;
             return (
-              <li key={m.id} className="flex min-h-14 items-center">
+              // Under 360px a share field beside the name would squeeze it to
+              // "Jordan Lee-…", so the field drops onto its own line instead.
+              <li
+                key={m.id}
+                className={cn(
+                  "flex min-h-14 items-center",
+                  showInput && "max-[359px]:flex-wrap",
+                )}
+              >
                 <label
                   className={cn(
                     "relative flex min-h-14 min-w-0 flex-1 cursor-pointer select-none items-center gap-3 py-2 pl-4 transition-colors active:bg-accent/60",
-                    showInput ? "pr-2" : "pr-4",
+                    showInput ? "pr-2 max-[359px]:basis-full max-[359px]:pr-4" : "pr-4",
                   )}
                 >
                   <input
@@ -308,10 +316,12 @@ export function SplitEditor({
                       </span>
                     )}
                   </span>
+                  {/* Everyone's equal share is also in the total below, so
+                      on the narrowest screens the name gets the row. */}
                   {isIn && splitType === "equal" && (
                     <span
                       className={cn(
-                        "flex-shrink-0 whitespace-nowrap tabular-nums",
+                        "flex-shrink-0 whitespace-nowrap tabular-nums max-[359px]:hidden",
                         amountLabel
                           ? "text-sm text-muted-foreground"
                           : "text-base font-semibold",
@@ -323,7 +333,7 @@ export function SplitEditor({
                   )}
                 </label>
                 {showInput && (
-                  <div className="flex-shrink-0 py-1 pr-4">
+                  <div className="flex-shrink-0 py-1 pr-4 max-[359px]:w-full max-[359px]:pb-3 max-[359px]:pl-14 max-[359px]:pt-0">
                     <MoneyInput
                       value={state.values[m.id] ?? ""}
                       onChange={(e) => setValue(m.id, e.target.value)}
@@ -336,7 +346,7 @@ export function SplitEditor({
                       suffix={splitType === "percent" ? "%" : undefined}
                       aria-label={`${m.name} ${splitType === "percent" ? "percentage" : "amount"}`}
                       className={cn(
-                        "w-24",
+                        "w-24 max-[359px]:w-40",
                         splitType === "exact" && "min-[360px]:w-28",
                       )}
                     />

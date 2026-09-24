@@ -45,32 +45,38 @@ interface MethodRow extends PaymentMethod {
   key: number;
 }
 
-function SectionLabel({ id, children }: { id: string; children: React.ReactNode }) {
+/** A form section's heading. Fields sit straight on the sheet (no card
+ *  around them), so the heading carries the grouping. */
+function SectionTitle({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <h3 id={id} className="mb-2 px-1 text-sm font-semibold text-muted-foreground">
+    <h3 id={id} className="text-lg font-semibold leading-snug">
       {children}
     </h3>
+  );
+}
+
+function FieldSkeleton() {
+  return (
+    <div className="space-y-2">
+      <Skeleton className="h-4 w-16" />
+      <Skeleton className="h-12 w-full rounded-xl" />
+    </div>
   );
 }
 
 /** Placeholder shaped like the form, shown while the profile loads. */
 function ProfileSkeleton() {
   return (
-    <div role="status" className="space-y-6">
+    <div role="status" className="space-y-8">
       <span className="sr-only">Loading your profile…</span>
-      {[2, 1].map((fields, s) => (
-        <div key={s}>
-          <Skeleton className="mb-3 ml-1 h-4 w-24" />
-          <Card className="space-y-5 p-4">
-            {Array.from({ length: fields }, (_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-12 w-full rounded-xl" />
-              </div>
-            ))}
-          </Card>
-        </div>
-      ))}
+      <div className="space-y-5">
+        <FieldSkeleton />
+        <FieldSkeleton />
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-36" />
+        <Skeleton className="h-16 w-full rounded-2xl" />
+      </div>
     </div>
   );
 }
@@ -202,52 +208,53 @@ export function ProfileSheet({
             <ProfileSkeleton />
           )
         ) : (
-          <form onSubmit={save} className="space-y-6">
+          <form onSubmit={save} className="space-y-8">
             {/* Name and email */}
-            <section aria-labelledby="profile-details">
-              <SectionLabel id="profile-details">Your details</SectionLabel>
-              <Card className="space-y-5 p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pname">Name</Label>
-                  <Input
-                    id="pname"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    maxLength={80}
-                    autoComplete="name"
-                    enterKeyHint="next"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pemail">Email</Label>
-                  <Input
-                    id="pemail"
-                    type="email"
-                    inputMode="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="email"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                  />
-                </div>
-              </Card>
+            <section aria-label="Your details" className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="pname">Name</Label>
+                <Input
+                  id="pname"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  maxLength={80}
+                  autoComplete="name"
+                  enterKeyHint="next"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pemail">Email</Label>
+                <Input
+                  id="pemail"
+                  type="email"
+                  inputMode="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                />
+              </div>
             </section>
 
             {/* Ways to pay */}
-            <section aria-labelledby="profile-ways-to-pay">
-              <SectionLabel id="profile-ways-to-pay">Ways to pay me</SectionLabel>
+            <section aria-labelledby="profile-ways-to-pay" className="space-y-3">
+              <div className="space-y-1">
+                <SectionTitle id="profile-ways-to-pay">Ways to pay me</SectionTitle>
+                <p className="text-sm text-muted-foreground">
+                  Shown to roommates when they owe you, so they know how to pay.
+                </p>
+              </div>
               <Card className="overflow-hidden">
                 {methods.length === 0 ? (
                   <div className="flex items-center gap-3 px-4 py-4">
-                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                    <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground min-[360px]:flex">
                       <Wallet className="h-5 w-5" aria-hidden />
                     </span>
                     <p className="min-w-0 text-sm text-muted-foreground">
-                      No ways to pay yet. Add Venmo, Cash App and more so
-                      roommates can pay you back.
+                      None yet. Add Venmo, Cash App, Zelle and more.
                     </p>
                   </div>
                 ) : (
@@ -256,7 +263,7 @@ export function ProfileSheet({
                       const def = PAYMENT_METHODS.find((p) => p.value === m.type);
                       const label = def?.label ?? m.type;
                       return (
-                        <li key={m.key} className="space-y-3 p-4">
+                        <li key={m.key} className="space-y-3 p-3 min-[360px]:p-4">
                           <div className="flex gap-2">
                             <Select
                               value={m.type}
@@ -315,40 +322,37 @@ export function ProfileSheet({
                   Add a way to pay
                 </button>
               </Card>
-              <p className="mt-2 px-1 text-sm text-muted-foreground">
-                Shown to roommates when they owe you, so they know how to pay.
-              </p>
             </section>
 
             {/* Optional password change */}
-            <section aria-labelledby="profile-password">
-              <SectionLabel id="profile-password">Change password</SectionLabel>
-              <Card className="space-y-5 p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="pcurrent">Current password</Label>
-                  <Input
-                    id="pcurrent"
-                    type="password"
-                    autoComplete="current-password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pnew">New password</Label>
-                  <Input
-                    id="pnew"
-                    type="password"
-                    autoComplete="new-password"
-                    placeholder="At least 8 characters"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                </div>
-              </Card>
-              <p className="mt-2 px-1 text-sm text-muted-foreground">
-                Optional. Leave both blank to keep your current password.
-              </p>
+            <section aria-labelledby="profile-password" className="space-y-5">
+              <div className="space-y-1">
+                <SectionTitle id="profile-password">Change password</SectionTitle>
+                <p className="text-sm text-muted-foreground">
+                  Optional. Leave both blank to keep your current one.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pcurrent">Current password</Label>
+                <Input
+                  id="pcurrent"
+                  type="password"
+                  autoComplete="current-password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="pnew">New password</Label>
+                <Input
+                  id="pnew"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
             </section>
 
             <Button type="submit" className="w-full" size="lg" disabled={saving}>
