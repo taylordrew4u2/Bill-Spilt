@@ -55,12 +55,14 @@ export function JoinInvite({
   }
 
   return (
-    <div
-      role="status"
-      className="flex items-center justify-center gap-2.5 text-base text-muted-foreground"
-    >
-      <Loader2 className="h-5 w-5 flex-shrink-0 animate-spin text-primary" aria-hidden />
-      <span>Adding you to {householdName}…</span>
-    </div>
+    // The spinner sits inline so it stays beside the first word when a long
+    // household name wraps the line.
+    <p role="status" className="text-center text-base text-muted-foreground">
+      <Loader2
+        className="mr-2 inline-block h-5 w-5 animate-spin align-[-0.2em] text-primary"
+        aria-hidden
+      />
+      Adding you to {householdName}…
+    </p>
   );
 }
