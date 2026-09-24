@@ -14,6 +14,7 @@ import { MemberAvatar } from "@/components/member-avatar";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
 import { isPdfReceipt } from "@/components/receipt-picker";
+import { cn } from "@/lib/utils";
 
 const SPLIT_LABEL: Record<Expense["splitType"], string> = {
   equal: "Equally",
@@ -30,6 +31,14 @@ function longDate(iso: string): string {
     day: "numeric",
     year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
   }).format(d);
+}
+
+/** Steps the hero amount down for long figures ("CHF 123,456.78") so it still
+ *  fits on one line in a 320px-wide sheet. */
+function heroSize(formatted: string): string {
+  if (formatted.length <= 11) return "text-5xl";
+  if (formatted.length <= 14) return "text-4xl";
+  return "text-3xl";
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -66,6 +75,7 @@ export function ExpenseDetailSheet({
     ? CATEGORIES.find((c) => c.value === expense.category)
     : null;
   const CatIcon = cat?.icon ?? Package;
+  const amountText = expense ? money(expense.amount) : "";
 
   function confirmDelete(e: Expense) {
     if (!onDelete) return;
@@ -95,8 +105,13 @@ export function ExpenseDetailSheet({
               <SheetTitle className="mt-3 leading-snug">{expense.description}</SheetTitle>
             </SheetHeader>
 
-            <p className="mt-1 text-5xl font-bold tracking-tight tabular-nums">
-              {money(expense.amount)}
+            <p
+              className={cn(
+                "mt-1 break-words font-bold tracking-tight tabular-nums",
+                heroSize(amountText),
+              )}
+            >
+              {amountText}
             </p>
 
             <dl className="mt-5 divide-y rounded-2xl border">
@@ -108,7 +123,7 @@ export function ExpenseDetailSheet({
                     name={expense.paidByName}
                     className="h-8 w-8"
                   />
-                  <span className="truncate">
+                  <span className="line-clamp-2 min-w-0 break-words">
                     {expense.paidBy === currentUserId ? "You" : expense.paidByName}
                   </span>
                 </dd>
@@ -134,7 +149,7 @@ export function ExpenseDetailSheet({
                       className="flex min-h-14 items-center gap-3 px-4 py-2.5"
                     >
                       <MemberAvatar id={s.userId} name={s.name} className="h-10 w-10" />
-                      <span className="min-w-0 flex-1 truncate text-base font-medium">
+                      <span className="line-clamp-2 min-w-0 flex-1 break-words text-base font-medium">
                         {s.name}
                         {s.userId === currentUserId && (
                           <span className="font-normal text-muted-foreground"> (you)</span>

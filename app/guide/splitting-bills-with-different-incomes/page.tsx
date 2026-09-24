@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  CalcList,
+  CalcRow,
+  GuideShell,
+  NumberedSections,
+  Paragraph,
+  proseLink,
+} from "@/components/guide-shell";
 import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
@@ -80,89 +89,70 @@ const JSON_LD = {
 export default function DifferentIncomesGuide() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        How to split bills when roommates earn different amounts
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader
+        eyebrow="Guide"
+        title="How to split bills when roommates earn different amounts"
+      >
         A 50/50 split feels fair until you realize it takes half of one
         person&apos;s paycheck and a tenth of another&apos;s. When incomes are
         genuinely far apart, splitting equally isn&apos;t always splitting
         fairly. Here&apos;s how to divide shared bills in proportion to income —
         with the formula, a worked example, and ways to keep the conversation
         comfortable.
-      </p>
+      </ArticleHeader>
 
-      <div className="mt-10 space-y-8">
-        {APPROACHES.map((a, i) => (
-          <section key={a.name}>
-            <h2 className="flex items-baseline gap-2 text-xl font-bold">
-              <span className="text-primary">{i + 1}.</span> {a.name}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{a.text}</p>
-          </section>
-        ))}
-      </div>
+      <NumberedSections items={APPROACHES} className="mt-10" />
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">The formula</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="The formula">
+        <Paragraph>
           For any shared bill, one person&apos;s fair share is:
-        </p>
-        <div className="mt-4 rounded-xl border bg-card p-5 text-center font-medium">
+        </Paragraph>
+        <div className="text-balance rounded-2xl border border-primary/25 bg-primary/10 px-5 py-5 text-center text-lg font-semibold leading-snug text-foreground">
           your share = (your income ÷ total household income) × the bill
         </div>
-        <p className="mt-4 text-muted-foreground">
+        <Paragraph>
           It works for a single bill or the whole month&apos;s shared spend —
           just plug in the right total.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">A worked example</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="A worked example">
+        <Paragraph>
           Three roommates take home <strong>$3,000</strong>,{" "}
           <strong>$2,000</strong>, and <strong>$1,000</strong> a month — a
           household total of $6,000. Their combined shared bills (rent,
           utilities, internet) come to <strong>$3,000</strong>. Proportional
           shares:
-        </p>
-        <ul className="mt-4 space-y-2 text-muted-foreground">
-          <li>• Top earner: 3,000 ÷ 6,000 × $3,000 = <strong>$1,500</strong> (50%)</li>
-          <li>• Middle earner: 2,000 ÷ 6,000 × $3,000 = <strong>$1,000</strong> (33%)</li>
-          <li>• Lowest earner: 1,000 ÷ 6,000 × $3,000 = <strong>$500</strong> (17%)</li>
-        </ul>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <CalcList>
+          <CalcRow label="Top earner:">3,000 ÷ 6,000 × $3,000 = <strong>$1,500</strong> (50%)</CalcRow>
+          <CalcRow label="Middle earner:">2,000 ÷ 6,000 × $3,000 = <strong>$1,000</strong> (33%)</CalcRow>
+          <CalcRow label="Lowest earner:">1,000 ÷ 6,000 × $3,000 = <strong>$500</strong> (17%)</CalcRow>
+        </CalcList>
+        <Paragraph>
           Every roommate spends exactly half their take-home pay on shared
           bills — the load is identical relative to what each can afford, even
           though the dollar amounts are very different. Compare that to an even
           split ($1,000 each), which would eat the entire paycheck of the lowest
           earner.
-        </p>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <Paragraph>
           You can model your own numbers in{" "}
-          <Link href="/split-calculator" className="font-medium text-primary hover:underline">
+          <Link href="/split-calculator" className={proseLink}>
             the free split calculator
           </Link>{" "}
           using its custom-amount mode.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12 rounded-2xl border bg-card p-6">
-        <h2 className="text-xl font-bold">Set the percentages once, forget the math</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleCta title="Set the percentages once, forget the math" cta="Split fairly — free">
+        <Paragraph>
           BillSpilt supports percentage splits, so you can lock in each
           person&apos;s income-based share and have every recurring bill divided
           that way automatically — with one running balance and a fewest-payments
           settle-up. Free forever, no paywall.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Split fairly — free <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+        </Paragraph>
+      </ArticleCta>
 
       <FaqSection faq={FAQ} />
     </GuideShell>
