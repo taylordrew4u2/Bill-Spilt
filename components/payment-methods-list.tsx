@@ -7,6 +7,22 @@ import { paymentLink } from "@/lib/payments";
 import { cn } from "@/lib/utils";
 
 /**
+ * A handle with line-break chances after "@" and before each ".", so an email
+ * that has to wrap splits at "name@" / "example.com" rather than mid-word.
+ */
+function breakable(value: string): React.ReactNode {
+  const parts = value.split(/([@.])/);
+  if (parts.length === 1) return value;
+  return parts.map((part, i) => (
+    <React.Fragment key={i}>
+      {part === "." && i > 0 && <wbr />}
+      {part}
+      {part === "@" && i < parts.length - 1 && <wbr />}
+    </React.Fragment>
+  ));
+}
+
+/**
  * Renders a person's "ways to pay". Each value is a tappable deep link when
  * one can be derived (Venmo / Cash App / PayPal / URLs) — opening the app with
  * the amount prefilled where supported — and always has a tap-to-copy button.
@@ -48,8 +64,10 @@ export function PaymentMethodsList({
         // easy to read back or check before paying.
         const body = (
           <>
+            {/* The same wallet on every row, so it gives way on narrow
+                screens and leaves the width to the handle. */}
             <span
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
+              className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex"
               aria-hidden
             >
               <Wallet className="h-5 w-5" />
@@ -67,7 +85,7 @@ export function PaymentMethodsList({
                   href && "text-primary",
                 )}
               >
-                {pm.value}
+                {breakable(pm.value)}
               </span>
             </span>
           </>
@@ -81,7 +99,7 @@ export function PaymentMethodsList({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Pay with ${label}: ${pm.value} (opens ${label})`}
-                className="-ml-2 flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-accent active:bg-accent"
+                className="-ml-2 flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-1 transition-colors active:bg-accent [@media(hover:hover)]:hover:bg-accent"
               >
                 {body}
               </a>
@@ -95,8 +113,10 @@ export function PaymentMethodsList({
               onClick={() => copy(pm.value, i)}
               aria-label={isCopied ? `${label} copied` : `Copy ${label}`}
               className={cn(
-                "-mr-1.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent active:bg-accent",
-                isCopied ? "text-positive" : "text-muted-foreground hover:text-foreground",
+                "-mr-1.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full transition-colors active:bg-accent [@media(hover:hover)]:hover:bg-accent",
+                isCopied
+                  ? "text-positive"
+                  : "text-muted-foreground [@media(hover:hover)]:hover:text-foreground",
               )}
             >
               {isCopied ? (

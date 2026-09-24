@@ -82,22 +82,26 @@ function IconTile({ icon: Icon }: { icon: LucideIcon }) {
   );
 }
 
-function StatTile({ label, value }: { label: string; value: React.ReactNode }) {
+/** A leading icon or avatar that gives way on a narrow screen, where the
+ *  row's text needs the width more than a picture of what it already says. */
+function Leading({ children }: { children: React.ReactNode }) {
+  return <span className="hidden flex-shrink-0 min-[360px]:block">{children}</span>;
+}
+
+function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Card className="p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      {/* One notch smaller on a 320px phone so a four-figure total fits. */}
-      <p className="mt-1 text-xl font-bold tabular-nums tracking-tight min-[360px]:text-2xl">
-        {value}
-      </p>
-    </Card>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-3 px-4 py-3">
+      <dt className="text-base text-muted-foreground">{label}</dt>
+      <dd className="whitespace-nowrap text-base font-semibold tabular-nums">{children}</dd>
+    </div>
   );
 }
 
 /**
- * One line of a horizontal bar chart: the label and amount on one line, a
- * thick bar below with its share of the total beside it. Every value is
- * printed, so the bar only has to show proportion at a glance.
+ * One line of a horizontal bar chart: the label and amount on one line (the
+ * amount drops under a label too long to share it), a thick bar below with
+ * its share of the total beside it. Every value is printed, so the bar only
+ * has to show proportion at a glance.
  */
 function BarRow({
   leading,
@@ -115,13 +119,13 @@ function BarRow({
   const pct = total > 0 ? (part / total) * 100 : 0;
   return (
     <li className="flex min-h-14 items-center gap-3 px-4 py-3">
-      {leading}
+      <Leading>{leading}</Leading>
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-3">
-          <span className="line-clamp-2 min-w-0 flex-1 text-base font-medium leading-snug">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+          <span className="line-clamp-2 min-w-0 break-words text-base font-medium leading-snug">
             {label}
           </span>
-          <span className="flex-shrink-0 whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
+          <span className="whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
             {amount}
           </span>
         </div>
@@ -189,21 +193,27 @@ function SpendingSkeleton() {
   return (
     <div role="status" className="space-y-6">
       <span className="sr-only">Loading stats…</span>
-      <div className="grid grid-cols-2 gap-3" aria-hidden>
-        {[0, 1, 2, 3].map((i) => (
-          <Card key={i} className="p-4">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="mt-3 h-7 w-24" />
-          </Card>
-        ))}
-      </div>
+      <Card aria-hidden>
+        <div className="p-4">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="mt-3 h-9 w-40" />
+        </div>
+        <div className="divide-y border-t">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex justify-between gap-3 px-4 py-4">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))}
+        </div>
+      </Card>
       <div aria-hidden>
         <Skeleton className="mb-3 ml-1 h-4 w-40" />
         <Card>
           <ul className="divide-y">
             {[0, 1, 2].map((i) => (
               <li key={i} className="flex items-center gap-3 px-4 py-3">
-                <Skeleton className="h-10 w-10 flex-shrink-0 rounded-xl" />
+                <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl min-[360px]:block" />
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between gap-3">
                     <Skeleton className="h-4 w-24" />
@@ -227,7 +237,7 @@ function RecurringSkeleton() {
       <ul className="divide-y" aria-hidden>
         {[0, 1].map((i) => (
           <li key={i} className="flex items-center gap-3 px-4 py-3">
-            <Skeleton className="h-10 w-10 flex-shrink-0 rounded-xl" />
+            <Skeleton className="hidden h-10 w-10 flex-shrink-0 rounded-xl min-[360px]:block" />
             <div className="min-w-0 flex-1 space-y-2">
               <Skeleton className="h-4 w-36" />
               <Skeleton className="h-4 w-28" />
@@ -256,21 +266,24 @@ function RecurringRow({
       <button
         type="button"
         onClick={() => onOpen(bill)}
-        className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
+        className="flex min-h-14 w-full items-center gap-3 py-3 pl-4 pr-3 text-left transition-colors [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
       >
-        <IconTile icon={Icon} />
+        <Leading>
+          <IconTile icon={Icon} />
+        </Leading>
         <span className="min-w-0 flex-1">
-          {/* The amount drops under the name when both can't share a line. */}
+          {/* The name keeps the full width; the amount shares its line when
+              both fit and drops under it when they don't. */}
           <span className="flex flex-wrap items-baseline justify-between gap-x-3">
-            <span className="line-clamp-2 min-w-0 flex-1 basis-32 text-base font-medium leading-snug">
+            <span className="line-clamp-2 min-w-0 break-words text-base font-medium leading-snug">
               {bill.description}
             </span>
             {variable && bill.amount <= 0 ? (
-              <span className="flex-shrink-0 whitespace-nowrap text-base font-medium leading-snug text-muted-foreground">
+              <span className="whitespace-nowrap text-base font-medium leading-snug text-muted-foreground">
                 Varies
               </span>
             ) : (
-              <span className="flex-shrink-0 whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
+              <span className="whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
                 {variable && (
                   <>
                     <span aria-hidden>~</span>
@@ -342,7 +355,7 @@ function RecurringBillSheet({
           {variable ? (
             <>
               <p className="text-3xl font-bold tracking-tight">Amount varies</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-balance text-sm text-muted-foreground">
                 {bill.amount > 0
                   ? `Usually about ${money(bill.amount)} a ${per}`
                   : `Entered each ${per} when it comes due`}
@@ -362,11 +375,16 @@ function RecurringBillSheet({
           <DetailRow label="Next due">{capitalize(formatDueDate(bill.nextRun))}</DetailRow>
           <DetailRow label="Paid by">
             {/* Avatar trails the name, so a long name that wraps stays flush
-                against it instead of leaving it stranded mid-row. */}
+                against it instead of leaving it stranded mid-row. On a narrow
+                screen it gives way so the name can stay on one line. */}
             <span className="min-w-0 break-words">
               {bill.paidBy === currentUserId ? "You" : bill.paidByName}
             </span>
-            <MemberAvatar id={bill.paidBy} name={bill.paidByName} className="h-7 w-7 flex-shrink-0" />
+            <MemberAvatar
+              id={bill.paidBy}
+              name={bill.paidByName}
+              className="hidden h-7 w-7 flex-shrink-0 min-[360px]:flex"
+            />
           </DetailRow>
           <DetailRow label="Category">
             <CatIcon className="h-5 w-5 flex-shrink-0 text-muted-foreground" aria-hidden />
@@ -485,7 +503,14 @@ export default function StatsPage() {
 
   return (
     <div className="duration-500 animate-in fade-in slide-in-from-bottom-3">
-      <PageHeader title="Stats" subtitle="Where the household's money goes." />
+      <PageHeader
+        title="Stats"
+        subtitle={
+          <span className="block text-balance">
+            Where the household&apos;s money goes.
+          </span>
+        }
+      />
 
       <div className="space-y-6">
         <PendingBillsCard
@@ -516,11 +541,24 @@ export default function StatsPage() {
           </EmptyState>
         ) : (
           <>
-            <section aria-label="Summary" className="grid grid-cols-2 gap-3">
-              <StatTile label="Total spent" value={money(total)} />
-              <StatTile label="Your share" value={money(yourShare)} />
-              <StatTile label="Expenses" value={expenses.length} />
-              <StatTile label="Average" value={money(total / expenses.length)} />
+            <section aria-label="Summary">
+              <Card>
+                <div className="p-4 pb-3">
+                  <p className="text-sm text-muted-foreground">Total spent</p>
+                  {/* One notch smaller on a narrow phone so a six-figure
+                      total still sits on one line. */}
+                  <p className="mt-1 break-words text-3xl font-bold tabular-nums tracking-tight min-[360px]:text-4xl">
+                    {money(total)}
+                  </p>
+                </div>
+                <dl className="divide-y border-t">
+                  <SummaryRow label="Your share">{money(yourShare)}</SummaryRow>
+                  <SummaryRow label="Expenses">{expenses.length}</SummaryRow>
+                  <SummaryRow label="Average expense">
+                    {money(total / expenses.length)}
+                  </SummaryRow>
+                </dl>
+              </Card>
             </section>
 
             <section aria-labelledby="stats-categories">
@@ -614,12 +652,15 @@ export default function StatsPage() {
                   onClick={() => setSheetOpen(true)}
                   className="flex min-h-14 w-full items-center gap-3 border-t px-4 py-3 text-left text-base font-semibold text-primary transition-colors [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
                 >
-                  <IconTile icon={Plus} />
+                  <Leading>
+                    <IconTile icon={Plus} />
+                  </Leading>
+                  <Plus className="h-5 w-5 flex-shrink-0 min-[360px]:hidden" aria-hidden />
                   Add recurring bill
                 </button>
               </Card>
               {fixedMonthly > 0 && (
-                <p className="mt-2 px-1 text-sm text-muted-foreground">
+                <p className="mt-2 text-balance px-1 text-sm text-muted-foreground">
                   Fixed bills come to{" "}
                   {hasWeekly ? "about " : ""}
                   <span className="font-semibold tabular-nums text-foreground">

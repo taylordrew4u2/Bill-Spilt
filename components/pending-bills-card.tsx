@@ -149,15 +149,21 @@ function PendingRow({
     <Card className="border-primary/40 p-4">
       <form onSubmit={log} aria-labelledby={titleId} className="space-y-4">
         <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          {/* The category tile gives way on a narrow screen so the title and
+              due line get the full width. */}
+          <span className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex">
             <CatIcon className="h-5 w-5" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
             <h3 id={titleId} className="line-clamp-2 text-base font-semibold leading-snug">
               {charge.description}
             </h3>
+            {/* Wraps between the two facts, never inside one. */}
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Due {formatDueDate(charge.dueDate)} · paid by {charge.paidByName}
+              <span className="whitespace-nowrap">
+                Due {formatDueDate(charge.dueDate)} ·
+              </span>{" "}
+              <span className="inline-block">paid by {charge.paidByName}</span>
             </p>
           </div>
         </div>

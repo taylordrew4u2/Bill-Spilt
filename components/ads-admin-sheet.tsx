@@ -56,6 +56,16 @@ function SectionLabel({ id, children }: { id: string; children: React.ReactNode 
   );
 }
 
+/** A form section's heading. Fields sit straight on the sheet (no card
+ *  around them), so the heading carries the grouping. */
+function SectionTitle({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <h3 id={id} className="text-lg font-semibold leading-snug">
+      {children}
+    </h3>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col-reverse items-center rounded-xl bg-muted/60 px-2 py-2 text-center">
@@ -186,7 +196,7 @@ export function AdsAdminSheet({
         <div ref={topRef} />
         <SheetHeader className="mb-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <span className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary min-[360px]:flex">
               <Megaphone className="h-6 w-6" aria-hidden />
             </span>
             <div className="min-w-0">
@@ -203,139 +213,131 @@ export function AdsAdminSheet({
         </SheetHeader>
 
         {draft ? (
-          <form onSubmit={save} className="space-y-6">
-            <section aria-labelledby="ad-content">
-              <SectionLabel id="ad-content">Content</SectionLabel>
-              <Card className="space-y-5 p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ad-title">Title</Label>
-                  <Input
-                    id="ad-title"
-                    value={draft.title}
-                    maxLength={120}
-                    required
-                    onChange={(e) => set("title", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ad-body">
-                    Body <span className="font-normal text-muted-foreground">(optional)</span>
-                  </Label>
-                  <textarea
-                    id="ad-body"
-                    value={draft.body}
-                    maxLength={280}
-                    rows={3}
-                    onChange={(e) => set("body", e.target.value)}
-                    className="flex min-h-24 w-full resize-none rounded-xl border border-input bg-card px-4 py-3 text-base leading-snug ring-offset-background placeholder:text-muted-foreground/80 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ad-cta">
-                    Button text{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
-                  </Label>
-                  <Input
-                    id="ad-cta"
-                    value={draft.cta}
-                    maxLength={40}
-                    placeholder="Learn more"
-                    onChange={(e) => set("cta", e.target.value)}
-                  />
-                </div>
-              </Card>
+          <form onSubmit={save} className="space-y-8">
+            <section aria-labelledby="ad-content" className="space-y-5">
+              <SectionTitle id="ad-content">Content</SectionTitle>
+              <div className="space-y-2">
+                <Label htmlFor="ad-title">Title</Label>
+                <Input
+                  id="ad-title"
+                  value={draft.title}
+                  maxLength={120}
+                  required
+                  onChange={(e) => set("title", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ad-body">
+                  Body <span className="font-normal text-muted-foreground">(optional)</span>
+                </Label>
+                <textarea
+                  id="ad-body"
+                  value={draft.body}
+                  maxLength={280}
+                  rows={3}
+                  onChange={(e) => set("body", e.target.value)}
+                  className="flex min-h-24 w-full resize-none rounded-xl border border-input bg-card px-4 py-3 text-base leading-snug ring-offset-background placeholder:text-muted-foreground/80 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ad-cta">
+                  Button text{" "}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
+                </Label>
+                <Input
+                  id="ad-cta"
+                  value={draft.cta}
+                  maxLength={40}
+                  placeholder="Learn more"
+                  onChange={(e) => set("cta", e.target.value)}
+                />
+              </div>
             </section>
 
-            <section aria-labelledby="ad-links">
-              <SectionLabel id="ad-links">Links</SectionLabel>
-              <Card className="space-y-5 p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ad-link">Destination URL</Label>
-                  <Input
-                    id="ad-link"
-                    type="url"
-                    inputMode="url"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    placeholder="https://…"
-                    value={draft.linkUrl}
-                    required
-                    onChange={(e) => set("linkUrl", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ad-img">
-                    Image URL{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
-                  </Label>
-                  <Input
-                    id="ad-img"
-                    type="url"
-                    inputMode="url"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    placeholder="https://…"
-                    value={draft.imageUrl}
-                    onChange={(e) => set("imageUrl", e.target.value)}
-                  />
-                </div>
-              </Card>
+            <section aria-labelledby="ad-links" className="space-y-5">
+              <SectionTitle id="ad-links">Links</SectionTitle>
+              <div className="space-y-2">
+                <Label htmlFor="ad-link">Destination URL</Label>
+                <Input
+                  id="ad-link"
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="https://…"
+                  value={draft.linkUrl}
+                  required
+                  onChange={(e) => set("linkUrl", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ad-img">
+                  Image URL{" "}
+                  <span className="font-normal text-muted-foreground">(optional)</span>
+                </Label>
+                <Input
+                  id="ad-img"
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="https://…"
+                  value={draft.imageUrl}
+                  onChange={(e) => set("imageUrl", e.target.value)}
+                />
+              </div>
             </section>
 
-            <section aria-labelledby="ad-delivery">
-              <SectionLabel id="ad-delivery">Delivery</SectionLabel>
-              <Card className="divide-y overflow-hidden">
-                <div className="space-y-5 p-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="ad-placement">Placement</Label>
-                    <Select
-                      value={draft.placement}
-                      onValueChange={(v) => set("placement", v as AdPlacement)}
-                    >
-                      <SelectTrigger id="ad-placement">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {AD_PLACEMENTS.map((p) => (
-                          <SelectItem key={p.value} value={p.value}>
-                            {p.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ad-weight">Weight</Label>
-                    <Input
-                      id="ad-weight"
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      max={100}
-                      value={draft.weight}
-                      onChange={(e) => set("weight", parseInt(e.target.value) || 1)}
-                      aria-describedby="ad-weight-hint"
-                    />
-                    <p id="ad-weight-hint" className="text-sm text-muted-foreground">
-                      1–100. Higher weights show more often.
-                    </p>
-                  </div>
-                </div>
-                <label className="flex min-h-14 cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-accent">
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-base font-medium">Active</span>
-                    <span className="block text-sm text-muted-foreground">
-                      Visible to users as soon as it&apos;s saved
-                    </span>
+            <section aria-labelledby="ad-delivery" className="space-y-5">
+              <SectionTitle id="ad-delivery">Delivery</SectionTitle>
+              <div className="space-y-2">
+                <Label htmlFor="ad-placement">Placement</Label>
+                <Select
+                  value={draft.placement}
+                  onValueChange={(v) => set("placement", v as AdPlacement)}
+                >
+                  <SelectTrigger id="ad-placement">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AD_PLACEMENTS.map((p) => (
+                      <SelectItem key={p.value} value={p.value}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ad-weight">Weight</Label>
+                <Input
+                  id="ad-weight"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={100}
+                  value={draft.weight}
+                  onChange={(e) => set("weight", parseInt(e.target.value) || 1)}
+                  aria-describedby="ad-weight-hint"
+                />
+                <p id="ad-weight-hint" className="text-sm text-muted-foreground">
+                  1–100. Higher weights show more often.
+                </p>
+              </div>
+              <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-colors hover:bg-accent">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-medium">Active</span>
+                  <span className="block text-sm text-muted-foreground">
+                    Visible to users as soon as it&apos;s saved
                   </span>
-                  <input
-                    type="checkbox"
-                    checked={draft.active}
-                    onChange={(e) => set("active", e.target.checked)}
-                    className="h-6 w-6 flex-shrink-0 cursor-pointer accent-primary"
-                  />
-                </label>
-              </Card>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={draft.active}
+                  onChange={(e) => set("active", e.target.checked)}
+                  className="h-6 w-6 flex-shrink-0 cursor-pointer accent-primary"
+                />
+              </label>
             </section>
 
             <div className="space-y-2">
@@ -403,18 +405,15 @@ export function AdsAdminSheet({
                       const busy = busyId === ad.id;
                       return (
                         <li key={ad.id} className="p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="min-w-0 flex-1">
-                              <p className="line-clamp-2 break-words text-base font-semibold leading-snug">
-                                {ad.title}
-                              </p>
-                              <p className="mt-0.5 text-sm text-muted-foreground">
-                                {placement} · Weight {ad.weight}
-                              </p>
-                            </div>
+                          {/* The title gets the full width; the status pill
+                              flows with the other facts underneath. */}
+                          <p className="line-clamp-2 break-words text-base font-semibold leading-snug">
+                            {ad.title}
+                          </p>
+                          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                             <span
                               className={cn(
-                                "flex-shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                                "rounded-full px-2.5 py-0.5 text-xs font-semibold",
                                 ad.active
                                   ? "bg-positive-soft text-positive"
                                   : "bg-muted text-muted-foreground",
@@ -422,7 +421,10 @@ export function AdsAdminSheet({
                             >
                               {ad.active ? "Active" : "Paused"}
                             </span>
-                          </div>
+                            <span>
+                              {placement} · Weight {ad.weight}
+                            </span>
+                          </p>
                           <dl className="mt-3 grid grid-cols-3 gap-2">
                             <Stat label="Views" value={ad.impressions.toLocaleString()} />
                             <Stat label="Clicks" value={ad.clicks.toLocaleString()} />
@@ -433,7 +435,7 @@ export function AdsAdminSheet({
                               type="button"
                               size="sm"
                               variant="outline"
-                              className="min-w-0 flex-1"
+                              className="min-w-0 flex-1 px-3"
                               onClick={() => toggleActive(ad)}
                               disabled={busy}
                             >
@@ -449,7 +451,7 @@ export function AdsAdminSheet({
                               type="button"
                               size="sm"
                               variant="outline"
-                              className="min-w-0 flex-1"
+                              className="min-w-0 flex-1 px-3"
                               onClick={() => startEdit(ad)}
                             >
                               <Pencil aria-hidden /> Edit
