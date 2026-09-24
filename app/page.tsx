@@ -11,12 +11,16 @@ import {
   WifiOff,
   Bell,
   ArrowRight,
-  ArrowUpRight,
+  ArrowDownLeft,
+  BookOpen,
   Check,
+  ChevronRight,
 } from "lucide-react";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { Brand } from "@/components/brand";
+import { MarketingHeader } from "@/components/marketing-header";
+import { MemberAvatar } from "@/components/member-avatar";
+import { Button } from "@/components/ui/button";
 import { GUIDES, guidePath } from "@/lib/guides";
 import { JsonLd } from "@/components/json-ld";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS } from "@/lib/site";
@@ -149,42 +153,69 @@ const JSON_LD = {
 };
 
 /** Static mock of the in-app home screen so first-time visitors instantly see
- *  what the product does. Purely illustrative — hidden from screen readers. */
+ *  what the product does. Purely illustrative — hidden from screen readers.
+ *  Styled like the real Home screen (balance hero + roommate rows). */
 function AppPreview() {
   const rows = [
-    { name: "Sam", note: "owes you", amount: "$24.00" },
-    { name: "Priya", note: "owes you", amount: "$12.50" },
+    { id: "preview-sam", name: "Sam", note: "owes you", amount: "$24.00" },
+    { id: "preview-priya", name: "Priya", note: "owes you", amount: "$12.50" },
   ];
   return (
-    <div
-      aria-hidden
-      className="mx-auto mt-10 w-full max-w-sm rounded-2xl border bg-card p-4 text-left shadow-lg"
-    >
-      <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 p-4 text-white">
-        <p className="text-xs opacity-90">You are owed</p>
-        <p className="mt-1 text-3xl font-extrabold tracking-tight">$36.50</p>
-      </div>
-      <ul className="mt-3 divide-y">
-        {rows.map((r) => (
-          <li key={r.name} className="flex items-center gap-3 py-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              {r.name[0]}
+    <div aria-hidden className="relative mx-auto w-full max-w-sm">
+      <div className="absolute -inset-3 -z-10 rounded-[2rem] bg-primary/10 blur-2xl" />
+      <div className="rounded-3xl border bg-card p-3 text-left shadow-[0_1px_2px_rgb(0_0_0/0.04),0_16px_40px_-16px_rgb(0_0_0/0.18)]">
+        <div className="rounded-2xl border border-positive/20 bg-positive-soft p-4">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-positive/15 text-positive">
+              <ArrowDownLeft className="h-5 w-5" strokeWidth={2.4} />
             </span>
-            <div className="flex-1">
-              <p className="text-sm font-medium">{r.name}</p>
-              <p className="text-xs text-muted-foreground">{r.note}</p>
-            </div>
-            <span className="flex items-center gap-1 text-sm font-semibold text-emerald-600">
-              <ArrowUpRight className="h-4 w-4" />
-              {r.amount}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary">
-        <Check className="h-4 w-4" />
-        Settle up: 2 payments clear everything
+            <p className="text-base font-semibold">You are owed</p>
+          </div>
+          <p className="mt-2 text-4xl font-bold tabular-nums tracking-tight text-positive">
+            $36.50
+          </p>
+        </div>
+        <ul className="divide-y px-1">
+          {rows.map((r) => (
+            <li key={r.name} className="flex min-h-14 items-center gap-3 py-3">
+              <MemberAvatar id={r.id} name={r.name} className="h-10 w-10" />
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-medium leading-snug">{r.name}</p>
+                <p className="text-sm text-muted-foreground">{r.note}</p>
+              </div>
+              <span className="flex-shrink-0 whitespace-nowrap text-base font-semibold tabular-nums text-positive">
+                {r.amount}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex items-center justify-center gap-2 text-balance rounded-2xl bg-primary/10 px-3 py-3 text-center text-sm font-semibold text-primary">
+          <Check className="h-4 w-4 flex-shrink-0" strokeWidth={2.6} />
+          Settle up: 2 payments clear everything
+        </div>
       </div>
+    </div>
+  );
+}
+
+/** Centered section heading + optional lede, shared by every landing section. */
+function SectionHeading({
+  title,
+  lede,
+}: {
+  title: string;
+  lede?: string;
+}) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
+        {title}
+      </h2>
+      {lede && (
+        <p className="mx-auto mt-3 max-w-xl text-pretty text-lg text-muted-foreground">
+          {lede}
+        </p>
+      )}
     </div>
   );
 }
@@ -200,100 +231,131 @@ export default async function LandingPage() {
       {/* AdSense — the landing is public, content-rich, and ad-appropriate. */}
       <AdSenseScript />
       {/* Nav */}
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-gutter py-4 safe-top">
-        <Brand size="sm" />
-        <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="flex h-11 items-center rounded-md px-4 text-sm font-medium hover:bg-accent"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/register"
-            className="flex h-11 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
-          >
-            Get started
-          </Link>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* Hero */}
-      <section className="mx-auto max-w-3xl px-gutter pb-16 pt-10 text-center sm:pt-16">
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          Split bills with your roommates.
-          <br />
-          <span className="text-primary">Settle up in seconds.</span>
-        </h1>
-        <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-          BillSpilt is the free roommate bill splitter: log shared expenses,
-          see who owes what instantly, and clear every debt in the fewest
-          payments.
-        </p>
-        <div className="mt-8 flex justify-center">
-          <Link
-            href="/register"
-            className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95 sm:w-auto"
+      <section className="relative isolate overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 -z-10 h-[34rem] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"
+        />
+        <div className="mx-auto max-w-3xl px-gutter pb-14 pt-10 text-center sm:pb-20 sm:pt-20">
+          <h1 className="text-balance text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl sm:leading-[1.08] md:text-6xl">
+            Split bills with your roommates.
+            <br />
+            <span className="text-primary">Settle up in seconds.</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-pretty text-lg text-muted-foreground sm:text-xl sm:leading-8">
+            BillSpilt is the free roommate bill splitter: log shared expenses,
+            see who owes what instantly, and clear every debt in the fewest
+            payments.
+          </p>
+
+          {/* Stacked, full-width actions on a phone; side by side from `sm`. */}
+          <div className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:max-w-xl sm:flex-row sm:items-stretch">
+            <Button asChild size="lg" className="w-full sm:flex-1">
+              <Link href="/register">
+                Start splitting — it&apos;s free <ArrowRight aria-hidden />
+              </Link>
+            </Button>
+            <Link
+              href="/split-calculator"
+              className="group flex min-h-14 w-full items-center gap-3 rounded-xl border border-input bg-card px-4 py-2.5 text-left transition-colors hover:bg-accent active:bg-accent sm:flex-1"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm text-muted-foreground">
+                  Just need a quick split?
+                </span>
+                <span className="block text-base font-semibold leading-snug text-primary">
+                  Use the free calculator — no sign-up
+                </span>
+              </span>
+              <ChevronRight
+                className="h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                aria-hidden
+              />
+            </Link>
+          </div>
+
+          <ul
+            aria-label="Pricing"
+            className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm font-medium text-muted-foreground"
           >
-            Start splitting — it&apos;s free <ArrowRight className="h-4 w-4" />
-          </Link>
+            {["Free forever", "No credit card", "No premium tier"].map((t) => (
+              <li key={t} className="inline-flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-positive" strokeWidth={2.6} aria-hidden />
+                {t}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-12 sm:mt-16">
+            <AppPreview />
+          </div>
         </div>
-        <p className="mt-4 text-xs text-muted-foreground">
-          Free forever · No credit card · No premium tier
-        </p>
-        <AppPreview />
-        <p className="mt-8 text-sm text-muted-foreground">
-          Just need a quick split?{" "}
-          <Link
-            href="/split-calculator"
-            className="font-semibold text-primary hover:underline"
-          >
-            Use the free calculator — no sign-up →
-          </Link>
-        </p>
       </section>
 
       {/* How it works */}
-      <section className="border-t bg-card/40 py-16">
+      <section className="border-y bg-card py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-gutter">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">
-            How it works
-          </h2>
-          <div className="mt-10 grid gap-6 sm:grid-cols-3">
-            {STEPS.map((s) => (
-              <div key={s.title} className="rounded-xl border bg-card p-6">
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <s.icon className="h-6 w-6" />
+          <SectionHeading title="How it works" />
+          {/* A vertical timeline on phones, three cards side by side up. */}
+          <ol className="mx-auto mt-10 max-w-md sm:grid sm:max-w-none sm:grid-cols-3 sm:gap-6">
+            {STEPS.map((s, i) => (
+              <li
+                key={s.title}
+                className="relative flex gap-4 pb-9 last:pb-0 sm:flex-col sm:gap-0 sm:rounded-2xl sm:border sm:bg-background sm:p-6"
+              >
+                {i < STEPS.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="absolute bottom-2 left-6 top-[3.75rem] w-0.5 -translate-x-1/2 rounded-full bg-primary/20 sm:hidden"
+                  />
+                )}
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
+                  <s.icon className="h-6 w-6" aria-hidden />
                 </div>
-                <h3 className="mt-4 font-semibold">{s.title}</h3>
-                <p className="mt-1.5 text-sm text-muted-foreground">{s.body}</p>
-              </div>
+                <div className="min-w-0 pt-2.5 sm:mt-5 sm:pt-0">
+                  <h3 className="text-lg font-semibold leading-snug">{s.title}</h3>
+                  <p className="mt-1.5 text-base text-muted-foreground">{s.body}</p>
+                </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-16">
+      <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-5xl px-gutter">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">
-            Everything roommates need
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-center text-muted-foreground">
-            Rent, utilities, groceries — from the first shared cost to
-            moving-out day.
-          </p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <SectionHeading
+            title="Everything roommates need"
+            lede="Rent, utilities, groceries — from the first shared cost to moving-out day."
+          />
+          {/* One grouped panel with hairline dividers: a list on phones, a
+              grid from `sm` up. */}
+          <ul className="mt-10 grid gap-px overflow-hidden rounded-2xl border bg-border shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.title} className="rounded-xl border bg-card p-5">
-                <f.icon className="h-6 w-6 text-primary" />
-                <h3 className="mt-3 font-semibold">{f.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
-              </div>
+              <li
+                key={f.title}
+                className="flex gap-4 bg-card p-4 sm:flex-col sm:gap-0 sm:p-6"
+              >
+                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <f.icon className="h-6 w-6" aria-hidden />
+                </span>
+                <div className="min-w-0 pt-0.5 sm:mt-4 sm:pt-0">
+                  <h3 className="text-base font-semibold leading-snug sm:text-lg">
+                    {f.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
+                </div>
+              </li>
             ))}
-          </div>
-          <p className="mt-8 text-center text-sm text-muted-foreground">
-            <Check className="mr-1 inline h-4 w-4 text-primary" aria-hidden />
+          </ul>
+          <p className="mx-auto mt-5 flex max-w-2xl items-start gap-3 rounded-2xl bg-primary/10 p-4 text-left text-sm font-medium text-foreground sm:items-center sm:justify-center sm:text-center">
+            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <Check className="h-4 w-4" strokeWidth={2.6} aria-hidden />
+            </span>
             Every feature is free — including the ones other bill splitters put
             behind a subscription.
           </p>
@@ -301,24 +363,22 @@ export default async function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-t bg-card/40 py-16">
+      <section className="border-y bg-card py-14 sm:py-20">
         <div className="mx-auto max-w-2xl px-gutter">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">
-            Frequently asked questions
-          </h2>
-          <div className="mt-8 space-y-4">
+          <SectionHeading title="Frequently asked questions" />
+          <div className="mt-8 divide-y border-y">
             {FAQ.map((item) => (
-              <div key={item.q} className="rounded-xl border bg-card p-5">
-                <h3 className="font-semibold">{item.q}</h3>
-                <p className="mt-1.5 text-sm text-muted-foreground">{item.a}</p>
+              <div key={item.q} className="py-6">
+                <h3 className="text-lg font-semibold leading-snug">{item.q}</h3>
+                <p className="mt-2 text-base text-muted-foreground">{item.a}</p>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <p className="mt-8 text-center text-base text-muted-foreground">
             New to this?{" "}
             <Link
               href="/guide/how-to-split-bills-with-roommates"
-              className="font-semibold text-primary hover:underline"
+              className="font-semibold text-primary underline-offset-4 hover:underline"
             >
               Read our guide on how to split bills with roommates →
             </Link>
@@ -327,51 +387,62 @@ export default async function LandingPage() {
       </section>
 
       {/* Guides */}
-      <section className="py-16">
-        <div className="mx-auto max-w-5xl px-gutter">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">
-            Guides for splitting bills with roommates
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-            Practical, no-fluff advice on dividing rent, utilities, groceries,
-            and more — with worked examples and the fairness math spelled out.
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="py-14 sm:py-20">
+        <div className="mx-auto max-w-3xl px-gutter">
+          <SectionHeading
+            title="Guides for splitting bills with roommates"
+            lede="Practical, no-fluff advice on dividing rent, utilities, groceries, and more — with worked examples and the fairness math spelled out."
+          />
+          <ul className="mt-10 divide-y overflow-hidden rounded-2xl border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
             {GUIDES.map((g) => (
-              <Link
-                key={g.slug}
-                href={guidePath(g.slug)}
-                className="group rounded-xl border bg-card p-5 transition-colors hover:border-primary/50"
-              >
-                <h3 className="font-semibold group-hover:text-primary">
-                  {g.title}
-                </h3>
-                <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                  Read guide <ArrowRight className="h-4 w-4" />
-                </span>
-              </Link>
+              <li key={g.slug}>
+                <Link
+                  href={guidePath(g.slug)}
+                  className="group flex min-h-16 items-center gap-4 px-4 py-4 transition-colors hover:bg-accent/60 active:bg-accent sm:px-5"
+                >
+                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <BookOpen className="h-5 w-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-semibold leading-snug group-hover:text-primary">
+                      {g.title}
+                    </h3>
+                    <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                      Read guide <ArrowRight className="h-4 w-4" aria-hidden />
+                    </span>
+                  </div>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="px-gutter pb-16">
-        <div className="mx-auto max-w-3xl rounded-2xl bg-primary px-6 py-12 text-center text-primary-foreground">
-          <h2 className="text-2xl font-bold sm:text-3xl">
+      <section className="px-gutter pb-14 sm:pb-20">
+        <div className="relative isolate mx-auto max-w-3xl overflow-hidden rounded-3xl bg-primary px-6 py-10 text-center text-primary-foreground sm:px-12 sm:py-14">
+          <div
+            aria-hidden
+            className="absolute -right-16 -top-20 -z-10 h-56 w-56 rounded-full bg-primary-foreground/10"
+          />
+          <div
+            aria-hidden
+            className="absolute -bottom-24 -left-16 -z-10 h-64 w-64 rounded-full bg-primary-foreground/[0.07]"
+          />
+          <h2 className="text-balance text-3xl font-bold tracking-tight sm:text-4xl">
             Stop chasing your roommates for money.
           </h2>
-          <p className="mx-auto mt-3 max-w-md opacity-90">
+          <p className="mx-auto mt-3 max-w-md text-pretty text-lg text-primary-foreground/90">
             Set up your household in under a minute and let BillSpilt do the
             math. Free forever — no card, no catch.
           </p>
           <Link
             href="/register"
-            className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-8 text-base font-semibold text-primary active:scale-95"
+            className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-primary-foreground px-8 text-lg font-semibold text-primary shadow-sm transition-transform active:scale-[0.98] sm:w-auto"
           >
-            Create your free account <ArrowRight className="h-4 w-4" />
+            Create your free account <ArrowRight className="h-5 w-5" aria-hidden />
           </Link>
-          <p className="mt-3 text-sm opacity-80">
+          <p className="mt-4 text-balance text-sm text-primary-foreground/90">
             Takes a minute · No credit card · Works on every phone
           </p>
         </div>
