@@ -442,11 +442,14 @@ export default async function LandingPage() {
             Create your free account{" "}
             <ArrowRight className="h-5 w-5 flex-shrink-0 max-[359px]:hidden" aria-hidden />
           </Link>
-          <p className="mt-4 text-sm text-primary-foreground/90">
-            <span className="whitespace-nowrap">Takes a minute</span> ·{" "}
-            <span className="whitespace-nowrap">No credit card</span> ·{" "}
-            <span className="whitespace-nowrap">Works on every phone</span>
-          </p>
+          <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm font-medium text-primary-foreground/90">
+            {["Takes a minute", "No credit card", "Works on every phone"].map((t) => (
+              <li key={t} className="inline-flex items-center gap-1.5">
+                <Check className="h-4 w-4" strokeWidth={2.6} aria-hidden />
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

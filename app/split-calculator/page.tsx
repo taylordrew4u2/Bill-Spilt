@@ -73,7 +73,7 @@ export default function SplitCalculatorPage() {
           </div>
 
           {/* On-brand upsell card */}
-          <section className="mx-auto mt-10 max-w-md rounded-2xl border bg-card p-6 text-center shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:mt-14 sm:p-8">
+          <section className="mx-auto mt-10 max-w-md rounded-2xl border bg-card p-5 text-center shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:mt-14 sm:p-8">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Scale className="h-7 w-7" aria-hidden />
             </div>
@@ -84,16 +84,23 @@ export default function SplitCalculatorPage() {
               BillSpilt remembers every shared bill, tracks who owes what over
               time, and settles everyone up in the fewest payments — free forever.
             </p>
-            <Button asChild size="lg" className="mt-6 w-full">
+            <Button
+              asChild
+              size="lg"
+              className="mt-6 h-auto min-h-14 w-full whitespace-normal text-balance px-4 py-3 text-base leading-snug sm:text-lg"
+            >
               <Link href="/register">
                 Track it with your household <ArrowRight aria-hidden />
               </Link>
             </Button>
-            <p className="mt-3 text-sm text-muted-foreground">
-              <span className="whitespace-nowrap">No credit card</span> ·{" "}
-              <span className="whitespace-nowrap">No premium tier</span> ·{" "}
-              <span className="whitespace-nowrap">Free forever</span>
-            </p>
+            <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+              {["No credit card", "No premium tier", "Free forever"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-positive" strokeWidth={2.6} aria-hidden />
+                  {t}
+                </li>
+              ))}
+            </ul>
           </section>
         </div>
       </main>
