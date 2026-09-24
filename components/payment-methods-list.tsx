@@ -37,37 +37,72 @@ export function PaymentMethodsList({
   if (methods.length === 0) return null;
 
   return (
-    <ul className={cn("space-y-1", className)}>
+    <ul className={cn("divide-y divide-border/70", className)}>
       {methods.map((pm, i) => {
         const def = PAYMENT_METHODS.find((p) => p.value === pm.type);
+        const label = def?.label ?? pm.type;
         const href = paymentLink(pm, linkContext);
+        const isCopied = copied === i;
+
+        // Provider name on top, the handle underneath at body size so it's
+        // easy to read back or check before paying.
+        const body = (
+          <>
+            <span
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
+              aria-hidden
+            >
+              <Wallet className="h-5 w-5" />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                {label}
+                {href && <ExternalLink className="h-4 w-4 flex-shrink-0" aria-hidden />}
+              </span>
+              {/* Long handles (emails, phone numbers) wrap rather than being
+                  cut off, so you can read the whole thing before paying. */}
+              <span
+                className={cn(
+                  "line-clamp-3 break-words text-base font-medium leading-snug",
+                  href && "text-primary",
+                )}
+              >
+                {pm.value}
+              </span>
+            </span>
+          </>
+        );
+
         return (
-          <li key={i} className="flex items-center gap-2 text-sm">
-            <Wallet className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden />
-            <span className="text-muted-foreground">{def?.label ?? pm.type}:</span>
+          <li key={i} className="flex min-h-14 items-center gap-1 py-1">
             {href ? (
               <a
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-w-0 flex-1 items-center gap-1 font-medium text-primary hover:underline"
+                aria-label={`Pay with ${label}: ${pm.value} (opens ${label})`}
+                className="-ml-2 flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-1 transition-colors hover:bg-accent active:bg-accent"
               >
-                <span className="truncate">{pm.value}</span>
-                <ExternalLink className="h-3 w-3 flex-shrink-0 opacity-70" />
+                {body}
               </a>
             ) : (
-              <span className="min-w-0 flex-1 truncate font-medium">{pm.value}</span>
+              <div className="flex min-h-12 min-w-0 flex-1 items-center gap-3 py-1">
+                {body}
+              </div>
             )}
             <button
               type="button"
               onClick={() => copy(pm.value, i)}
-              aria-label={`Copy ${def?.label ?? pm.type}`}
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+              aria-label={isCopied ? `${label} copied` : `Copy ${label}`}
+              className={cn(
+                "-mr-1.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent active:bg-accent",
+                isCopied ? "text-positive" : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              {copied === i ? (
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              {isCopied ? (
+                <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden />
               ) : (
-                <Copy className="h-3.5 w-3.5" />
+                <Copy className="h-5 w-5" aria-hidden />
               )}
             </button>
           </li>

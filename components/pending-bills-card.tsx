@@ -1,14 +1,38 @@
 "use client";
 
 import * as React from "react";
-import { CircleAlert, Loader2, Paperclip } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Package, Paperclip } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ReceiptPicker } from "@/components/receipt-picker";
+import { MoneyInput, FieldError, currencySymbol } from "@/components/split-editor";
+import { useCurrency, useMoney } from "@/components/app-data";
 import { useToast } from "@/components/ui/toaster";
-import type { PendingRecurringCharge } from "@/lib/types";
+import { CATEGORIES, type PendingRecurringCharge } from "@/lib/types";
+
+/**
+ * A YYYY-MM-DD schedule date as a phone-friendly phrase: "today", "tomorrow",
+ * "yesterday", else "Sat, Sep 20" (plus the year when it isn't this year).
+ * Read as a local calendar day, so it never slips back a day west of UTC.
+ */
+export function formatDueDate(ymd: string): string {
+  const [y, m, d] = ymd.split("-").map(Number);
+  if (!y || !m || !d) return ymd;
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((date.getTime() - today.getTime()) / 86_400_000);
+  if (days === 0) return "today";
+  if (days === 1) return "tomorrow";
+  if (days === -1) return "yesterday";
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: y === today.getFullYear() ? undefined : "numeric",
+  }).format(date);
+}
 
 /**
  * Variable recurring bills (electric, water, wifi…) that have come due and are
@@ -25,22 +49,24 @@ export function PendingBillsCard({
   if (pending.length === 0) return null;
 
   return (
-    <Card className="border-primary/40">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CircleAlert className="h-4 w-4 text-primary" />
-          Needs an amount
-          <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-            {pending.length}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <section aria-labelledby="pending-bills-title">
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <h2
+          id="pending-bills-title"
+          className="text-sm font-semibold text-muted-foreground"
+        >
+          {pending.length === 1 ? "A bill needs its amount" : "Bills that need an amount"}
+        </h2>
+        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-xs font-bold tabular-nums text-primary-foreground">
+          {pending.length}
+        </span>
+      </div>
+      <div className="space-y-3">
         {pending.map((p) => (
           <PendingRow key={p.id} charge={p} onResolved={onResolved} />
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -52,20 +78,30 @@ function PendingRow({
   onResolved: () => void;
 }) {
   const { toast } = useToast();
+  const money = useMoney();
+  const currency = useCurrency();
   const [amount, setAmount] = React.useState(
     charge.estimatedAmount > 0 ? charge.estimatedAmount.toFixed(2) : "",
   );
   const [receiptUrl, setReceiptUrl] = React.useState<string | null>(null);
   const [showReceipt, setShowReceipt] = React.useState(false);
   const [busy, setBusy] = React.useState<"log" | "skip" | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const cat = CATEGORIES.find((c) => c.value === charge.category);
+  const CatIcon = cat?.icon ?? Package;
+  const parsed = parseFloat(amount);
+  const hasAmount = parsed > 0;
 
   async function log(e: React.FormEvent) {
     e.preventDefault();
     const value = parseFloat(amount);
     if (!value || value <= 0) {
+      setError("Enter what the bill came to.");
       toast({ title: "Enter what the bill came to", variant: "error" });
       return;
     }
+    setError(null);
     setBusy("log");
     try {
       const res = await fetch(`/api/recurring/pending/${charge.id}`, {
@@ -103,66 +139,101 @@ function PendingRow({
   }
 
   const inputId = `pending-${charge.id}`;
+  const titleId = `${inputId}-title`;
+  const hintId = `${inputId}-hint`;
+  const receiptOpen = showReceipt || receiptUrl !== null;
+  const splitHint =
+    charge.splitType === "percent" ? "split by percent" : "split equally";
 
   return (
-    <form onSubmit={log} className="space-y-2 rounded-xl border p-3">
-      <div>
-        <p className="font-medium">{charge.description}</p>
-        <p className="text-xs text-muted-foreground">
-          due {charge.dueDate} · paid by {charge.paidByName} ·{" "}
-          {charge.splitType === "percent" ? "split by percent" : "split equally"}
-        </p>
-      </div>
-
-      <div className="flex items-end gap-2">
-        <div className="flex-1 space-y-1">
-          <Label htmlFor={inputId} className="text-xs">
-            What did it come to?
-          </Label>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-              $
-            </span>
-            <Input
-              id={inputId}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              className="pl-7"
-            />
+    <Card className="border-primary/40 p-4">
+      <form onSubmit={log} aria-labelledby={titleId} className="space-y-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <CatIcon className="h-5 w-5" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 id={titleId} className="line-clamp-2 text-base font-semibold leading-snug">
+              {charge.description}
+            </h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Due {formatDueDate(charge.dueDate)} · paid by {charge.paidByName}
+            </p>
           </div>
         </div>
-        <Button type="submit" disabled={busy !== null}>
-          {busy === "log" && <Loader2 className="h-4 w-4 animate-spin" />}
-          Log it
-        </Button>
-      </div>
 
-      {showReceipt || receiptUrl ? (
-        <ReceiptPicker value={receiptUrl} onChange={setReceiptUrl} />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowReceipt(true)}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground underline"
-        >
-          <Paperclip className="h-3.5 w-3.5" aria-hidden />
-          Attach the bill
-        </button>
-      )}
+        <div className="space-y-2">
+          <Label htmlFor={inputId}>What did it come to?</Label>
+          <MoneyInput
+            id={inputId}
+            hero
+            prefix={currencySymbol(currency)}
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setError(null);
+            }}
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min="0"
+            placeholder="0.00"
+            invalid={Boolean(error)}
+            aria-describedby={hintId}
+          />
+          {error ? (
+            <FieldError id={hintId}>{error}</FieldError>
+          ) : (
+            <p id={hintId} className="text-sm text-muted-foreground">
+              {charge.estimatedAmount > 0
+                ? `Usually about ${money(charge.estimatedAmount)} · ${splitHint}`
+                : `We'll log it ${splitHint}, as set up.`}
+            </p>
+          )}
+        </div>
 
-      <button
-        type="button"
-        onClick={skip}
-        disabled={busy !== null}
-        className="block text-xs text-muted-foreground underline"
-      >
-        {busy === "skip" ? "Skipping…" : "Skip this one"}
-      </button>
-    </form>
+        {receiptOpen && (
+          <ReceiptPicker value={receiptUrl} onChange={setReceiptUrl} />
+        )}
+
+        <div className="space-y-2">
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={busy !== null}
+          >
+            {busy === "log" && <Loader2 className="animate-spin" aria-hidden />}
+            {hasAmount ? `Log ${money(parsed)}` : "Log this bill"}
+          </Button>
+          {/* Side by side when they fit; each takes the full width when not. */}
+          <div className="flex flex-wrap gap-2">
+            {!receiptOpen && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-auto"
+                onClick={() => setShowReceipt(true)}
+              >
+                <Paperclip aria-hidden />
+                Attach the bill
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="flex-auto text-muted-foreground"
+              onClick={skip}
+              disabled={busy !== null}
+            >
+              {busy === "skip" && <Loader2 className="animate-spin" aria-hidden />}
+              {busy === "skip" ? "Skipping…" : "Skip this cycle"}
+            </Button>
+          </div>
+        </div>
+      </form>
+    </Card>
   );
 }
