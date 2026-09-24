@@ -5,7 +5,6 @@ import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trash2, Paperclip, Package } from "lucide-react";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 const DELETE_THRESHOLD = -96;
 
@@ -15,23 +14,6 @@ const DELETE_THRESHOLD = -96;
  * squeezing the description), and the leading "·" of whichever piece starts a
  * line is clipped off by the parent's negative margin + overflow-hidden.
  */
-function MetaPart({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span className={cn("flex min-w-0 max-w-full items-center", className)}>
-      <span aria-hidden className="w-4 flex-shrink-0 text-center">
-        ·
-      </span>
-      {children}
-    </span>
-  );
-}
-
 /**
  * A single expense row with swipe-to-delete (drag left to reveal/confirm
  * delete). Powered by framer-motion drag. Tapping the row opens its details
@@ -124,9 +106,11 @@ export function ExpenseItem({
         }
         role={onOpen ? "button" : undefined}
         tabIndex={onOpen ? 0 : undefined}
-        className="relative flex min-h-14 cursor-pointer touch-pan-y items-center gap-3 bg-card px-4 py-3 transition-colors [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
+        className="relative flex min-h-14 cursor-pointer touch-pan-y items-center gap-3 bg-card px-3 py-3.5 transition-colors min-[360px]:px-4 [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
       >
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        {/* The category tile is decoration; on the narrowest screens (small
+            phones, large text settings) its width goes to the description. */}
+        <div className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary min-[360px]:flex">
           <CatIcon className="h-5 w-5" aria-hidden />
         </div>
 
@@ -144,29 +128,28 @@ export function ExpenseItem({
             </p>
           </div>
 
-          <div className="mt-0.5 overflow-hidden text-sm text-muted-foreground">
-            <p className="-ml-4 flex flex-wrap items-center">
-              <MetaPart>
-                {expense.receiptUrl && (
-                  <>
-                    <Paperclip className="mr-1 h-4 w-4 flex-shrink-0" aria-hidden />
-                    <span className="sr-only">Receipt attached. </span>
-                  </>
-                )}
-                <span className="line-clamp-2 min-w-0 break-words">
-                  {paidByYou ? "You" : expense.paidByName} paid
-                </span>
-              </MetaPart>
-              {yourShare && (
-                <MetaPart className="whitespace-nowrap">
-                  your share&nbsp;
+          {/* One line of plain inline text that wraps at word boundaries,
+              rather than separate flex columns that each stack on their own. */}
+          <p className="mt-1 break-words text-sm text-muted-foreground">
+            {expense.receiptUrl && (
+              <>
+                <Paperclip className="-mt-0.5 mr-1 inline h-4 w-4 align-middle" aria-hidden />
+                <span className="sr-only">Receipt attached. </span>
+              </>
+            )}
+            {paidByYou ? "You" : expense.paidByName} paid
+            {yourShare && (
+              <>
+                <span aria-hidden> · </span>
+                <span className="whitespace-nowrap">
+                  your share{" "}
                   <span className="font-medium tabular-nums text-foreground">
                     {money(yourShare.amount)}
                   </span>
-                </MetaPart>
-              )}
-            </p>
-          </div>
+                </span>
+              </>
+            )}
+          </p>
         </div>
       </motion.div>
     </motion.div>
