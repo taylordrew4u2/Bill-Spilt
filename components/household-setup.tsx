@@ -190,8 +190,7 @@ export function HouseholdSetup() {
                 className="h-16 text-center indent-[0.3em] font-mono text-2xl font-bold uppercase tracking-[0.3em] placeholder:font-semibold placeholder:text-muted-foreground/50"
               />
               <p id="code-help" className="text-sm text-muted-foreground">
-                Ask a roommate — it&apos;s in their household settings. Got an
-                invite link instead? Just open it.
+                Ask a roommate for it, or just open their invite link.
               </p>
             </div>
           )}
