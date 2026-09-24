@@ -37,7 +37,7 @@ function BackToLogin() {
       Remembered it?{" "}
       <Link
         href="/login"
-        className="inline-flex h-11 items-center rounded-lg px-1 font-semibold text-primary hover:underline"
+        className="inline-flex h-11 items-center rounded-lg px-0.5 font-semibold text-primary hover:underline"
       >
         Back to log in
       </Link>

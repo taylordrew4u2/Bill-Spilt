@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Scale } from "lucide-react";
-import { Brand } from "@/components/brand";
+import { ArrowRight, Check, Scale } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MarketingHeader } from "@/components/marketing-header";
 import { SplitCalculator } from "@/components/split-calculator";
 import { SiteFooter } from "@/components/site-footer";
 import { JsonLd } from "@/components/json-ld";
@@ -36,71 +37,63 @@ export default function SplitCalculatorPage() {
     <div className="min-h-[100dvh] bg-background">
       <JsonLd data={JSON_LD} />
 
-      {/* Nav — mirrors the landing header */}
-      <header className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4 safe-top">
-        <Link href="/" aria-label="BillSpilt home">
-          <Brand size="sm" />
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/login"
-            className="flex h-10 items-center rounded-md px-4 text-sm font-medium hover:bg-accent"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/register"
-            className="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground active:scale-95"
-          >
-            Get started
-          </Link>
-        </div>
-      </header>
+      {/* Nav — the same header as the landing page */}
+      <MarketingHeader />
 
-      <main className="mx-auto max-w-3xl px-5 pb-16 pt-4">
-        {/* Hero — same badge pill + primary accent as the landing */}
-        <div className="mx-auto max-w-md text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden />
-            Free · No sign-up · Works in your browser
-          </span>
-          <h1 className="mt-5 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Bill split calculator.
-            <br />
-            <span className="text-primary">Free, instant, no math.</span>
-          </h1>
-          <p className="mt-3 text-muted-foreground">
-            Enter the total, how many people, and an optional tip — or split it
-            unevenly. We&apos;ll show exactly what each person owes.
-          </p>
-        </div>
-
-        <div className="mt-8">
-          <SplitCalculator />
-        </div>
-
-        {/* On-brand upsell card */}
-        <section className="mx-auto mt-12 max-w-md rounded-2xl border bg-card p-6 text-center">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Scale className="h-6 w-6" aria-hidden />
+      <main className="relative isolate">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 -z-10 h-80 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent"
+        />
+        <div className="mx-auto max-w-3xl px-gutter pb-14 pt-8 sm:pb-20 sm:pt-14">
+          {/* Hero — same primary accent + check-mark promises as the landing */}
+          <div className="mx-auto max-w-md text-center">
+            <h1 className="text-balance text-3xl font-bold leading-[1.12] tracking-tight sm:text-5xl sm:leading-[1.08]">
+              Bill split calculator.
+              <br />
+              <span className="text-primary">Free, instant, no math.</span>
+            </h1>
+            <p className="mt-4 text-pretty text-base text-muted-foreground sm:text-lg">
+              Enter the total, how many people, and an optional tip — or split it
+              unevenly. We&apos;ll show exactly what each person owes.
+            </p>
+            <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm font-medium text-muted-foreground"
+            >
+              {["Free", "No sign-up", "Works in your browser"].map((t) => (
+                <li key={t} className="inline-flex items-center gap-1.5">
+                  <Check className="h-4 w-4 text-positive" strokeWidth={2.6} aria-hidden />
+                  {t}
+                </li>
+              ))}
+            </ul>
           </div>
-          <h2 className="mt-4 text-lg font-bold">
-            Splitting with roommates regularly?
-          </h2>
-          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            BillSpilt remembers every shared bill, tracks who owes what over
-            time, and settles everyone up in the fewest payments — free forever.
-          </p>
-          <Link
-            href="/register"
-            className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-          >
-            Track it with your household <ArrowRight className="h-4 w-4" />
-          </Link>
-          <p className="mt-3 text-xs text-muted-foreground">
-            No credit card · No premium tier · Free forever
-          </p>
-        </section>
+
+          <div className="mt-8">
+            <SplitCalculator />
+          </div>
+
+          {/* On-brand upsell card */}
+          <section className="mx-auto mt-10 max-w-md rounded-2xl border bg-card p-6 text-center shadow-[0_1px_2px_rgb(0_0_0/0.04)] sm:mt-14 sm:p-8">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Scale className="h-7 w-7" aria-hidden />
+            </div>
+            <h2 className="mt-4 text-balance text-xl font-bold">
+              Splitting with roommates regularly?
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-pretty text-base text-muted-foreground">
+              BillSpilt remembers every shared bill, tracks who owes what over
+              time, and settles everyone up in the fewest payments — free forever.
+            </p>
+            <Button asChild size="lg" className="mt-6 w-full">
+              <Link href="/register">
+                Track it with your household <ArrowRight aria-hidden />
+              </Link>
+            </Button>
+            <p className="mt-3 text-sm text-muted-foreground">
+              No credit card · No premium tier · Free forever
+            </p>
+          </section>
+        </div>
       </main>
 
       <SiteFooter />
