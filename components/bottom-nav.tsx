@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/expenses", label: "Expenses", icon: Receipt },
-  { href: "/settle", label: "Settle up", icon: Scale },
+  { href: "/settle", label: "Settle", icon: Scale },
   { href: "/stats", label: "Stats", icon: PieChart },
 ];
 
@@ -27,7 +27,7 @@ function Tab({
       href={tab.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex h-full flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors",
+        "flex h-full min-w-0 flex-col items-center justify-center gap-1 text-xs font-semibold transition-colors",
         active ? "text-primary" : "text-muted-foreground",
       )}
     >
@@ -39,7 +39,7 @@ function Tab({
       >
         <Icon className="h-6 w-6" strokeWidth={active ? 2.4 : 2} aria-hidden />
       </span>
-      {tab.label}
+      <span className="max-w-full truncate px-0.5">{tab.label}</span>
     </Link>
   );
 }
@@ -58,9 +58,9 @@ export function BottomNav() {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/85 md:hidden"
     >
-      <ul className="mx-auto grid h-tabbar max-w-lg grid-cols-5 items-stretch px-1 pb-[env(safe-area-inset-bottom)] box-content">
+      <ul className="mx-auto grid h-tabbar max-w-lg grid-cols-5 items-stretch pb-[env(safe-area-inset-bottom)] box-content">
         {TABS.slice(0, 2).map((tab) => (
-          <li key={tab.href}>
+          <li key={tab.href} className="min-w-0">
             <Tab tab={tab} active={pathname === tab.href} />
           </li>
         ))}
@@ -75,7 +75,7 @@ export function BottomNav() {
           </button>
         </li>
         {TABS.slice(2).map((tab) => (
-          <li key={tab.href}>
+          <li key={tab.href} className="min-w-0">
             <Tab tab={tab} active={pathname === tab.href} />
           </li>
         ))}
