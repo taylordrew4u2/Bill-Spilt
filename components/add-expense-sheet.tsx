@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -12,35 +11,47 @@ import {
 } from "@/components/ui/sheet";
 import { ExpenseForm } from "@/components/expense-form";
 
-/**
- * Floating action button that opens the "Add Expense" bottom sheet. Also opens
- * automatically when the app is launched via the manifest shortcut (?add=1).
- */
-export function AddExpenseSheet() {
-  const [open, setOpen] = React.useState(false);
+const Ctx = React.createContext<(() => void) | null>(null);
+
+/** Returns a function that opens the "Add expense" sheet from anywhere in the
+ *  signed-in app (the tab bar's + button, the sidebar, empty states…). */
+export function useAddExpense(): () => void {
+  const open = React.useContext(Ctx);
+  if (!open) throw new Error("useAddExpense must be used within <AddExpenseProvider>");
+  return open;
+}
+
+/** Opens the sheet when the app is launched from the manifest shortcut
+ *  (`/home?add=1`), then strips the param so a refresh doesn't reopen it. */
+function LaunchShortcut({ onOpen }: { onOpen: () => void }) {
   const params = useSearchParams();
   const router = useRouter();
-
   React.useEffect(() => {
     if (params.get("add") === "1") {
-      setOpen(true);
+      onOpen();
       router.replace(window.location.pathname);
     }
-  }, [params, router]);
+  }, [params, router, onOpen]);
+  return null;
+}
+
+/**
+ * Owns the "Add expense" bottom sheet. Children open it through
+ * `useAddExpense()` rather than each rendering their own sheet.
+ */
+export function AddExpenseProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
+  const show = React.useCallback(() => setOpen(true), []);
 
   return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Add expense"
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition active:scale-95 md:bottom-8"
-      >
-        <Plus className="h-7 w-7" strokeWidth={2.5} />
-      </button>
-
+    <Ctx.Provider value={show}>
+      {children}
+      <React.Suspense fallback={null}>
+        <LaunchShortcut onOpen={show} />
+      </React.Suspense>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
-          <SheetHeader className="mb-4">
+          <SheetHeader className="mb-5">
             <SheetTitle>Add expense</SheetTitle>
             <SheetDescription>
               Split it equally, by exact amounts, or by percentage.
@@ -49,6 +60,6 @@ export function AddExpenseSheet() {
           <ExpenseForm onDone={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
-    </>
+    </Ctx.Provider>
   );
 }

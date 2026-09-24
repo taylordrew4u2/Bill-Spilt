@@ -1,7 +1,29 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Share2, Check, Crown, UserMinus, LogOut, Pencil, ShieldPlus, RefreshCw } from "lucide-react";
+import {
+  Activity,
+  CalendarClock,
+  Check,
+  ChevronRight,
+  Coins,
+  Crown,
+  HandCoins,
+  Home,
+  Loader2,
+  LogOut,
+  Pencil,
+  Receipt,
+  RefreshCw,
+  Repeat,
+  Share2,
+  SkipForward,
+  Trash2,
+  Undo2,
+  UserMinus,
+  UserPlus,
+  type LucideIcon,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -10,9 +32,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -21,7 +44,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MemberAvatar } from "@/components/member-avatar";
-import { PaymentMethodsList } from "@/components/payment-methods-list";
 import { MemberDetailSheet } from "@/components/member-detail-sheet";
 import { useToast } from "@/components/ui/toaster";
 import { CURRENCIES, type Member } from "@/lib/types";
@@ -35,6 +57,37 @@ interface ActivityEntry {
   action: string;
   detail: string | null;
   createdAt: string;
+}
+
+/** How many activity entries show before "Show all". */
+const ACTIVITY_PREVIEW = 5;
+
+const ACTIVITY_ICONS: Record<string, LucideIcon> = {
+  expense_added: Receipt,
+  expense_edited: Pencil,
+  expense_deleted: Trash2,
+  settlement_recorded: HandCoins,
+  settled_all: HandCoins,
+  settlement_undone: Undo2,
+  recurring_added: Repeat,
+  recurring_charged: Repeat,
+  recurring_due: CalendarClock,
+  recurring_skipped: SkipForward,
+  household_renamed: Home,
+  currency_changed: Coins,
+  invite_regenerated: RefreshCw,
+  member_joined: UserPlus,
+  member_left: LogOut,
+  member_removed: UserMinus,
+  admin_transferred: Crown,
+};
+
+function SectionLabel({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <h3 id={id} className="mb-2 px-1 text-sm font-semibold text-muted-foreground">
+      {children}
+    </h3>
+  );
 }
 
 export function ManageHouseholdSheet({
@@ -65,16 +118,41 @@ export function ManageHouseholdSheet({
   const [copied, setCopied] = React.useState(false);
   const [regenBusy, setRegenBusy] = React.useState(false);
   const [currencyBusy, setCurrencyBusy] = React.useState(false);
+  const [showAllActivity, setShowAllActivity] = React.useState(false);
+  // The member stays set while the detail sheet animates closed.
   const [detailMember, setDetailMember] = React.useState<Member | null>(null);
+  const [detailOpen, setDetailOpen] = React.useState(false);
+
+  const me = members.find((m) => m.id === currentUserId);
 
   function openDetail(m: Member) {
     setDetailMember(m);
+    setDetailOpen(true);
     onOpenChange(false); // close this sheet; detail opens on top
+  }
+
+  // Closing a member's sheet steps back to this one, like a "Back" button.
+  function closeDetail() {
+    setDetailOpen(false);
+    onOpenChange(true);
   }
 
   React.useEffect(() => {
     setName(household?.name ?? "");
   }, [household?.name]);
+
+  // Start fresh each time the sheet opens.
+  React.useEffect(() => {
+    if (!open) {
+      setEditingName(false);
+      setShowAllActivity(false);
+    }
+  }, [open]);
+
+  function cancelRename() {
+    setName(household?.name ?? "");
+    setEditingName(false);
+  }
 
   async function saveName() {
     if (!name.trim()) return;
@@ -119,6 +197,7 @@ export function ManageHouseholdSheet({
         title: isSelf ? "You left the household" : `Removed ${who}`,
         variant: "success",
       });
+      setDetailOpen(false);
       onOpenChange(false);
       mutate();
       await refresh();
@@ -202,234 +281,323 @@ export function ManageHouseholdSheet({
     }
   }
 
+  // Read the member from live data so a promotion shows up right away.
+  const detail = detailMember
+    ? (members.find((m) => m.id === detailMember.id) ?? detailMember)
+    : null;
+  const detailIsSelf = detail?.id === currentUserId;
+  // Admins can't be demoted or removed from here; anyone else can be promoted
+  // (by an admin) or removed (by an admin, or by themselves to leave).
+  const detailIsMember = !!detail && detail.role !== "owner";
+  const canPromote = detailIsMember && isAdmin && !detailIsSelf;
+  const canRemove = detailIsMember && (isAdmin || detailIsSelf);
+
+  const visibleActivity = showAllActivity
+    ? activity
+    : activity.slice(0, ACTIVITY_PREVIEW);
+
   return (
     <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="sm:mx-auto sm:max-w-md">
-        <SheetHeader className="mb-4">
-          <SheetTitle>Manage household</SheetTitle>
-          <SheetDescription>
-            {isAdmin
-              ? "You're an admin — rename the household, share the invite code, or manage members."
-              : "View household members."}
-          </SheetDescription>
+        <SheetHeader className="mb-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Home className="h-6 w-6" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <SheetTitle className="line-clamp-2 break-words leading-tight">
+                {household?.name ?? "Household"}
+              </SheetTitle>
+              <SheetDescription>
+                {members.length} {members.length === 1 ? "member" : "members"}
+                {isAdmin ? " · You're an admin" : ""}
+              </SheetDescription>
+            </div>
+          </div>
         </SheetHeader>
 
-        {/* Name */}
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Name
-          </p>
-          {editingName ? (
-            <div className="flex gap-2">
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={80}
-                autoFocus
-                aria-label="Household name"
-              />
-              <Button onClick={saveName} disabled={savingName}>
-                {savingName ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span className="flex-1 text-lg font-semibold">
-                {household?.name}
-              </span>
-              {isAdmin && (
+        <div className="space-y-6">
+          {/* Invite — admin only */}
+          {isAdmin && household && (
+            <section aria-labelledby="household-invite">
+              <SectionLabel id="household-invite">Invite roommates</SectionLabel>
+              <Card className="divide-y overflow-hidden">
+                <div className="p-4 text-center">
+                  <p className="text-sm text-muted-foreground">Invite code</p>
+                  <p className="mt-1 select-all pl-[0.3em] text-3xl font-bold tabular-nums tracking-[0.3em]">
+                    {household.inviteCode}
+                  </p>
+                  <p className="mx-auto mt-1 max-w-xs text-balance text-sm text-muted-foreground">
+                    Send the join link, or have roommates enter this code.
+                  </p>
+                  <Button type="button" className="mt-4 w-full" onClick={shareLink}>
+                    {copied ? (
+                      <>
+                        <Check aria-hidden /> Link copied
+                      </>
+                    ) : (
+                      <>
+                        <Share2 aria-hidden /> Share invite link
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <button
-                  onClick={() => setEditingName(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
-                  aria-label="Rename household"
+                  type="button"
+                  onClick={regenCode}
+                  disabled={regenBusy}
+                  className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
                 >
-                  <Pencil className="h-4 w-4" />
+                  <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                    {regenBusy ? (
+                      <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                    ) : (
+                      <RefreshCw className="h-5 w-5" aria-hidden />
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-base font-medium">Get a new code</span>
+                    <span className="block text-sm text-muted-foreground">
+                      The current code and link stop working.
+                    </span>
+                  </span>
                 </button>
-              )}
-            </div>
+              </Card>
+            </section>
           )}
-        </div>
 
-        <Separator className="my-4" />
-
-        {/* Invite code — admin only */}
-        {isAdmin && (
-          <>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Invite link
-                </p>
-                <p className="text-xl font-bold tracking-[0.25em]">
-                  {household?.inviteCode}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={shareLink}>
-                  {copied ? (
-                    <Check className="h-4 w-4 text-emerald-600" />
-                  ) : (
-                    <Share2 className="h-4 w-4" />
-                  )}
-                  {copied ? "Copied" : "Share"}
-                </Button>
-                <Button variant="outline" onClick={regenCode} disabled={regenBusy} aria-label="Regenerate invite code">
-                  {regenBusy ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <Separator className="my-4" />
-          </>
-        )}
-
-        {/* Currency — admin only */}
-        {isAdmin && (
-          <>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Currency
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  How amounts are shown across the household.
-                </p>
-              </div>
-              <Select
-                value={household?.currency ?? "USD"}
-                onValueChange={changeCurrency}
-                disabled={currencyBusy}
-              >
-                <SelectTrigger className="w-36 flex-shrink-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map((c) => (
-                    <SelectItem key={c.code} value={c.code}>
-                      {c.symbol} {c.code} · {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Separator className="my-4" />
-          </>
-        )}
-
-        {/* Members */}
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Members ({members.length})
-        </p>
-        <ul className="divide-y">
-          {members.map((m) => {
-            const isSelf = m.id === currentUserId;
-            const canRemove = (isAdmin || isSelf) && !busyId;
-            return (
-              <li key={m.id} className="py-2.5">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => openDetail(m)}
-                    className="flex min-w-0 flex-1 items-center gap-3 rounded-md py-0.5 text-left hover:opacity-80"
-                  >
-                    <MemberAvatar id={m.id} name={m.name} className="h-9 w-9" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {m.name}
-                        {isSelf && (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            (you)
+          {/* Members */}
+          <section aria-labelledby="household-members">
+            <SectionLabel id="household-members">
+              Members ({members.length})
+            </SectionLabel>
+            <Card className="overflow-hidden">
+              <ul className="divide-y">
+                {members.map((m) => {
+                  const isSelf = m.id === currentUserId;
+                  return (
+                    <li key={m.id}>
+                      <button
+                        type="button"
+                        onClick={() => openDetail(m)}
+                        className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent"
+                      >
+                        <MemberAvatar id={m.id} name={m.name} className="h-10 w-10" />
+                        <span className="min-w-0 flex-1">
+                          <span className="line-clamp-2 break-words text-base font-medium leading-snug">
+                            {m.name}
+                            {isSelf && (
+                              <span className="font-normal text-muted-foreground">
+                                {" "}
+                                (you)
+                              </span>
+                            )}
                           </span>
-                        )}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {m.email}
-                      </p>
-                    </div>
-                  </button>
-                  {m.role === "owner" ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Crown className="h-3 w-3" /> Admin
-                    </Badge>
+                          <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+                            {m.role === "owner" && (
+                              <span className="inline-flex flex-shrink-0 items-center gap-1 font-semibold text-primary">
+                                <Crown className="h-4 w-4" aria-hidden /> Admin
+                                <span aria-hidden className="font-normal text-muted-foreground">
+                                  ·
+                                </span>
+                              </span>
+                            )}
+                            <span className="truncate">{m.email}</span>
+                          </span>
+                        </span>
+                        <ChevronRight
+                          className="h-5 w-5 flex-shrink-0 text-muted-foreground"
+                          aria-hidden
+                        />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+            <p className="mt-2 px-1 text-sm text-muted-foreground">
+              {isAdmin
+                ? "Tap someone to see your balance, how to pay them, or to make them an admin."
+                : "Tap someone to see your balance and how to pay them."}
+            </p>
+          </section>
+
+          {/* Settings — admin only */}
+          {isAdmin && (
+            <section aria-labelledby="household-settings">
+              <SectionLabel id="household-settings">Settings</SectionLabel>
+              <Card className="space-y-5 p-4">
+                <div className="space-y-2">
+                  <Label htmlFor={editingName ? "household-name" : undefined}>
+                    Household name
+                  </Label>
+                  {editingName ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void saveName();
+                      }}
+                      className="space-y-3"
+                    >
+                      <Input
+                        id="household-name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        maxLength={80}
+                        autoFocus
+                        enterKeyHint="done"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button type="button" variant="outline" onClick={cancelRename}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={savingName || !name.trim()}>
+                          {savingName && <Loader2 className="animate-spin" aria-hidden />}
+                          Save
+                        </Button>
+                      </div>
+                    </form>
                   ) : (
-                    <div className="flex items-center gap-1">
-                      {isAdmin && !isSelf && (
-                        <button
-                          onClick={() => makeAdmin(m.id)}
-                          disabled={busyId === m.id}
-                          aria-label={`Make ${m.name} admin`}
-                          title="Make admin"
-                          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-primary"
-                        >
-                          <ShieldPlus className="h-4 w-4" />
-                        </button>
-                      )}
-                      {canRemove && (
-                        <button
-                          onClick={() => removeMember(m.id, isSelf)}
-                          disabled={busyId === m.id}
-                          aria-label={isSelf ? "Leave household" : `Remove ${m.name}`}
-                          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-destructive"
-                        >
-                          {busyId === m.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : isSelf ? (
-                            <LogOut className="h-4 w-4" />
-                          ) : (
-                            <UserMinus className="h-4 w-4" />
-                          )}
-                        </button>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <p className="min-w-0 flex-1 break-words text-base font-medium">
+                        {household?.name}
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={() => setEditingName(true)}
+                        aria-label="Rename household"
+                      >
+                        <Pencil aria-hidden /> Rename
+                      </Button>
                     </div>
                   )}
                 </div>
-                {m.paymentMethods.length > 0 && (
-                  <PaymentMethodsList
-                    methods={m.paymentMethods}
-                    className="mt-2 pl-12"
-                  />
-                )}
-              </li>
-            );
-          })}
-        </ul>
 
-        {activity.length > 0 && (
-          <>
-            <Separator className="my-4" />
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Recent activity
-            </p>
-            <ul className="space-y-2.5">
-              {activity.map((a) => (
-                <li key={a.id} className="flex items-start gap-2 text-sm">
-                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary/60" />
-                  <span className="flex-1">
-                    <span className="font-medium">{a.actorName}</span>{" "}
-                    <span className="text-muted-foreground">
-                      {a.detail ?? a.action.replace(/_/g, " ")}
-                    </span>
+                <div className="space-y-2">
+                  <Label htmlFor="household-currency">Currency</Label>
+                  <Select
+                    value={household?.currency ?? "USD"}
+                    onValueChange={changeCurrency}
+                    disabled={currencyBusy}
+                  >
+                    <SelectTrigger id="household-currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.symbol} {c.code} · {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    How amounts are shown for everyone. Nothing is converted.
+                  </p>
+                </div>
+              </Card>
+            </section>
+          )}
+
+          {/* Recent activity */}
+          {activityQ.loading && !activityQ.data ? (
+            <section aria-busy="true" aria-label="Recent activity">
+              <Skeleton className="mb-3 ml-1 h-4 w-28" />
+              <Card className="divide-y overflow-hidden">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-3 px-4 py-3">
+                    <Skeleton className="h-10 w-10 flex-shrink-0 rounded-xl" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-4/5" />
+                      <Skeleton className="h-3.5 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </Card>
+            </section>
+          ) : (
+            activity.length > 0 && (
+              <section aria-labelledby="household-activity">
+                <SectionLabel id="household-activity">Recent activity</SectionLabel>
+                <Card className="overflow-hidden">
+                  <ul className="divide-y">
+                    {visibleActivity.map((a) => {
+                      const Icon = ACTIVITY_ICONS[a.action] ?? Activity;
+                      return (
+                        <li key={a.id} className="flex items-start gap-3 px-4 py-3">
+                          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                            <Icon className="h-5 w-5" aria-hidden />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="break-words text-base leading-snug">
+                              {a.detail ?? a.action.replace(/_/g, " ")}
+                            </p>
+                            <p className="mt-0.5 text-sm text-muted-foreground">
+                              {a.actorName} · {timeAgo(a.createdAt)}
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {activity.length > ACTIVITY_PREVIEW && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllActivity((s) => !s)}
+                      aria-expanded={showAllActivity}
+                      className="flex min-h-12 w-full items-center justify-center border-t px-4 text-base font-semibold text-primary transition-colors hover:bg-accent active:bg-accent"
+                    >
+                      {showAllActivity ? "Show less" : `Show all ${activity.length}`}
+                    </button>
+                  )}
+                </Card>
+              </section>
+            )
+          )}
+
+          {/* Leave — anyone who isn't an admin can leave on their own */}
+          {me && me.role !== "owner" && (
+            <Card className="overflow-hidden">
+              <button
+                type="button"
+                onClick={() => removeMember(me.id, true)}
+                disabled={!!busyId}
+                className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent active:bg-accent disabled:pointer-events-none disabled:opacity-60"
+              >
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                  {busyId === me.id ? (
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                  ) : (
+                    <LogOut className="h-5 w-5" aria-hidden />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-semibold text-destructive">
+                    Leave household
                   </span>
-                  <span className="flex-shrink-0 text-xs text-muted-foreground">
-                    {timeAgo(a.createdAt)}
+                  <span className="block text-sm text-muted-foreground">
+                    You need to be settled up first.
                   </span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+                </span>
+              </button>
+            </Card>
+          )}
+        </div>
       </SheetContent>
     </Sheet>
 
     <MemberDetailSheet
-      member={detailMember}
-      open={detailMember !== null}
-      onOpenChange={(o) => !o && setDetailMember(null)}
+      member={detail}
+      open={detailOpen && detail !== null}
+      onOpenChange={(o) => !o && closeDetail()}
+      onMakeAdmin={canPromote && detail ? () => makeAdmin(detail.id) : undefined}
+      onRemove={
+        canRemove && detail ? () => removeMember(detail.id, detailIsSelf) : undefined
+      }
     />
     </>
   );

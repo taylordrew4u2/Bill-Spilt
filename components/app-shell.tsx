@@ -1,72 +1,76 @@
 "use client";
 
 import * as React from "react";
-import { signOut } from "next-auth/react";
-import { LogOut, Loader2, Settings, UserCircle2, Megaphone } from "lucide-react";
-import { Brand } from "@/components/brand";
+import Image from "next/image";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { BottomNav, Sidebar } from "@/components/bottom-nav";
 import { OfflineBanner } from "@/components/offline-banner";
-import { AddExpenseSheet } from "@/components/add-expense-sheet";
+import { AddExpenseProvider } from "@/components/add-expense-sheet";
 import { AppDataProvider, useAppData } from "@/components/app-data";
 import { HouseholdSetup } from "@/components/household-setup";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ManageHouseholdSheet } from "@/components/manage-household-sheet";
 import { ProfileSheet } from "@/components/profile-sheet";
 import { AdsAdminSheet } from "@/components/ads-admin-sheet";
+import { AccountSheet } from "@/components/account-sheet";
+import { MemberAvatar } from "@/components/member-avatar";
 import { InstallPrompt } from "@/components/install-prompt";
 
-function Header() {
-  const { household, isSiteAdmin } = useAppData();
+/**
+ * The top bar holds exactly two controls — the household (tap to manage it)
+ * and your avatar (tap for profile, theme, log out) — so it fits a 320px
+ * phone without squeezing, instead of the old row of five unlabeled icons.
+ */
+function TopBar() {
+  const { household, members, currentUserId } = useAppData();
+  const me = members.find((m) => m.id === currentUserId);
+  const [accountOpen, setAccountOpen] = React.useState(false);
   const [manageOpen, setManageOpen] = React.useState(false);
   const [profileOpen, setProfileOpen] = React.useState(false);
   const [adsOpen, setAdsOpen] = React.useState(false);
+
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-gutter py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 safe-top">
-      <button
-        onClick={() => setManageOpen(true)}
-        className="flex flex-col items-start text-left"
-        aria-label="Manage household"
-      >
-        <Brand size="sm" />
-        {household && (
-          <span className="mt-0.5 pl-9 text-xs text-muted-foreground">
-            {household.name}
-          </span>
-        )}
-      </button>
-      <div className="flex items-center gap-1">
-        <ThemeToggle />
-        {isSiteAdmin && (
-          <button
-            onClick={() => setAdsOpen(true)}
-            aria-label="Manage ads"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
-          >
-            <Megaphone className="h-5 w-5" />
-          </button>
-        )}
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-lg safe-top supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto flex h-14 w-full max-w-lg items-center gap-2 px-gutter md:max-w-none">
         <button
-          onClick={() => setProfileOpen(true)}
-          aria-label="Your profile"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
-        >
-          <UserCircle2 className="h-5 w-5" />
-        </button>
-        <button
+          type="button"
           onClick={() => setManageOpen(true)}
-          aria-label="Manage household"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+          className="-ml-2 flex h-11 min-w-0 items-center gap-2 rounded-xl px-2 text-left transition-colors hover:bg-accent active:bg-accent"
+          aria-label={`Household: ${household?.name ?? ""}. Manage household`}
         >
-          <Settings className="h-5 w-5" />
+          <Image
+            src="/icons/icon-192.png"
+            alt=""
+            aria-hidden
+            width={28}
+            height={28}
+            className="flex-shrink-0 rounded-lg md:hidden"
+          />
+          <span className="truncate text-base font-semibold">
+            {household?.name ?? "BillSpilt"}
+          </span>
+          <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden />
         </button>
+        <div className="flex-1" />
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          aria-label="Log out"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-accent"
+          type="button"
+          onClick={() => setAccountOpen(true)}
+          aria-label="Account and settings"
+          className="-mr-1.5 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full transition-colors hover:bg-accent"
         >
-          <LogOut className="h-5 w-5" />
+          {me ? (
+            <MemberAvatar id={me.id} name={me.name} className="h-9 w-9" />
+          ) : (
+            <span className="h-9 w-9 rounded-full bg-muted" />
+          )}
         </button>
       </div>
+      <AccountSheet
+        open={accountOpen}
+        onOpenChange={setAccountOpen}
+        onProfile={() => setProfileOpen(true)}
+        onHousehold={() => setManageOpen(true)}
+        onAds={() => setAdsOpen(true)}
+      />
       <ManageHouseholdSheet open={manageOpen} onOpenChange={setManageOpen} />
       <ProfileSheet open={profileOpen} onOpenChange={setProfileOpen} />
       <AdsAdminSheet open={adsOpen} onOpenChange={setAdsOpen} />
@@ -80,7 +84,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-label="Loading" />
       </div>
     );
   }
@@ -90,27 +94,28 @@ function Shell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <OfflineBanner />
-      <div className="mx-auto flex w-full max-w-5xl flex-1 md:gap-0">
-        <Sidebar />
-        <div className="flex w-full flex-1 flex-col">
-          <Header />
-          <main className="flex-1 px-gutter pb-28 pt-4 md:pb-12">
-            <div className="mx-auto w-full max-w-lg">{children}</div>
-          </main>
+    <AddExpenseProvider>
+      <div data-app-shell className="flex min-h-[100dvh] flex-col">
+        <OfflineBanner />
+        <div className="mx-auto flex w-full max-w-6xl flex-1">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopBar />
+            {/* Bottom padding clears the fixed tab bar plus the home
+                indicator, with room to scroll the last card fully into view. */}
+            <main className="flex-1 px-gutter pb-[calc(theme(spacing.tabbar)+env(safe-area-inset-bottom)+1.5rem)] pt-5 md:pb-12 md:pt-8">
+              <div className="mx-auto w-full max-w-lg">{children}</div>
+            </main>
+          </div>
         </div>
+        <BottomNav />
+        <InstallPrompt />
+        {/* No ad code runs inside the authenticated app: it's a functional tool,
+            and AdSense policy forbids ads on "screens without publisher content."
+            Ads live only on the public content pages (landing, guides, About,
+            Contact) via <AdSenseScript />. */}
       </div>
-      <BottomNav />
-      <InstallPrompt />
-      <React.Suspense fallback={null}>
-        <AddExpenseSheet />
-      </React.Suspense>
-      {/* No ad code runs inside the authenticated app: it's a functional tool,
-          and AdSense policy forbids ads on "screens without publisher content."
-          Ads live only on the public content pages (landing, guides, About,
-          Contact) via <AdSenseScript />. */}
-    </div>
+    </AddExpenseProvider>
   );
 }
 

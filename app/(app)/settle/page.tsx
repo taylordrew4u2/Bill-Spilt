@@ -2,25 +2,33 @@
 
 import * as React from "react";
 import {
+  AlertCircle,
   ArrowRight,
-  PartyPopper,
-  Loader2,
-  Undo2,
-  History,
-  CheckCheck,
-  ShieldCheck,
   Bell,
+  Check,
+  CheckCheck,
+  Loader2,
+  PartyPopper,
+  Plus,
+  ShieldCheck,
+  Undo2,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/page-header";
 import { MemberAvatar } from "@/components/member-avatar";
 import { useAppData, useMoney } from "@/components/app-data";
+import { useAddExpense } from "@/components/add-expense-sheet";
 import { useFetch } from "@/lib/use-fetch";
 import { useToast } from "@/components/ui/toaster";
 import { PaymentMethodsList } from "@/components/payment-methods-list";
-import { formatDate } from "@/lib/utils";
-import { PAYMENT_METHODS, type Balance, type SettlementTransfer } from "@/lib/types";
+import { cn, formatDate } from "@/lib/utils";
+import {
+  PAYMENT_METHODS,
+  type Balance,
+  type SettlementTransfer,
+} from "@/lib/types";
 
 interface SettlementRecord {
   id: string;
@@ -32,11 +40,234 @@ interface SettlementRecord {
   settledAt: string;
 }
 
+const transferKey = (t: SettlementTransfer) => `${t.from}-${t.to}-${t.amount}`;
+
+const firstName = (name: string) => name.trim().split(/\s+/)[0] || name;
+
+/** iOS-style grouped-list label that sits above a card. */
+function SectionLabel({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <h2
+      id={id}
+      className="mb-2 px-1 text-sm font-semibold text-muted-foreground"
+    >
+      {children}
+    </h2>
+  );
+}
+
+/** Payer → payee, as two overlapping avatars joined by an arrow. */
+function AvatarPair({ t }: { t: SettlementTransfer }) {
+  return (
+    <div className="flex flex-shrink-0 items-center" aria-hidden>
+      <MemberAvatar
+        id={t.from}
+        name={t.fromName}
+        className="h-11 w-11 ring-2 ring-card"
+      />
+      <span className="z-10 -mx-1.5 flex h-7 w-7 items-center justify-center rounded-full border bg-card text-muted-foreground">
+        <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+      </span>
+      <MemberAvatar
+        id={t.to}
+        name={t.toName}
+        className="h-11 w-11 ring-2 ring-card"
+      />
+    </div>
+  );
+}
+
+function TransferCard({
+  t,
+  currentUserId,
+  settling,
+  onMarkPaid,
+  onRemind,
+  children,
+}: {
+  t: SettlementTransfer;
+  currentUserId: string | null | undefined;
+  settling: boolean;
+  onMarkPaid: () => void;
+  onRemind: () => void;
+  /** Ways to pay the payee, when you're the one paying. */
+  children?: React.ReactNode;
+}) {
+  const money = useMoney();
+  const youPay = t.from === currentUserId;
+  const owedToYou = t.to === currentUserId;
+  const mine = youPay || owedToYou;
+  const fromLabel = youPay ? "You" : t.fromName;
+  const toLabel = owedToYou ? "you" : t.toName;
+
+  return (
+    <Card
+      className={cn(
+        "p-4",
+        mine && "border-primary/40 shadow-md shadow-primary/5",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <AvatarPair t={t} />
+        <p className="min-w-0 flex-1 text-base leading-snug">
+          <span className="font-semibold">{fromLabel}</span>{" "}
+          {youPay ? "pay" : "pays"}{" "}
+          <span className="font-semibold">{toLabel}</span>
+        </p>
+      </div>
+
+      <p
+        className={cn(
+          "mt-3 font-bold tabular-nums tracking-tight",
+          mine ? "text-4xl" : "text-3xl",
+          youPay && "text-negative",
+          owedToYou && "text-positive",
+        )}
+      >
+        {money(t.amount)}
+      </p>
+
+      {children}
+
+      {/* Side by side when both fit, stacked full-width on phones instead of
+          squeezing the labels. */}
+      <div className="mt-4 flex flex-wrap gap-2 [&>*]:min-w-[10rem] [&>*]:flex-1">
+        <Button
+          variant={mine ? "default" : "outline"}
+          onClick={onMarkPaid}
+          disabled={settling}
+        >
+          {settling ? (
+            <Loader2 className="animate-spin" aria-hidden />
+          ) : (
+            <Check aria-hidden />
+          )}
+          Mark as paid
+        </Button>
+        {owedToYou && (
+          <Button variant="outline" onClick={onRemind}>
+            <Bell aria-hidden />
+            Remind {firstName(t.fromName)}
+          </Button>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function TransferSkeleton() {
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-11 w-11 rounded-full" />
+          <Skeleton className="h-11 w-11 rounded-full" />
+        </div>
+        <Skeleton className="h-5 flex-1" />
+      </div>
+      <Skeleton className="mt-4 h-9 w-36" />
+      <Skeleton className="mt-4 h-12 w-full rounded-xl" />
+    </Card>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div role="status" className="space-y-6">
+      <span className="sr-only">Loading payments…</span>
+      <div className="space-y-3" aria-hidden>
+        <Skeleton className="ml-1 h-4 w-28" />
+        <TransferSkeleton />
+        <TransferSkeleton />
+      </div>
+    </div>
+  );
+}
+
+/** Nobody owes anybody — worth a little celebration. */
+function SettledState({ onAdd }: { onAdd: () => void }) {
+  return (
+    <Card className="relative flex flex-col items-center overflow-hidden px-6 py-10 text-center">
+      <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <PartyPopper className="h-7 w-7" aria-hidden />
+        {/* A few confetti flecks around the tile. */}
+        <span
+          aria-hidden
+          className="absolute -left-5 -top-2 h-2 w-2 rotate-12 rounded-sm bg-primary/70"
+        />
+        <span
+          aria-hidden
+          className="absolute -right-6 top-1 h-2.5 w-1.5 -rotate-12 rounded-sm bg-positive/80"
+        />
+        <span
+          aria-hidden
+          className="absolute -left-7 bottom-1 h-1.5 w-2.5 rotate-45 rounded-sm bg-negative/70"
+        />
+        <span
+          aria-hidden
+          className="absolute -right-4 -bottom-3 h-2 w-2 rounded-full bg-primary/40"
+        />
+        <span
+          aria-hidden
+          className="absolute -top-5 right-2 h-1.5 w-1.5 rounded-full bg-positive/60"
+        />
+      </span>
+      <h2 className="mt-5 text-lg font-semibold">Everyone&apos;s settled up</h2>
+      <p className="mt-1 max-w-xs text-balance text-sm text-muted-foreground">
+        No payments needed right now. Nice work, everyone.
+      </p>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onAdd}
+        className="mt-5 px-6"
+      >
+        <Plus aria-hidden />
+        Add expense
+      </Button>
+    </Card>
+  );
+}
+
+function ErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <Card
+      role="alert"
+      className="flex flex-col items-center px-6 py-8 text-center"
+    >
+      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-negative-soft text-negative">
+        <AlertCircle className="h-7 w-7" aria-hidden />
+      </span>
+      <h2 className="mt-4 text-lg font-semibold">
+        Couldn&apos;t load payments
+      </h2>
+      <p className="mt-1 max-w-xs text-balance text-sm text-muted-foreground">
+        Check your connection and try again.
+      </p>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onRetry}
+        className="mt-5 px-6"
+      >
+        Try again
+      </Button>
+    </Card>
+  );
+}
+
 export default function SettlePage() {
   const { version, mutate, currentUserId, isAdmin, members } = useAppData();
   const money = useMoney();
+  const addExpense = useAddExpense();
   const { toast } = useToast();
-  const { data, loading, refetch } = useFetch<{
+  const { data, loading, error, refetch } = useFetch<{
     balances: Balance[];
     transfers: SettlementTransfer[];
   }>("/api/settle");
@@ -62,10 +293,20 @@ export default function SettlePage() {
       (a, b) => Number(involvesMe(b)) - Number(involvesMe(a)),
     );
   }, [data, currentUserId]);
+  const mine = transfers.filter(
+    (t) => t.from === currentUserId || t.to === currentUserId,
+  );
+  const others = transfers.filter(
+    (t) => t.from !== currentUserId && t.to !== currentUserId,
+  );
   const settlements = history.data?.settlements ?? [];
 
   async function markAllPaid() {
-    if (!window.confirm("Record every outstanding payment as settled? This clears all balances.")) {
+    if (
+      !window.confirm(
+        "Record every outstanding payment as settled? This clears all balances.",
+      )
+    ) {
       return;
     }
     setSettlingAll(true);
@@ -73,7 +314,10 @@ export default function SettlePage() {
       const res = await fetch("/api/settle/all", { method: "POST" });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast({ title: body.error || "Could not settle everyone", variant: "error" });
+        toast({
+          title: body.error || "Could not settle everyone",
+          variant: "error",
+        });
         return;
       }
       toast({
@@ -106,7 +350,11 @@ export default function SettlePage() {
         return;
       }
       await navigator.clipboard.writeText(text);
-      toast({ title: "Reminder copied", description: "Paste it to send.", variant: "success" });
+      toast({
+        title: "Reminder copied",
+        description: "Paste it to send.",
+        variant: "success",
+      });
     } catch {
       /* user dismissed the share sheet, or clipboard unavailable */
     }
@@ -129,7 +377,7 @@ export default function SettlePage() {
   }
 
   async function markPaid(t: SettlementTransfer) {
-    const key = `${t.from}-${t.to}-${t.amount}`;
+    const key = transferKey(t);
     setSettling(key);
     try {
       const res = await fetch("/api/settle", {
@@ -139,7 +387,10 @@ export default function SettlePage() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        toast({ title: body.error || "Could not record payment", variant: "error" });
+        toast({
+          title: body.error || "Could not record payment",
+          variant: "error",
+        });
         return;
       }
       toast({ title: "Settled up!", variant: "success" });
@@ -150,179 +401,199 @@ export default function SettlePage() {
     }
   }
 
-  return (
-    <div className="space-y-4 duration-500 animate-in fade-in slide-in-from-bottom-3">
-      <div>
-        <h1 className="text-lg font-bold">Settle up</h1>
-        <p className="text-sm text-muted-foreground">
-          The fewest payments to clear all debts.
-        </p>
-      </div>
-
-      {isAdmin && transfers.length > 0 && (
-        <Card className="border-primary/40 bg-primary/5">
-          <CardContent className="flex items-center gap-3 p-4">
-            <ShieldCheck className="h-5 w-5 flex-shrink-0 text-primary" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">Admin: settle everyone up</p>
-              <p className="text-xs text-muted-foreground">
-                Record all {transfers.length} payment
-                {transfers.length === 1 ? "" : "s"} at once.
+  function renderTransfer(t: SettlementTransfer) {
+    const key = transferKey(t);
+    // When you're the payer, show the payee's ways to pay.
+    const payee = members.find((m) => m.id === t.to);
+    const showPay =
+      t.from === currentUserId && (payee?.paymentMethods?.length ?? 0) > 0;
+    const payerName = members.find((m) => m.id === t.from)?.name;
+    return (
+      <li key={key}>
+        <TransferCard
+          t={t}
+          currentUserId={currentUserId}
+          settling={settling === key}
+          onMarkPaid={() => markPaid(t)}
+          onRemind={() => shareReminder(t)}
+        >
+          {showPay && (
+            <div className="mt-4 rounded-xl bg-muted/60 px-3 pt-2.5">
+              <p className="text-sm font-semibold text-muted-foreground">
+                Pay {firstName(t.toName)} with
               </p>
+              <PaymentMethodsList
+                methods={payee!.paymentMethods}
+                linkContext={{
+                  amount: t.amount,
+                  note: payerName
+                    ? `BillSpilt — from ${payerName}`
+                    : "BillSpilt",
+                }}
+              />
             </div>
-            <Button size="sm" onClick={markAllPaid} disabled={settlingAll}>
-              {settlingAll ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCheck className="h-4 w-4" />
-              )}
-              Mark all paid
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </TransferCard>
+      </li>
+    );
+  }
 
-      {loading && !data ? (
-        <div className="space-y-3">
-          {[0, 1].map((i) => (
-            <Skeleton key={i} className="h-20 w-full" />
-          ))}
+  let plan: React.ReactNode;
+  if (loading && !data) {
+    plan = <LoadingState />;
+  } else if (error && !data) {
+    plan = <ErrorState onRetry={() => void refetch()} />;
+  } else if (transfers.length === 0) {
+    plan = <SettledState onAdd={addExpense} />;
+  } else {
+    plan = (
+      <>
+        <div>
+          <div className="space-y-6">
+            {mine.length > 0 ? (
+              <section aria-labelledby="settle-yours">
+                <SectionLabel id="settle-yours">Your payments</SectionLabel>
+                <ul className="space-y-3">{mine.map(renderTransfer)}</ul>
+              </section>
+            ) : (
+              <Card className="flex items-center gap-3 p-4">
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-positive-soft text-positive">
+                  <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-base font-semibold">
+                    You&apos;re all square
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    The payments below are between your roommates.
+                  </p>
+                </div>
+              </Card>
+            )}
+
+            {others.length > 0 && (
+              <section aria-labelledby="settle-others">
+                <SectionLabel id="settle-others">
+                  Between roommates
+                </SectionLabel>
+                <ul className="space-y-3">{others.map(renderTransfer)}</ul>
+              </section>
+            )}
+          </div>
+          <p className="mt-3 px-1 text-balance text-sm text-muted-foreground">
+            Paid in cash or another way? Mark it as paid here too.
+          </p>
         </div>
-      ) : transfers.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center py-12 text-center">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-              <PartyPopper className="h-7 w-7 text-emerald-600" />
-            </div>
-            <p className="font-medium">Everyone&apos;s settled up</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              No payments needed right now.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <ul className="space-y-3">
-          {transfers.map((t) => {
-            const key = `${t.from}-${t.to}-${t.amount}`;
-            const involvesYou = t.from === currentUserId || t.to === currentUserId;
-            // When you're the payer, show the payee's ways to pay.
-            const payee = members.find((m) => m.id === t.to);
-            const showPay = t.from === currentUserId && (payee?.paymentMethods?.length ?? 0) > 0;
-            const payerName = members.find((m) => m.id === t.from)?.name;
-            const owedToYou = t.to === currentUserId;
-            return (
-              <li key={key}>
-                <Card className={involvesYou ? "border-primary/40" : undefined}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2">
-                      <MemberAvatar id={t.from} name={t.fromName} className="h-8 w-8" />
-                      <span className="text-sm font-medium">
-                        {t.from === currentUserId ? "You" : t.fromName}
-                      </span>
-                      <ArrowRight className="mx-1 h-4 w-4 text-muted-foreground" />
-                      <MemberAvatar id={t.to} name={t.toName} className="h-8 w-8" />
-                      <span className="text-sm font-medium">
-                        {t.to === currentUserId ? "You" : t.toName}
-                      </span>
-                      <span className="ml-auto text-lg font-bold text-primary">
-                        {money(t.amount)}
-                      </span>
-                    </div>
 
-                    {showPay && (
-                      <div className="mt-3 rounded-lg bg-muted/60 p-3">
-                        <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                          Pay {t.toName} with
+        {isAdmin && (
+          <section aria-labelledby="settle-admin">
+            <SectionLabel id="settle-admin">Admin</SectionLabel>
+            <Card className="p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <ShieldCheck className="h-5 w-5" aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-base font-semibold">Settle everyone up</p>
+                  <p className="text-sm text-muted-foreground">
+                    Record all {transfers.length} payment
+                    {transfers.length === 1 ? "" : "s"} at once and clear every
+                    balance.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="mt-4 w-full"
+                onClick={markAllPaid}
+                disabled={settlingAll}
+              >
+                {settlingAll ? (
+                  <Loader2 className="animate-spin" aria-hidden />
+                ) : (
+                  <CheckCheck aria-hidden />
+                )}
+                Mark all paid
+              </Button>
+            </Card>
+          </section>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <div className="duration-500 animate-in fade-in slide-in-from-bottom-3">
+      <PageHeader
+        title="Settle up"
+        subtitle="The fewest payments to clear all debts."
+      />
+
+      <div className="space-y-6">
+        {plan}
+
+        {settlements.length > 0 && (
+          <section aria-labelledby="settle-history">
+            <SectionLabel id="settle-history">History</SectionLabel>
+            <Card>
+              <ul className="divide-y">
+                {settlements.map((s) => {
+                  const fromYou = s.from === currentUserId;
+                  const toYou = s.to === currentUserId;
+                  return (
+                    <li
+                      key={s.id}
+                      className="flex min-h-14 items-center gap-3 py-3 pl-4 pr-2"
+                    >
+                      <MemberAvatar
+                        id={s.from}
+                        name={s.fromName}
+                        className="h-10 w-10"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-3 text-base font-medium leading-snug">
+                          {fromYou ? "You" : s.fromName} paid{" "}
+                          {toYou ? "you" : s.toName}
                         </p>
-                        <PaymentMethodsList
-                          methods={payee!.paymentMethods}
-                          linkContext={{
-                            amount: t.amount,
-                            note: payerName
-                              ? `BillSpilt — from ${payerName}`
-                              : "BillSpilt",
-                          }}
-                        />
+                        <p className="mt-0.5 text-sm text-muted-foreground">
+                          <span
+                            className={cn(
+                              "font-semibold tabular-nums",
+                              fromYou
+                                ? "text-negative"
+                                : toYou
+                                  ? "text-positive"
+                                  : "text-foreground",
+                            )}
+                          >
+                            {money(s.amount)}
+                          </span>
+                          {" · "}
+                          {formatDate(s.settledAt)}
+                        </p>
                       </div>
-                    )}
-
-                    <div className="mt-3 flex gap-2">
-                      {owedToYou && (
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => shareReminder(t)}
-                        >
-                          <Bell className="h-4 w-4" />
-                          Remind
-                        </Button>
-                      )}
                       <Button
-                        variant="success"
-                        className="flex-1"
-                        onClick={() => markPaid(t)}
-                        disabled={settling === key}
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => undoSettlement(s.id)}
+                        disabled={undoing === s.id}
+                        aria-label={`Undo settlement: ${fromYou ? "you" : s.fromName} paid ${toYou ? "you" : s.toName} ${money(s.amount)}`}
+                        className="text-muted-foreground hover:text-foreground"
                       >
-                        {settling === key && (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                        {undoing === s.id ? (
+                          <Loader2 className="animate-spin" aria-hidden />
+                        ) : (
+                          <Undo2 aria-hidden />
                         )}
-                        Mark as paid
                       </Button>
-                    </div>
-                    <p className="mt-1.5 text-center text-xs text-muted-foreground">
-                      Paid in cash or another way? Mark it as paid here too.
-                    </p>
-                  </CardContent>
-                </Card>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {settlements.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <History className="h-4 w-4 text-muted-foreground" />
-              Settlement history
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y">
-              {settlements.map((s) => (
-                <li key={s.id} className="flex items-center gap-2 py-2.5">
-                  <div className="min-w-0 flex-1 text-sm">
-                    <span className="font-medium">
-                      {s.from === currentUserId ? "You" : s.fromName}
-                    </span>{" "}
-                    paid{" "}
-                    <span className="font-medium">
-                      {s.to === currentUserId ? "you" : s.toName}
-                    </span>
-                    <span className="ml-1 text-muted-foreground">
-                      · {formatDate(s.settledAt)}
-                    </span>
-                  </div>
-                  <span className="font-semibold">{money(s.amount)}</span>
-                  <button
-                    onClick={() => undoSettlement(s.id)}
-                    disabled={undoing === s.id}
-                    aria-label="Undo settlement"
-                    className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-                  >
-                    {undoing === s.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Undo2 className="h-4 w-4" />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

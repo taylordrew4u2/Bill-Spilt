@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Camera, ImageIcon, Loader2, Paperclip, FileText, X } from "lucide-react";
+import { Camera, ExternalLink, FileText, ImageIcon, Loader2, Paperclip, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 
@@ -65,8 +66,8 @@ export function isPdfReceipt(url: string): boolean {
 type Source = "camera" | "photo" | "file";
 
 const SOURCES: { key: Source; label: string; icon: typeof Camera; accept: string }[] = [
-  { key: "camera", label: "Take photo", icon: Camera, accept: ACCEPT_IMAGE },
-  { key: "photo", label: "Photo", icon: ImageIcon, accept: ACCEPT_IMAGE },
+  { key: "camera", label: "Camera", icon: Camera, accept: ACCEPT_IMAGE },
+  { key: "photo", label: "Library", icon: ImageIcon, accept: ACCEPT_IMAGE },
   { key: "file", label: "File", icon: Paperclip, accept: ACCEPT_ANY },
 ];
 
@@ -132,77 +133,85 @@ export function ReceiptPicker({
   if (value) {
     const pdf = isPdfReceipt(value);
     return (
-      <div className="flex items-center gap-3 rounded-xl border p-2.5">
-        {pdf ? (
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <FileText className="h-5 w-5" aria-hidden />
-          </div>
-        ) : (
-          <Image
-            src={value}
-            alt="Receipt preview"
-            width={48}
-            height={48}
-            className="h-12 w-12 flex-shrink-0 rounded-lg border object-cover"
-            unoptimized
-          />
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">
-            {pdf ? "PDF attached" : "Receipt attached"}
-          </p>
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted-foreground underline"
-          >
-            View
-          </a>
-        </div>
-        <button
+      <div className="flex items-center gap-1 rounded-2xl border bg-card p-2">
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-1 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {pdf ? (
+            <span className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <FileText className="h-7 w-7" aria-hidden />
+            </span>
+          ) : (
+            <Image
+              src={value}
+              alt="Receipt preview"
+              width={64}
+              height={64}
+              className="h-16 w-16 flex-shrink-0 rounded-xl border object-cover"
+              unoptimized
+            />
+          )}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-base font-semibold">
+              {pdf ? "PDF attached" : "Receipt attached"}
+            </span>
+            <span className="flex items-center gap-1 text-sm font-medium text-primary">
+              View
+              <ExternalLink className="h-4 w-4" aria-hidden />
+            </span>
+          </span>
+        </a>
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => onChange(null)}
-          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-destructive"
+          className="text-muted-foreground hover:bg-negative-soft hover:text-destructive"
           aria-label="Remove receipt"
         >
-          <X className="h-5 w-5" />
-        </button>
+          <Trash2 aria-hidden />
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div className="grid grid-cols-3 gap-2">
         {SOURCES.map((s) => (
           <label
             key={s.key}
             className={cn(
-              "flex h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed text-xs font-medium text-muted-foreground transition hover:bg-accent",
+              "relative flex h-20 cursor-pointer select-none flex-col items-center justify-center gap-1.5 rounded-xl border border-input bg-card px-1 text-center text-sm font-semibold ring-offset-background transition-[background-color,transform] focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:bg-accent active:scale-[0.98]",
               uploading && "pointer-events-none opacity-60",
             )}
           >
             {uploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden />
             ) : (
-              <s.icon className="h-4 w-4" aria-hidden />
+              <s.icon className="h-6 w-6 text-primary" aria-hidden />
             )}
             {s.label}
             <input
               type="file"
               accept={s.accept}
               {...(s.key === "camera" ? { capture: "environment" as const } : {})}
-              className="hidden"
+              className="sr-only"
               onChange={upload}
               disabled={uploading}
             />
           </label>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">
-        Photo or file (JPG, PNG, HEIC, or PDF) — up to 5 MB. Photos are
-        shrunk before upload.
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {uploading
+          ? "Uploading your receipt…"
+          : disabled
+            ? "You're offline — attach the receipt once you're back online."
+            : "JPG, PNG, HEIC or PDF, up to 5 MB. Photos are shrunk before upload."}
       </p>
     </div>
   );

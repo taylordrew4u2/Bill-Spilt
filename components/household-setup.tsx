@@ -1,17 +1,38 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Home, Users, Megaphone } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { Check, House, Loader2, LogOut, Megaphone, Users } from "lucide-react";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toaster";
 import { useAppData } from "@/components/app-data";
 import { AdsAdminSheet } from "@/components/ads-admin-sheet";
+import { cn } from "@/lib/utils";
 
 type Mode = "create" | "join";
+
+const OPTIONS: {
+  value: Mode;
+  title: string;
+  body: string;
+  icon: typeof House;
+}[] = [
+  {
+    value: "create",
+    title: "Create a household",
+    body: "Start one and invite others.",
+    icon: House,
+  },
+  {
+    value: "join",
+    title: "Join with a code",
+    body: "Use a roommate's invite code.",
+    icon: Users,
+  },
+];
 
 /**
  * First-run gate: a user with no household either creates one (becoming owner
@@ -54,89 +75,148 @@ export function HouseholdSetup() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center px-5 safe-top safe-bottom">
-      <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center gap-1.5">
-          <Brand size="lg" />
-          <p className="text-sm font-medium text-muted-foreground">
-            Split bills with your roommates
-          </p>
+    <div className="flex min-h-[100dvh] flex-col bg-background safe-top safe-bottom">
+      {/* The app shell (and its account menu) isn't mounted until there's a
+          household, so this screen carries its own way out. */}
+      <header className="mx-auto flex h-16 w-full max-w-md items-center justify-between gap-2 px-gutter">
+        <Brand size="md" />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-mr-2 text-muted-foreground"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+        >
+          <LogOut aria-hidden />
+          Log out
+        </Button>
+      </header>
+
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-gutter pb-8 pt-6 sm:justify-center sm:pb-16">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Set up your household
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">
+          A household is where you and your roommates share bills.
+        </p>
+
+        <div
+          role="radiogroup"
+          aria-label="How do you want to start?"
+          className="mt-8 space-y-3"
+        >
+          {OPTIONS.map(({ value: option, title, body, icon: Icon }) => {
+            const active = mode === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => {
+                  setMode(option);
+                  setValue("");
+                }}
+                className={cn(
+                  "flex min-h-[76px] w-full items-center gap-3 rounded-2xl border bg-card p-4 text-left transition-[border-color,box-shadow,background-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  active
+                    ? "border-primary shadow-[0_0_0_1px_hsl(var(--primary))]"
+                    : "active:bg-accent [@media(hover:hover)]:hover:bg-accent/60",
+                )}
+              >
+                <span
+                  className={cn(
+                    "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-primary/10 text-primary",
+                  )}
+                >
+                  <Icon className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-semibold">{title}</span>
+                  <span className="block text-sm text-muted-foreground">
+                    {body}
+                  </span>
+                </span>
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input",
+                  )}
+                >
+                  {active && <Check className="h-4 w-4" strokeWidth={3} />}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
-          <button
-            onClick={() => {
-              setMode("create");
-              setValue("");
-            }}
-            className={`flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-medium transition ${
-              mode === "create" ? "bg-background shadow-sm" : "text-muted-foreground"
-            }`}
+        <form onSubmit={submit} className="mt-8 space-y-5" aria-busy={loading}>
+          {mode === "create" ? (
+            <div className="space-y-2">
+              <Label htmlFor="hh">Household name</Label>
+              <Input
+                id="hh"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="e.g. Maple Street Flat"
+                required
+                maxLength={80}
+                autoCapitalize="words"
+                aria-describedby="hh-help"
+              />
+              <p id="hh-help" className="text-sm text-muted-foreground">
+                You&apos;ll get a code to invite up to 12 roommates.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="code">Invite code</Label>
+              <Input
+                id="code"
+                value={value}
+                onChange={(e) => setValue(e.target.value.toUpperCase())}
+                placeholder="ABC123"
+                required
+                autoCapitalize="characters"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                aria-describedby="code-help"
+                className="h-16 text-center indent-[0.3em] font-mono text-2xl font-bold uppercase tracking-[0.3em] placeholder:font-semibold placeholder:text-muted-foreground/50"
+              />
+              <p id="code-help" className="text-sm text-muted-foreground">
+                Ask a roommate for it, or just open their invite link.
+              </p>
+            </div>
+          )}
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={loading || !value.trim()}
           >
-            <Home className="h-4 w-4" /> Create
-          </button>
-          <button
-            onClick={() => {
-              setMode("join");
-              setValue("");
-            }}
-            className={`flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-medium transition ${
-              mode === "join" ? "bg-background shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            <Users className="h-4 w-4" /> Join
-          </button>
-        </div>
-
-        <Card>
-          <CardContent className="pt-5">
-            <form onSubmit={submit} className="space-y-4">
-              {mode === "create" ? (
-                <div className="space-y-1.5">
-                  <Label htmlFor="hh">Household name</Label>
-                  <Input
-                    id="hh"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    placeholder="e.g. Maple Street Flat"
-                    required
-                    maxLength={80}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    You&apos;ll get a code to invite up to 12 roommates.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <Label htmlFor="code">Invite code</Label>
-                  <Input
-                    id="code"
-                    value={value}
-                    onChange={(e) => setValue(e.target.value.toUpperCase())}
-                    placeholder="ABC123"
-                    required
-                    autoCapitalize="characters"
-                    className="text-center text-lg tracking-[0.3em]"
-                  />
-                </div>
-              )}
-              <Button type="submit" className="w-full" disabled={loading || !value.trim()}>
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {mode === "create" ? "Create household" : "Join household"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            {loading && <Loader2 className="animate-spin" aria-hidden />}
+            {mode === "create" ? "Create household" : "Join household"}
+          </Button>
+        </form>
 
         {isSiteAdmin && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setAdsOpen(true)}
-            className="mx-auto mt-6 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="mx-auto mt-6 text-muted-foreground"
           >
-            <Megaphone className="h-4 w-4" /> Manage ads (operator)
-          </button>
+            <Megaphone aria-hidden />
+            Manage ads (operator)
+          </Button>
         )}
-      </div>
+      </main>
 
       <AdsAdminSheet open={adsOpen} onOpenChange={setAdsOpen} />
     </div>

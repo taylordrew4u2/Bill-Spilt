@@ -3,17 +3,39 @@
 import * as React from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trash2, Paperclip, Package } from "lucide-react";
-import { MemberAvatar } from "@/components/member-avatar";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const DELETE_THRESHOLD = -96;
 
 /**
+ * One piece of a row's secondary line. Pieces wrap onto a new line when they
+ * don't fit (so "your share" drops below the payer on a 320px phone instead of
+ * squeezing the description), and the leading "·" of whichever piece starts a
+ * line is clipped off by the parent's negative margin + overflow-hidden.
+ */
+function MetaPart({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span className={cn("flex min-w-0 max-w-full items-center", className)}>
+      <span aria-hidden className="w-4 flex-shrink-0 text-center">
+        ·
+      </span>
+      {children}
+    </span>
+  );
+}
+
+/**
  * A single expense row with swipe-to-delete (drag left to reveal/confirm
- * delete). Powered by framer-motion drag. Tapping the row opens the receipt
- * if one is attached.
+ * delete). Powered by framer-motion drag. Tapping the row opens its details
+ * (split, receipt, edit and delete).
  */
 export function ExpenseItem({
   expense,
@@ -72,10 +94,12 @@ export function ExpenseItem({
     >
       {/* Delete background */}
       <motion.div
+        aria-hidden
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 flex items-center justify-end bg-destructive pr-6 text-destructive-foreground"
+        className="absolute inset-0 flex items-center justify-end gap-2 bg-destructive pr-5 text-sm font-semibold text-destructive-foreground"
       >
         <Trash2 className="h-5 w-5" />
+        Delete
       </motion.div>
 
       <motion.div
@@ -100,30 +124,49 @@ export function ExpenseItem({
         }
         role={onOpen ? "button" : undefined}
         tabIndex={onOpen ? 0 : undefined}
-        className="relative flex cursor-pointer touch-pan-y items-center gap-3 bg-card py-3"
+        className="relative flex min-h-14 cursor-pointer touch-pan-y items-center gap-3 bg-card px-4 py-3 transition-colors [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
       >
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           <CatIcon className="h-5 w-5" aria-hidden />
         </div>
+
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <p className="truncate font-medium">{expense.description}</p>
-            {expense.receiptUrl && (
-              <Paperclip className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-            )}
-          </div>
-          <p className="truncate text-xs text-muted-foreground">
-            {paidByYou ? "You" : expense.paidByName} paid ·{" "}
-            {formatDate(expense.createdAt)}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="font-semibold">{money(expense.amount)}</p>
-          {yourShare && (
-            <p className="text-xs text-muted-foreground">
-              your share {money(yourShare.amount)}
+          {/* The description gets the whole line except the amount, and may
+              wrap to two lines rather than truncate to a few characters. A
+              wide amount (e.g. "CHF 12,345.67" on a 320px phone) drops onto
+              its own line instead of squeezing the description. */}
+          <div className="flex flex-wrap items-start justify-end gap-x-3">
+            <p className="line-clamp-2 min-w-0 grow basis-24 break-words text-base font-medium leading-snug">
+              {expense.description}
             </p>
-          )}
+            <p className="flex-shrink-0 whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
+              {money(expense.amount)}
+            </p>
+          </div>
+
+          <div className="mt-0.5 overflow-hidden text-sm text-muted-foreground">
+            <p className="-ml-4 flex flex-wrap items-center">
+              <MetaPart>
+                {expense.receiptUrl && (
+                  <>
+                    <Paperclip className="mr-1 h-4 w-4 flex-shrink-0" aria-hidden />
+                    <span className="sr-only">Receipt attached. </span>
+                  </>
+                )}
+                <span className="line-clamp-2 min-w-0 break-words">
+                  {paidByYou ? "You" : expense.paidByName} paid
+                </span>
+              </MetaPart>
+              {yourShare && (
+                <MetaPart className="whitespace-nowrap">
+                  your share&nbsp;
+                  <span className="font-medium tabular-nums text-foreground">
+                    {money(yourShare.amount)}
+                  </span>
+                </MetaPart>
+              )}
+            </p>
+          </div>
         </div>
       </motion.div>
     </motion.div>

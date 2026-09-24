@@ -3,53 +3,67 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * Light theme. The app background is a soft grey so white cards read as
+   * distinct surfaces on a phone in daylight, the way native apps do it.
+   * Muted text is darkened to >= 6:1 on white so secondary copy stays
+   * readable instead of washing out.
+   */
   :root {
-    --background: 0 0% 100%;
+    --background: 220 20% 97%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
     --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 93%;
     --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 9% 38%;
+    --accent: 220 14% 93%;
     --accent-foreground: 222 47% 11%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
+    --destructive: 0 72% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 70% 32%;
     --success-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --positive: 152 76% 29%;
+    --positive-soft: 150 60% 94%;
+    --negative: 350 76% 44%;
+    --negative-soft: 350 90% 96%;
+    --border: 220 13% 89%;
+    --input: 220 13% 82%;
     --ring: 221 83% 53%;
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: 222 47% 7%;
+    --background: 222 30% 6%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 10%;
+    --card: 222 24% 11%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 10%;
+    --popover: 222 24% 12%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
+    --primary: 217 91% 62%;
+    --primary-foreground: 222 47% 8%;
+    --secondary: 222 18% 18%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
+    --muted: 222 18% 18%;
+    --muted-foreground: 218 14% 72%;
+    --accent: 222 18% 18%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 50%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 224 76% 60%;
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 45%;
+    --success-foreground: 222 47% 8%;
+    --positive: 152 60% 56%;
+    --positive-soft: 152 40% 14%;
+    --negative: 350 86% 72%;
+    --negative-soft: 350 40% 17%;
+    --border: 222 16% 20%;
+    --input: 222 14% 28%;
+    --ring: 217 91% 62%;
   }
 }
 
@@ -59,12 +73,28 @@
   }
   html {
     -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-base text-foreground;
     /* Prevent overscroll bounce revealing white, feel native. */
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    /* Long names and emails wrap instead of pushing the page sideways. */
+    overflow-wrap: break-word;
+  }
+  /* Never let a stray wide element make the whole page zoom out on a phone. */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+  /* iOS Safari zooms into any field whose text is under 16px on focus. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
   }
   /* Respect device safe areas (notches, home indicator). */
   .safe-top {
@@ -73,18 +103,27 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer utilities {
   /*
-   * The standard horizontal page gutter. 20px keeps controls off the edge of
-   * a phone screen (16px reads as cramped, and curved display corners eat
-   * into it), and `max()` widens it past the notch cutout when the device is
-   * held in landscape.
+   * The standard horizontal page gutter: 16px, the platform norm on phones,
+   * widened past the notch cutout when the device is held in landscape.
    */
   .px-gutter {
-    padding-left: max(1.25rem, env(safe-area-inset-left));
-    padding-right: max(1.25rem, env(safe-area-inset-right));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
   }
 
   /* Hide scrollbars on horizontal scrollers for a cleaner mobile look. */
@@ -94,5 +133,16 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+/*
+ * Inside the signed-in app the tab bar owns the bottom of the screen, so the
+ * cookie notice floats above it instead of covering the navigation.
+ */
+@media (max-width: 767px) {
+  body:has([data-app-shell]) [data-cookie-consent] {
+    bottom: calc(theme("spacing.tabbar") + env(safe-area-inset-bottom));
+    padding-bottom: 0.75rem;
   }
 }

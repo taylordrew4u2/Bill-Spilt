@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  Bullet,
+  BulletList,
+  GuideShell,
+  NumberedSections,
+  Paragraph,
+  proseLink,
+} from "@/components/guide-shell";
 import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
@@ -93,70 +102,49 @@ const JSON_LD = {
 export default function SplitUtilitiesGuide() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        How to split utility bills with roommates
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader eyebrow="Guide" title="How to split utility bills with roommates">
         Utilities are the messiest shared cost: several bills, different due
         dates, different names on the account, and amounts that change every
         month. Rent is one predictable number; utilities are five moving ones.
         Here&apos;s a simple system that keeps it fair without a monthly
         negotiation.
-      </p>
+      </ArticleHeader>
 
-      <div className="mt-10 space-y-8">
-        {STEPS.map((s, i) => (
-          <section key={s.name}>
-            <h2 className="flex items-baseline gap-2 text-xl font-bold">
-              <span className="text-primary">{i + 1}.</span> {s.name}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{s.text}</p>
-          </section>
-        ))}
-      </div>
+      <NumberedSections items={STEPS} className="mt-10" />
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">A worked example</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="A worked example">
+        <Paragraph>
           Three roommates hold different accounts in one month:
-        </p>
-        <ul className="mt-4 space-y-2 text-muted-foreground">
-          <li>• Sam&apos;s name is on <strong>electric: $135</strong> (even = $45 each)</li>
-          <li>• Priya&apos;s name is on <strong>internet: $60</strong> (even = $20 each)</li>
-          <li>• Leo&apos;s name is on <strong>water + trash: $75</strong> (even = $25 each)</li>
-        </ul>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <BulletList>
+          <Bullet>Sam&apos;s name is on <strong>electric: $135</strong> (even = $45 each)</Bullet>
+          <Bullet>Priya&apos;s name is on <strong>internet: $60</strong> (even = $20 each)</Bullet>
+          <Bullet>Leo&apos;s name is on <strong>water + trash: $75</strong> (even = $25 each)</Bullet>
+        </BulletList>
+        <Paragraph>
           Total utilities are $270, so each person&apos;s fair share is $90. Sam
           paid $135, Priya paid $60, Leo paid $75. Netting it out: Priya owes $30
           and Leo owes $15, and both pay Sam. Two small transfers square the
           whole month — no one had to front everything, and nobody&apos;s doing
           arithmetic at the kitchen table.
-        </p>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <Paragraph>
           Want to check a split before you send it?{" "}
-          <Link href="/split-calculator" className="font-medium text-primary hover:underline">
+          <Link href="/split-calculator" className={proseLink}>
             Try the free split calculator
           </Link>
           .
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12 rounded-2xl border bg-card p-6">
-        <h2 className="text-xl font-bold">Put utilities on autopilot</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleCta title="Put utilities on autopilot" cta="Start splitting — free">
+        <Paragraph>
           Add each utility as a recurring bill in BillSpilt and it&apos;s logged
           automatically every month, split how you chose, and folded into one
           who-owes-what balance — even when the bills live in different
           roommates&apos; names. Free forever, no paywall.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Start splitting — free <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+        </Paragraph>
+      </ArticleCta>
 
       <FaqSection faq={FAQ} />
     </GuideShell>

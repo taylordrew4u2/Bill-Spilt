@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  GuideShell,
+  NumberedSections,
+  Paragraph,
+} from "@/components/guide-shell";
 import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
@@ -103,62 +108,46 @@ const JSON_LD = {
 export default function AskRoommateGuide() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        How to ask a roommate for money they owe you
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader eyebrow="Guide" title="How to ask a roommate for money they owe you">
         Chasing a roommate for money is the fastest way to make home feel
         uncomfortable. The trick is to make the ask small, specific, and
         friction-free — or to avoid having to ask at all.
-      </p>
+      </ArticleHeader>
 
-      <div className="mt-10 space-y-8">
-        {TIPS.map((t, i) => (
-          <section key={t.name}>
-            <h2 className="flex items-baseline gap-2 text-xl font-bold">
-              <span className="text-primary">{i + 1}.</span> {t.name}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{t.text}</p>
-          </section>
-        ))}
-      </div>
+      <NumberedSections items={TIPS} className="mt-10" />
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">Copy-paste message templates</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="Copy-paste message templates">
+        <Paragraph>
           The hardest part is often just wording it. Steal one of these,
           swap in the amount, and send:
-        </p>
-        <div className="mt-5 space-y-4">
+        </Paragraph>
+        {/* Each template reads like the text it will become: a label, then
+            the message in a chat bubble. */}
+        <div className="space-y-3">
           {TEMPLATES.map((t) => (
-            <div key={t.label} className="rounded-xl border bg-card p-5">
+            <div key={t.label} className="rounded-2xl border bg-card p-4">
               <p className="text-sm font-semibold text-primary">{t.label}</p>
-              <p className="mt-1.5 text-muted-foreground">
+              <p className="mt-2 rounded-2xl rounded-tl-md bg-primary/10 px-4 py-3 text-base/relaxed text-foreground">
                 &ldquo;{t.text}&rdquo;
               </p>
             </div>
           ))}
         </div>
-      </section>
+      </ArticleSection>
 
       <FaqSection faq={FAQ} />
 
-      <section className="mt-12 rounded-2xl border bg-card p-6">
-        <h2 className="text-xl font-bold">Never have the awkward conversation again</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleCta
+        title="Never have the awkward conversation again"
+        cta="Get everyone squared up — free"
+      >
+        <Paragraph>
           BillSpilt keeps a live balance of who owes what, links roommates
           straight to Venmo or Cash App with the amount ready, and sends a
           friendly pre-written reminder in one tap — so the math does the asking
           for you. Free forever, no paywall.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Get everyone squared up — free <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+        </Paragraph>
+      </ArticleCta>
     </GuideShell>
   );
 }
