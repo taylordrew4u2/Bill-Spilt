@@ -1,100 +1,79 @@
 <div align="center">
 
-<img src="public/icons/icon-512.png" width="96" height="96" alt="Bill Spilt icon" />
+<img src="public/icons/icon-512.png" width="96" height="96" alt="BillSpilt icon" />
 
 # BillSpilt
 
-**The roommate bill splitter that lives on your phone — no app store required.**
+**A roommate bill splitter that installs from the browser, works offline, and settles a household's debts in the fewest possible payments.**
 
-Split shared expenses, see who owes what, and settle up with the fewest payments possible. **Free forever — every feature, no paywall, no premium tier, no credit card.** Works offline, installs to your home screen in one tap.
+[**Live app: billspilt.com**](https://billspilt.com)
 
-[**▶ Try the live demo →**](https://billspilt.com)
-
-<br/>
-
-![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React_19-149ECA?style=for-the-badge&logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
-![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
-![Vercel](https://img.shields.io/badge/Deployed_on_Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=flat-square&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-149ECA?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-offline--first-5A0FC8?style=flat-square&logo=pwa&logoColor=white)
+![Vitest](https://img.shields.io/badge/tested_with-Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white)
 
 </div>
 
 ---
 
-## Screenshots
+## Overview
+
+BillSpilt is a full-stack progressive web app for households that share rent, utilities, and groceries. Roommates log expenses, see who owes whom in real time, and settle up through a short list of payments computed by a minimum-cash-flow algorithm. Every feature is free.
+
+It is built mobile-first (44px touch targets, bottom-sheet forms, swipe-to-delete), installs to the home screen without an app store, and keeps working without a network connection. The whole stack runs on free-tier infrastructure: one Postgres database holds the data and the receipt images.
 
 <div align="center">
 <table>
 <tr>
-<td align="center">
-<img src="docs/screenshots/home-balances.svg" width="220" alt="Home — Balances" />
-<br/><sub><b>Home — Balances</b></sub>
-<br/><sub>Net position + pairwise debts at a glance</sub>
-</td>
-<td align="center">
-<img src="docs/screenshots/add-expense.svg" width="220" alt="Add Expense" />
-<br/><sub><b>Add Expense</b></sub>
-<br/><sub>Equal, exact, or percentage splits</sub>
-</td>
-<td align="center">
-<img src="docs/screenshots/settle-up.svg" width="220" alt="Settle Up" />
-<br/><sub><b>Settle Up</b></sub>
-<br/><sub>Minimum-payment plan with deep links</sub>
-</td>
-<td align="center">
-<img src="docs/screenshots/stats.svg" width="220" alt="Stats" />
-<br/><sub><b>Stats</b></sub>
-<br/><sub>Spending by category & per person</sub>
-</td>
+<td align="center"><img src="docs/screenshots/home-balances.svg" width="200" alt="Home screen showing balances" /><br/><sub><b>Balances</b></sub></td>
+<td align="center"><img src="docs/screenshots/add-expense.svg" width="200" alt="Add expense sheet" /><br/><sub><b>Add expense</b></sub></td>
+<td align="center"><img src="docs/screenshots/settle-up.svg" width="200" alt="Settle-up plan" /><br/><sub><b>Settle up</b></sub></td>
+<td align="center"><img src="docs/screenshots/stats.svg" width="200" alt="Spending stats" /><br/><sub><b>Stats</b></sub></td>
 </tr>
 </table>
+<sub>Illustrative mockups of the four main tabs.</sub>
 </div>
 
----
+## Key features
 
-## Why it's interesting
+- **Flexible splits**: equal, exact-amount, or percentage, with remainder cents distributed so every split sums exactly to the total.
+- **Instant balances**: each member's net position plus pairwise "you owe X" amounts.
+- **Minimal settle-up**: debts collapse into a short "A pays B $X" plan, with settlement history and undo. Venmo and Cash App handles are shown with deep links when you owe someone.
+- **Recurring bills**: fixed bills (rent, subscriptions) are logged automatically by a daily cron job; variable bills (electric, internet) prompt for the real amount when due.
+- **Receipts**: attach a camera photo, library image, or PDF; images are downscaled to 1600px on the client before upload.
+- **Households with multiple admins**: rename the household, manage and promote members, regenerate invite codes, settle everyone at once, and review an activity log.
+- **One-tap invite links**: logged-in users join instantly from the native share sheet; new users are joined automatically on sign-up.
+- **Private split detail**: only the person who added an expense sees the full per-person breakdown; others see the total and their own share.
+- **Search, filter, and CSV export** of the full ledger.
+- **Offline-first PWA**: expenses added offline queue locally and sync on reconnect; installable, with dark mode and home-screen shortcuts.
+- **Accounts**: credentials sign-up and login with a self-serve email password reset.
+- **SEO-ready marketing site**: Open Graph and Twitter cards, a generated 1200x630 social image, JSON-LD structured data, sitemap, robots, and a set of long-form guides.
 
-BillSpilt isn't a CRUD demo. The hard parts are the parts users never see:
+## Tech stack
 
-- **A settlement engine** that collapses a tangle of IOUs into the minimum number of payments.
-- **Offline-first writes** that queue in the browser and reconcile when the network returns.
-- **A provider-agnostic data layer** that runs on Neon, Prisma Postgres, or any standard Postgres without code changes.
-- **Money math that always balances to the cent**, even with uneven splits.
-
-It's designed mobile-first (44 px touch targets, bottom-sheet forms, swipe-to-delete), installs to the home screen, and works on a plane.
-
----
-
-## Features
-
-| | |
-|---|---|
-| 🧾 **Log expenses in seconds** | Description, amount, category, and a split type — equal, exact, or percentage. |
-| ⚖️ **Instant balances** | Home screen shows each person's net position (green = owed, red = owes), plus pairwise "what you owe X". |
-| 🤝 **Smart settle-up** | Min-cash-flow algorithm turns every debt into a short "A pays B $X" list, with history + undo. |
-| 💳 **Ways to pay** | Each roommate shares Venmo / Cash App handles — shown (with deep links + copy) when you owe them. |
-| 👑 **Multiple admins** | Any leaseholder can be an admin. Admins can rename the household, manage members, promote others, and settle everyone in one tap. Activity log included. |
-| 🔗 **One-tap invite links** | Share a link via the native share sheet — your roommate taps it and is dropped straight into the household. No code to type, no "Create vs. Join" decision: logged-in users join instantly; new users are auto-joined the moment they sign up. The raw code stays as a manual fallback. |
-| 🔑 **Invite code (admin-only)** | Only admins can see and regenerate the invite code, invalidating the old link at any time. |
-| 🔒 **Private split breakdown** | The person who added an expense sees the full per-person breakdown. Everyone else sees just the total and their own share. |
-| 🔁 **Recurring bills** | Fixed bills (rent, subscriptions) auto-logged daily by a Vercel Cron job; bills that change each cycle (electric, wifi) prompt for the real amount when they come due. |
-| 📸 **Receipts** | Attach a camera photo, a picture from the library, or a file — including a PDF statement. Stored in Postgres, no object store to provision. |
-| 🔎 **Search & filter** · 📤 **CSV export** | Find expenses by text/category; download the full ledger any time. |
-| 🔐 **Auth + password reset** | Credentials auth with a self-serve email reset flow (SMTP). |
-| 📴 **Full offline support** | Add expenses offline; they sync automatically on reconnect. |
-| 📲 **Installable PWA** | Standalone display, app icons, dark mode, install prompt, home-screen shortcuts. |
-| 🔍 **Search-engine ready** | SEO-tuned landing with Open Graph / Twitter cards, a generated 1200×630 social image, JSON-LD structured data (WebApplication + FAQ rich results), canonical tags, sitemap, and robots. |
-
----
+| Concern | Choice |
+| --- | --- |
+| Framework | Next.js 16 (App Router), React 19, TypeScript (strict) |
+| UI | Tailwind CSS, shadcn/ui (Radix primitives), Framer Motion |
+| Database | PostgreSQL via Neon's serverless HTTP driver or `pg` over TCP, selected by host |
+| Validation | Zod |
+| Auth | NextAuth.js v5 (Credentials, JWT sessions, bcrypt) |
+| Email | Resend or SMTP via Nodemailer (password reset) |
+| Cache | Vercel KV (optional; degrades gracefully when absent) |
+| Offline / PWA | Serwist service worker, Dexie.js (IndexedDB) |
+| Background jobs | Vercel Cron |
+| Testing | Vitest |
+| Hosting | Vercel |
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Client["📱 Client — installable PWA"]
+    subgraph Client["Client: installable PWA"]
         UI["Next.js App Router · React · Tailwind + shadcn/ui"]
         SW["Service worker<br/>(cache-first assets · network-first API)"]
         IDB["IndexedDB queue (Dexie)<br/>offline expenses"]
@@ -102,23 +81,24 @@ flowchart TD
         UI <--> IDB
     end
 
-    subgraph Edge["⚡ Edge"]
-        MW["Middleware<br/>JWT auth gate"]
+    subgraph Gate["Request gate"]
+        PX["Next.js proxy<br/>JWT auth · nonce-based CSP"]
     end
 
-    subgraph Server["🔧 Server — Route Handlers (Node runtime)"]
+    subgraph Server["Server: Route Handlers (Node runtime)"]
         API["REST API<br/>/expenses /balances /settle /recurring …"]
         SET["Settlement engine<br/>min-cash-flow"]
         DB["Provider-agnostic SQL layer"]
     end
 
-    subgraph Vercel["☁️ Vercel-native services (free tier)"]
-        PG["Postgres<br/>Neon · Prisma · any"]
+    subgraph Infra["Vercel services"]
+        PG["Postgres<br/>data + receipt bytes"]
         KV["KV (optional)<br/>settlement cache"]
         CRON["Cron<br/>daily recurring bills"]
     end
 
-    UI -->|fetch| MW --> API
+    UI -->|pages| PX
+    UI -->|fetch| API
     IDB -->|sync on reconnect| API
     API --> SET
     API --> DB --> PG
@@ -126,160 +106,84 @@ flowchart TD
     CRON --> API
 ```
 
----
-
 ## Engineering highlights
 
-### 1. Settlement as a graph-reduction problem
-Naively, *n* roommates can owe each other up to *n²* ways. `minimizeTransfers` ([`lib/settlement.ts`](lib/settlement.ts)) reduces this to net balances, then greedily matches the largest creditor against the largest debtor each round — guaranteeing **at most _n − 1_ transfers** for _n_ people, and in practice a far shorter list. All arithmetic runs in integer cents to eliminate floating-point drift.
+**Settlement as graph reduction.** With *n* roommates there can be up to *n²* pairwise debts. `minimizeTransfers` in [`lib/settlement.ts`](lib/settlement.ts) reduces them to net balances, then repeatedly matches the largest creditor against the largest debtor, producing at most *n − 1* transfers. All arithmetic is done in integer cents to avoid floating-point drift.
 
-### 2. Money that always reconciles
-Splitting `$40.00` three ways is `13.34 / 13.33 / 13.33`, not `13.333…`. `computeSplits` distributes remainder cents deterministically so the parts **always sum back to the total** — for equal, exact-amount, and percentage splits alike. Inputs are validated server-side before anything is written.
+**Money that always reconciles.** Splitting $40.00 three ways yields 13.34 / 13.33 / 13.33, not 13.333…. `computeSplits` distributes remainder cents deterministically so parts always sum to the total for equal, exact, and percentage splits, and inputs are validated server-side before anything is written.
 
-### 3. Offline-first with conflict-free sync
-Expenses created offline are written to **IndexedDB** (Dexie) and flagged unsynced. A `online` listener and focus revalidation flush the queue to the API, removing each record only on a confirmed `2xx`. The UI surfaces an `OfflineBanner` with the pending count, and even a request that dies mid-flight falls back to the local queue ([`lib/sync.ts`](lib/sync.ts), [`lib/offline-db.ts`](lib/offline-db.ts)).
+**Offline-first writes.** Expenses created offline are stored in IndexedDB and flagged unsynced. An `online` listener and focus revalidation flush the queue, removing each record only after a confirmed 2xx; a request that fails mid-flight falls back to the local queue. An offline banner shows the pending count. See [`lib/sync.ts`](lib/sync.ts) and [`lib/offline-db.ts`](lib/offline-db.ts).
 
-### 4. A data layer that doesn't care who hosts Postgres
-Managed Postgres providers disagree on connection semantics (Neon speaks HTTP, others want TCP; pooled vs. direct strings). Instead of locking to one, the `sql` helper in [`lib/db.ts`](lib/db.ts) **selects a backend from the connection host** — Neon's serverless HTTP driver for `*.neon.tech`, standard `pg` over TCP for everything else — behind one tagged-template interface returning `{ rows, rowCount }`. The same build runs on Neon, Prisma Postgres, Supabase, or RDS unchanged.
+**A data layer that doesn't care who hosts Postgres.** Managed providers disagree on connection semantics (Neon speaks HTTP, others expect TCP). The `sql` helper in [`lib/db.ts`](lib/db.ts) picks a backend from the connection host, using Neon's HTTP driver for `*.neon.tech` and `pg` for everything else, behind a single tagged-template interface. The same build runs on Neon, Prisma Postgres, Supabase, or RDS.
 
-### 5. Receipts without a second storage product
-Receipt photos and PDF statements are stored **in Postgres**, not an object store, so the whole app runs on one free tier instead of two. Bytes travel as base64 and are kept as `BYTEA` (`decode()` in, `encode()` out) — compact on disk, and never asking a driver to marshal raw binary, which is where the Neon HTTP and `pg` TCP paths part ways. They're served from [`/api/receipts/[key]`](app/api/receipts/[key]/route.ts) to **members of the owning household only**, an improvement on the public object URLs they replaced; the picker downscales photos to 1600px before upload, and the daily cron drops uploads no expense ever claimed, so the quota stays small.
+**Atomic writes without interactive transactions.** The HTTP driver runs one statement per request, so there is no `BEGIN`/`COMMIT`. An expense and its splits are written in a single CTE that inserts the expense, returns its id, and fans it out across `jsonb_to_recordset` for the split rows: one round trip, all-or-nothing ([`lib/expenses.ts`](lib/expenses.ts)). Bulk settle-up uses the same technique.
 
-### 6. Atomic writes without interactive transactions
-The HTTP SQL path runs one statement per request, so there's no `BEGIN`/`COMMIT`. An expense + its N splits are written **atomically in a single CTE statement** that `INSERT … RETURNING`s the new expense id and fans it out across `jsonb_to_recordset` for the split rows — one round trip, all-or-nothing.
+**Receipts without a second storage product.** Receipt images and PDFs are stored in Postgres as `BYTEA`, moving over the wire as base64 so neither driver has to marshal raw binary. They are served from [`/api/receipts/[key]`](app/api/receipts/[key]/route.ts) only to members of the owning household, and the daily cron prunes uploads that no expense ever claimed.
 
-### 7. Auth and security
-NextAuth v5 (Credentials) with **bcrypt-hashed passwords**, stateless **JWT sessions**, and an **Edge middleware** gate that's intentionally scoped to page routes only — API routes self-authorize and return JSON `401`s rather than HTML redirects. Every query is parameterized; the schema **bootstraps itself idempotently** on first request (no migration step to forget). The cron endpoint is protected by a bearer secret.
+**Auth and security.** NextAuth v5 with bcrypt-hashed passwords and stateless JWT sessions. The request gate in [`proxy.ts`](proxy.ts) is scoped to page routes only (API routes authorize themselves and return JSON 401s instead of HTML redirects) and sets a strict, per-request nonce Content-Security-Policy with `'strict-dynamic'`. All queries are parameterized, the schema bootstraps itself idempotently on first request, and the cron endpoint requires a bearer secret.
 
----
-
-## Tech stack
-
-Every dependency is free and Vercel-native — the whole app runs at $0.
-
-| Concern | Choice |
-| --- | --- |
-| Framework | **Next.js 16** (App Router) · **React 19** · **TypeScript** (strict) |
-| UI | **Tailwind CSS** · **shadcn/ui** · **Framer Motion** (swipe gestures, sheets) |
-| Database | **Postgres** — Neon HTTP **or** `pg` TCP, auto-selected by host |
-| File storage | **Postgres** — receipt bytes live beside the data (no second storage product) |
-| Cache | **Vercel KV** — optional, degrades gracefully |
-| Auth | **NextAuth.js v5** (Credentials, JWT, bcrypt) + password reset over Resend or SMTP (**nodemailer**) |
-| Background jobs | **Vercel Cron** (`vercel.json`) |
-| Offline / PWA | **Serwist** service worker · **Dexie.js** (IndexedDB) |
-| Monetization | **Google AdSense** (Auto ads) with a self-served house-ad fallback |
-
-No object store, Supabase, Stripe, or Firebase. Postgres holds the data *and* the receipts; email is Resend's free tier or your own mailbox over SMTP.
-
----
+**Operational visibility.** `/api/health` reports whether login and password reset are actually ready (database reachable, auth secret present, email provider accepting credentials), and email-provider failures are recorded in the database so every instance sees them.
 
 ## Getting started
 
+Requires Node.js and a PostgreSQL connection string.
+
 ```bash
+git clone https://github.com/taylordrew4u2/Bill-Spilt.git
+cd Bill-Spilt
 npm install
-npm run dev          # http://localhost:3000
+cp .env.example .env.local   # then fill in POSTGRES_URL, AUTH_SECRET, etc.
+npm run dev                  # http://localhost:3000
 ```
 
-The service worker is disabled in dev; PWA behaviour is active in production builds.
+The schema is created automatically on first request. The service worker is disabled in development; PWA behavior is active in production builds.
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` / `npm start` | Production build and server |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Type-check |
+| `npm test` | Run the Vitest suite |
+| `npm run icons` | Regenerate PWA icons (dependency-free generator) |
+
+Environment variables, Vercel deployment, the health endpoint, and recovery scripts (`set-password`, `migrate-receipts`) are documented in [docs/operations.md](docs/operations.md).
+
+## Testing
+
+Unit tests use Vitest and live beside the code they cover (`lib/**/*.test.ts`, `app/**/*.test.ts`). They cover split and settlement math, credential handling, Venmo and Cash App deep links, receipt storage round-trips, email-provider health, and the forgot-password route.
 
 ```bash
-npm run build        # production build
-npm run lint         # ESLint (zero warnings)
-npx tsc --noEmit     # type-check (clean)
-npm run icons        # regenerate PWA icons (dependency-free generator)
+npm test
 ```
-
-### Environment
-
-Copy `.env.example` → `.env.local`. The Postgres / KV variables are injected automatically when you link those stores in the Vercel dashboard. Set by hand:
-
-- `AUTH_SECRET` — `openssl rand -base64 32`
-- `CRON_SECRET` — any random string; protects the cron endpoint.
-- `RESEND_API_KEY` (or `SMTP_USER` + `SMTP_PASS`) — **required for password-reset emails.** Without one of these, `/forgot` has nothing to send with and says so instead of pretending a link is on its way. A provider that is configured but *rejecting* the credentials — a revoked Gmail app password, a deleted Resend key — counts as broken too: `/forgot` says the mailer refused us rather than telling people to check an inbox, and `/api/health` reports it. That judgement is recorded in the database, so it is visible from any instance, not just the one that tried to send.
-
-The database **schema creates itself** on first request via `ensureSchema()` — no migrations to run.
-
-### Can't log in or reset a password?
-
-Login needs a reachable database plus `AUTH_SECRET`; password reset needs an email provider on top. When any of those is missing the symptom looks like a wrong password, so check the deployment first:
-
-```bash
-curl -s https://your-app.example.com/api/health | jq
-# → login.ready / login.database / login.authSecret
-#   passwordReset.ready / passwordReset.email
-# add: -H "Authorization: Bearer $CRON_SECRET"   for the underlying error text
-```
-
-Locked out with no working email? Set a password straight against the database:
-
-```bash
-vercel env pull .env.local            # or copy POSTGRES_URL from your provider
-POSTGRES_URL='postgres://…' npm run set-password -- you@example.com 'new-password'
-# omit the password to have a strong one generated and printed
-# ask what this database actually holds, before changing anything:
-POSTGRES_URL='postgres://…' npm run set-password -- --list
-```
-
-It prints the database it is about to touch (host and name, never credentials), matches the address case-insensitively, invalidates outstanding reset links, and lists the accounts it *can* see if there's no match.
-
-If login keeps saying the password is wrong for one you know is right, `--list` is the tiebreaker: an account that isn't listed is not in the database the app is reading, so no amount of resetting will help. `POSTGRES_URL` pointing at the wrong store — after a provider move, say — looks exactly like a bad password.
-
-A reset email that never arrives is now visible too. `/api/health` reports the last provider failure recorded in the database (`passwordReset.lastSendFailedAt`, and `passwordReset.ready: false`), so a revoked Gmail app password no longer reads as healthy configuration.
-
-### Moving off an object store
-
-Receipts used to live in Vercel Blob. If this database still has expenses whose receipt is an `https://…` URL, pull them in **before** deleting the Blob store — afterwards those links are dead:
-
-```bash
-POSTGRES_URL='postgres://…' npm run migrate-receipts -- --dry-run   # look first
-POSTGRES_URL='postgres://…' npm run migrate-receipts
-```
-
-It downloads each one, stores the bytes, and repoints the expense at `/api/receipts/<id>.<ext>`. Re-running is safe: rows already moved are skipped.
-
----
-
-## Deploying to Vercel
-
-1. Import the repo in Vercel.
-2. **Storage** → add **Postgres** (and optionally **KV**); env vars are wired in automatically. Receipts need no separate store.
-3. Add `AUTH_SECRET` and `CRON_SECRET`.
-4. Deploy. `vercel.json` registers a daily run of `/api/cron/recurring`.
-
----
 
 ## Project structure
 
 ```
 app/
-  (auth)/login · (auth)/register        Credentials auth screens
-  (app)/home · expenses · settle · stats  Four bottom-nav tabs
-  join/[code]                           One-tap invite entry (auto-join / sign-up)
-  api/                                  REST route handlers (Node runtime)
-  opengraph-image.tsx                   Generated 1200×630 social card
-  robots.ts · sitemap.ts                SEO crawl directives
-components/
-  ui/                                   shadcn/ui primitives
-  join-invite.tsx                       Client-side auto-join on the invite link
-  *                                     Feature components (sheets, swipe rows, charts)
+  (auth)/                 Login, register, forgot and reset password
+  (app)/                  Home, expenses, settle, and stats tabs
+  api/                    REST route handlers (Node runtime)
+  join/[code]/            One-tap invite entry
+  guide/                  Long-form SEO guides
+  sw.ts                   Service worker (Serwist)
+components/               Feature components; ui/ holds shadcn/ui primitives
 lib/
-  settlement.ts                         Min-cash-flow + split math
-  receipts.ts                           Receipt bytes in Postgres (store, read, prune)
-  db.ts                                 Provider-agnostic SQL layer
-  invite.ts                             Shared join-by-code logic (link + API)
-  site.ts                               Canonical SEO metadata (URL, keywords, …)
-  expenses.ts                           Atomic expense + splits write
-  queries.ts                            Read models & balance aggregation
-  offline-db.ts · sync.ts               IndexedDB queue & sync
-public/                                 manifest.json · generated icons · service worker
-scripts/generate-icons.mjs             Zero-dependency PNG icon generator
-scripts/set-password.mjs               Out-of-band password reset (locked-out escape hatch)
-scripts/migrate-blob-receipts.mjs      One-off: pulls old object-store receipts into Postgres
-scripts/test_utils.py                  Python bill-splitting utility (split_bill helper)
+  settlement.ts           Min-cash-flow and split math
+  db.ts                   Provider-agnostic SQL layer and schema bootstrap
+  expenses.ts             Atomic expense + splits write
+  queries.ts              Read models and balance aggregation
+  receipts.ts             Receipt storage, retrieval, and pruning
+  offline-db.ts, sync.ts  IndexedDB queue and sync
+proxy.ts                  Auth gate and Content-Security-Policy
+scripts/                  Icon generator, password reset, receipt migration
+docs/                     Operations guide, mockups, launch copy
 ```
 
----
+## Author
+
+Built by [@taylordrew4u2](https://github.com/taylordrew4u2).
 
 ## License
 
-Free to use. Built to stay free forever.
+Free to use. No formal open-source license file is included yet.
