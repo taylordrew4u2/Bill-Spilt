@@ -20,6 +20,14 @@
 
 ---
 
+## Demo
+
+<div align="center">
+<img src="docs/screenshots/demo.gif" width="320" alt="Recording: Jordan adds a $72 pizza night split four ways, his balance updates, he marks his payment to Maya as paid on the Settle tab, and the home screen shows him all square" />
+<br/>
+<sub>Add an expense, watch the balances update, then settle up. Recorded from a local build with sample data.</sub>
+</div>
+
 ## Overview
 
 BillSpilt is a full-stack progressive web app for households that share rent, utilities, and groceries. Roommates log expenses, see who owes whom in real time, and settle up through a short list of payments computed by a minimum-cash-flow algorithm. Every feature is free.
@@ -29,13 +37,14 @@ It is built mobile-first (44px touch targets, bottom-sheet forms, swipe-to-delet
 <div align="center">
 <table>
 <tr>
-<td align="center"><img src="docs/screenshots/home-balances.svg" width="200" alt="Home screen showing balances" /><br/><sub><b>Balances</b></sub></td>
-<td align="center"><img src="docs/screenshots/add-expense.svg" width="200" alt="Add expense sheet" /><br/><sub><b>Add expense</b></sub></td>
-<td align="center"><img src="docs/screenshots/settle-up.svg" width="200" alt="Settle-up plan" /><br/><sub><b>Settle up</b></sub></td>
-<td align="center"><img src="docs/screenshots/stats.svg" width="200" alt="Spending stats" /><br/><sub><b>Stats</b></sub></td>
+<td align="center"><img src="docs/screenshots/home-balances.png" width="180" alt="Home screen showing what you owe and each roommate's balance" /><br/><sub><b>Balances</b></sub></td>
+<td align="center"><img src="docs/screenshots/add-expense.png" width="180" alt="Add expense sheet with an equal four-way split" /><br/><sub><b>Add expense</b></sub></td>
+<td align="center"><img src="docs/screenshots/expenses.png" width="180" alt="Expense list with search, category filters, and your share of each" /><br/><sub><b>Expenses</b></sub></td>
+<td align="center"><img src="docs/screenshots/settle-up.png" width="180" alt="Settle-up plan with a Venmo link for the payment you owe" /><br/><sub><b>Settle up</b></sub></td>
+<td align="center"><img src="docs/screenshots/stats.png" width="180" alt="Spending totals and breakdown by category" /><br/><sub><b>Stats</b></sub></td>
 </tr>
 </table>
-<sub>Illustrative mockups of the four main tabs.</sub>
+<sub>Screenshots of the app running locally with sample data, at phone size.</sub>
 </div>
 
 ## Key features
@@ -177,7 +186,7 @@ lib/
   offline-db.ts, sync.ts  IndexedDB queue and sync
 proxy.ts                  Auth gate and Content-Security-Policy
 scripts/                  Icon generator, password reset, receipt migration
-docs/                     Operations guide, mockups, launch copy
+docs/                     Operations guide, screenshots and demo, launch copy
 ```
 
 ## Author
