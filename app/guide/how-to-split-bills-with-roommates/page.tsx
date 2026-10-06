@@ -1,7 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, XCircle } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import { CheckCircle2, XCircle } from "lucide-react";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  Bullet,
+  BulletList,
+  GuideShell,
+  NumberedSections,
+  Paragraph,
+  proseLink,
+  proseText,
+} from "@/components/guide-shell";
 import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
@@ -129,11 +140,10 @@ const JSON_LD = {
 export default function GuidePage() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        How to split bills with roommates (without the awkwardness)
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader
+        eyebrow="Guide"
+        title="How to split bills with roommates (without the awkwardness)"
+      >
         Sharing a place is easy. Sharing the bills is where roommates fall out.
         Money resentment rarely starts with a big blow-up — it builds quietly
         from a dozen small &ldquo;I&apos;ll get you back&rdquo; moments that
@@ -141,133 +151,129 @@ export default function GuidePage() {
         splitting bills with roommates, with real numbers, the mistakes to
         avoid, and how a free roommate bill splitter can do the tedious parts
         for you.
-      </p>
+      </ArticleHeader>
 
-      <section className="mt-10">
-        <h2 className="text-2xl font-bold">The five-step system</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="The five-step system" className="mt-10 md:mt-12">
+        <Paragraph>
           Almost every roommate money problem traces back to a missing step
           below. Get all five right and shared costs basically run themselves.
-        </p>
-        <div className="mt-6 space-y-8">
-          {STEPS.map((s, i) => (
-            <section key={s.name}>
-              <h3 className="flex items-baseline gap-2 text-xl font-bold">
-                <span className="text-primary">{i + 1}.</span> {s.name}
-              </h3>
-              <p className="mt-2 text-muted-foreground">{s.text}</p>
-            </section>
-          ))}
-        </div>
-      </section>
+        </Paragraph>
+        <NumberedSections items={STEPS} headingLevel="h3" className="pt-4" />
+      </ArticleSection>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">Which split method to use</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="Which split method to use">
+        <Paragraph>
           &ldquo;Split it evenly&rdquo; is the default, but it&apos;s only fair
           when everyone benefits equally. Match the method to the expense:
-        </p>
-        <div className="mt-5 overflow-hidden rounded-xl border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-card">
-              <tr className="border-b">
-                <th className="p-3 font-semibold">Method</th>
-                <th className="p-3 font-semibold">Best for</th>
-                <th className="p-3 font-semibold">How it works</th>
+        </Paragraph>
+        {/* A real table on wide screens; on a phone each row restacks into a
+            card with its column names as labels, so nothing is squeezed into
+            three 80px columns. */}
+        <div className="overflow-hidden rounded-2xl border bg-card">
+          <table className="block w-full text-left md:table">
+            <thead className="hidden border-b bg-muted/50 md:table-header-group">
+              <tr>
+                <th className="px-4 py-3 text-sm font-semibold">Method</th>
+                <th className="px-4 py-3 text-sm font-semibold">Best for</th>
+                <th className="px-4 py-3 text-sm font-semibold">How it works</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="block divide-y md:table-row-group">
               {METHODS.map((m) => (
-                <tr key={m.method} className="border-b last:border-0">
-                  <td className="p-3 font-medium">{m.method}</td>
-                  <td className="p-3 text-muted-foreground">{m.best}</td>
-                  <td className="p-3 text-muted-foreground">{m.how}</td>
+                <tr key={m.method} className="block px-4 py-4 md:table-row md:p-0">
+                  <td className="block text-lg font-semibold md:table-cell md:px-4 md:py-3 md:align-top md:text-base">
+                    {m.method}
+                  </td>
+                  <td
+                    data-label="Best for"
+                    className="mt-3 block text-base text-foreground/85 before:mb-0.5 before:block before:text-sm before:font-semibold before:text-muted-foreground before:content-[attr(data-label)] md:mt-0 md:table-cell md:px-4 md:py-3 md:align-top md:before:hidden"
+                  >
+                    {m.best}
+                  </td>
+                  <td
+                    data-label="How it works"
+                    className="mt-3 block text-base text-foreground/85 before:mb-0.5 before:block before:text-sm before:font-semibold before:text-muted-foreground before:content-[attr(data-label)] md:mt-0 md:table-cell md:px-4 md:py-3 md:align-top md:before:hidden"
+                  >
+                    {m.how}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
+      </ArticleSection>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">A worked example</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="A worked example">
+        <Paragraph>
           Say three roommates — Ava, Ben, and Cara — share a month:
-        </p>
-        <ul className="mt-4 space-y-2 text-muted-foreground">
-          <li>• Ava pays the <strong>$1,800 rent</strong> (split evenly = $600 each).</li>
-          <li>• Ben pays the <strong>$150 electric bill</strong> (even = $50 each).</li>
-          <li>• Cara pays <strong>$90 for shared groceries</strong> (even = $30 each).</li>
-        </ul>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <BulletList>
+          <Bullet>Ava pays the <strong>$1,800 rent</strong> (split evenly = $600 each).</Bullet>
+          <Bullet>Ben pays the <strong>$150 electric bill</strong> (even = $50 each).</Bullet>
+          <Bullet>Cara pays <strong>$90 for shared groceries</strong> (even = $30 each).</Bullet>
+        </BulletList>
+        <Paragraph>
           Total shared spend is $2,040, so each person&apos;s fair share is
           $680. Ava paid $1,800, Ben paid $150, Cara paid $90. The naive way to
           settle is six little payments flying in every direction. The smart way
           nets it out: Ben owes $530 and Cara owes $590, and both simply pay
           Ava. That&apos;s <strong>two payments instead of six</strong> — and
           nobody has to work out the math by hand.
-        </p>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <Paragraph>
           Want to try your own numbers first?{" "}
-          <Link
-            href="/split-calculator"
-            className="font-medium text-primary hover:underline"
-          >
+          <Link href="/split-calculator" className={proseLink}>
             Use the free split calculator
           </Link>{" "}
           — no sign-up needed.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">Common mistakes to avoid</h2>
-        <ul className="mt-5 space-y-3">
+      <ArticleSection title="Common mistakes to avoid">
+        <ul className="divide-y overflow-hidden rounded-2xl border bg-card">
           {MISTAKES.map((m) => (
-            <li key={m} className="flex items-start gap-2.5">
-              <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
-              <span className="text-muted-foreground">{m}</span>
+            <li key={m} className="flex items-start gap-3 px-4 py-4">
+              <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" aria-hidden />
+              <span className={proseText}>{m}</span>
             </li>
           ))}
         </ul>
-      </section>
+      </ArticleSection>
 
-      <section className="mt-12 rounded-2xl border bg-card p-6">
-        <h2 className="text-xl font-bold">
-          Let a free roommate bill splitter do the math
-        </h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleCta
+        title="Let a free roommate bill splitter do the math"
+        cta="Start splitting — free forever"
+      >
+        <Paragraph>
           Doing all of this by hand works, but it&apos;s a chore. BillSpilt is a
           free roommate bill splitter built for exactly this: log a shared
           expense in seconds, see everyone&apos;s balance update instantly, and
           get the fewest-payments plan when it&apos;s time to settle up. Every
           feature is free — no paywall, no premium tier, no credit card.
-        </p>
-        <ul className="mt-4 space-y-2 text-sm">
+        </Paragraph>
+        <ul className="space-y-3">
           {[
             "Equal, exact, or percentage splits — per expense",
             "Live who-owes-what balances for the whole house",
             "Minimum-payments settle-up, paid via Venmo or Cash App",
             "Recurring rent & utilities logged automatically",
           ].map((t) => (
-            <li key={t} className="flex items-start gap-2">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-              <span>{t}</span>
+            <li key={t} className="flex items-start gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-positive" aria-hidden />
+              <span className="text-base font-medium leading-snug">{t}</span>
             </li>
           ))}
         </ul>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Start splitting — free forever <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+      </ArticleCta>
 
       <FaqSection faq={FAQ} />
 
       <p className="mt-10 text-sm text-muted-foreground">
         More:{" "}
-        <Link href="/" className="font-medium text-primary hover:underline">
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center font-medium text-primary underline decoration-primary/40 underline-offset-4 hover:decoration-primary"
+        >
           BillSpilt — the free roommate bill splitter
         </Link>
       </p>

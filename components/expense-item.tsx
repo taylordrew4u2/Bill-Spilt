@@ -6,14 +6,27 @@ import { Trash2, Paperclip, Package } from "lucide-react";
 import { Amount } from "@/components/amount";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
 
+/** Swipe distances, in phone pixels at the default 16px root size. */
 const DELETE_THRESHOLD = -96;
+const DRAG_LIMIT = -160;
+
+/**
+ * How many CSS px make one "phone" px. 1 normally; larger when the root font
+ * is scaled up — by the desktop-mode phone fix (lib/viewport-fix.ts), where a
+ * CSS px is ~0.4 screen px, or by the user's own text-size setting — so a
+ * swipe has to travel the same physical distance to delete.
+ */
+function pxScale(): number {
+  if (typeof window === "undefined") return 1;
+  const root = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return root > 0 ? root / 16 : 1;
+}
 
 /**
  * A single expense row with swipe-to-delete (drag left to reveal/confirm
- * delete). Powered by framer-motion drag. Tapping the row opens the receipt
- * if one is attached.
+ * delete). Powered by framer-motion drag. Tapping the row opens its details
+ * (split, receipt, edit and delete).
  */
 export function ExpenseItem({
   expense,
@@ -34,11 +47,15 @@ export function ExpenseItem({
   const cat = CATEGORIES.find((c) => c.value === expense.category);
   const CatIcon = cat?.icon ?? Package;
 
+  const [scale, setScale] = React.useState(1);
+  React.useEffect(() => setScale(pxScale()), []);
+  const threshold = DELETE_THRESHOLD * scale;
+
   // Reveal the red delete affordance as the user drags left.
-  const bgOpacity = useTransform(x, [DELETE_THRESHOLD, 0], [1, 0]);
+  const bgOpacity = useTransform(x, (v) => Math.min(1, Math.max(0, v / threshold)));
 
   function handleDragEnd() {
-    if (x.get() <= DELETE_THRESHOLD) {
+    if (x.get() <= threshold) {
       setRemoving(true);
       // Animate off-screen, then commit the delete.
       animate(x, -window.innerWidth, {
@@ -72,16 +89,18 @@ export function ExpenseItem({
     >
       {/* Delete background */}
       <motion.div
+        aria-hidden
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 flex items-center justify-end bg-destructive pr-6 text-destructive-foreground"
+        className="absolute inset-0 flex items-center justify-end gap-2 bg-destructive pr-5 text-sm font-semibold text-destructive-foreground"
       >
         <Trash2 className="h-5 w-5" />
+        Delete
       </motion.div>
 
       <motion.div
         drag="x"
         style={{ x }}
-        dragConstraints={{ left: -160, right: 0 }}
+        dragConstraints={{ left: DRAG_LIMIT * scale, right: 0 }}
         dragElastic={0.05}
         onDragStart={() => {
           draggedRef.current = true;
@@ -100,45 +119,67 @@ export function ExpenseItem({
         }
         role={onOpen ? "button" : undefined}
         tabIndex={onOpen ? 0 : undefined}
-        className="relative flex cursor-pointer touch-pan-y items-center gap-3 bg-card py-3"
+        className="relative flex min-h-14 cursor-pointer touch-pan-y items-center gap-3 bg-card px-3 py-3.5 transition-colors xs:px-4 [@media(hover:hover)]:hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring active:bg-accent"
       >
-        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+        {/* The category tile is decoration; on the narrowest screens (small
+            phones, large text settings) its width goes to the description. */}
+        <div className="hidden h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary xs:flex">
           <CatIcon className="h-5 w-5" aria-hidden />
         </div>
+
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <p className="truncate font-medium">{expense.description}</p>
-            {expense.receiptUrl && (
-              <Paperclip className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-            )}
-          </div>
-          <p className="truncate text-xs text-muted-foreground">
-            {paidByYou ? "You" : expense.paidByName} paid ·{" "}
-            {formatDate(expense.createdAt)}
-          </p>
-        </div>
-        <div className="text-right">
-          {/* The total is only sent to people allowed to see it; everyone
-              else gets their own share and nothing more. */}
-          {expense.amount !== null ? (
-            <>
-              <p className="font-semibold">
-                <Amount value={expense.amount} />
-              </p>
-              {yourShare && (
-                <p className="text-xs text-muted-foreground">
-                  your share {money(yourShare.amount)}
-                </p>
+          {/* The description gets the whole line except the amount, and may
+              wrap to two lines rather than truncate to a few characters. A
+              wide amount (e.g. "CHF 12,345.67" on a 320px phone) drops onto
+              its own line instead of squeezing the description. */}
+          <div className="flex flex-wrap items-start justify-end gap-x-3">
+            <p className="line-clamp-2 min-w-0 grow basis-24 break-words text-base font-medium leading-snug">
+              {expense.description}
+            </p>
+            {/* The total is only sent to people allowed to see it; everyone
+                else gets their own share and nothing more. */}
+            <p className="flex-shrink-0 whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
+              {expense.amount !== null ? (
+                money(expense.amount)
+              ) : yourShare ? (
+                money(yourShare.amount)
+              ) : (
+                <Amount value={null} />
               )}
-            </>
-          ) : yourShare ? (
-            <>
-              <p className="font-semibold">{money(yourShare.amount)}</p>
-              <p className="text-xs text-muted-foreground">your share</p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">not your split</p>
-          )}
+            </p>
+          </div>
+
+          {/* One line of plain inline text that wraps at word boundaries,
+              rather than separate flex columns that each stack on their own. */}
+          <p className="mt-1 break-words text-sm text-muted-foreground">
+            {expense.receiptUrl && (
+              <>
+                <Paperclip className="-mt-0.5 mr-1 inline h-4 w-4 align-middle" aria-hidden />
+                <span className="sr-only">Receipt attached. </span>
+              </>
+            )}
+            {paidByYou ? "You" : expense.paidByName} paid
+            {expense.amount !== null ? (
+              yourShare && (
+                <>
+                  <span aria-hidden> · </span>
+                  <span className="whitespace-nowrap">
+                    your share{" "}
+                    <span className="font-medium tabular-nums text-foreground">
+                      {money(yourShare.amount)}
+                    </span>
+                  </span>
+                </>
+              )
+            ) : (
+              <>
+                <span aria-hidden> · </span>
+                <span className="whitespace-nowrap">
+                  {yourShare ? "your share" : "not your split"}
+                </span>
+              </>
+            )}
+          </p>
         </div>
       </motion.div>
     </motion.div>

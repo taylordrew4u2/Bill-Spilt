@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
+import plugin from "tailwindcss/plugin";
+import { BREAKPOINTS } from "./lib/viewport-fix";
 
 const config: Config = {
   darkMode: ["class"],
@@ -9,21 +11,43 @@ const config: Config = {
     "./lib/**/*.{ts,tsx}",
   ],
   theme: {
+    // The responsive variants are defined by the plugin at the bottom instead,
+    // so they can follow a phone's real width when it renders the page
+    // desktop-wide (see lib/viewport-fix.ts).
+    screens: {},
     container: {
       center: true,
       padding: "1rem",
       screens: { "2xl": "1400px" },
     },
     extend: {
-      // Lift the small end of the type ramp. 12px/14px is below a comfortable
-      // reading size on a phone, and those two steps carry most of the app's
-      // body copy, so raising them here fixes every usage at once. Line
-      // heights are >= 1.5x per WCAG 1.4.12. `base` stays at 16px so form
-      // inputs never trip iOS Safari's auto-zoom-on-focus.
+      // Mobile-first type ramp, sized for reading on a phone at arm's length.
+      // `base` is 17px — iOS's own body size — so body copy never needs a
+      // pinch-zoom, and it keeps form fields above the 16px line where iOS
+      // Safari auto-zooms on focus. Nothing in the app goes below `xs` (13px),
+      // and body steps (sm, base) keep >= 1.5x line height per WCAG 1.4.12.
       fontSize: {
-        xs: ["0.8125rem", { lineHeight: "1.25rem" }],
-        sm: ["0.9375rem", { lineHeight: "1.5rem" }],
-        base: ["1rem", { lineHeight: "1.625rem" }],
+        xs: ["0.8125rem", { lineHeight: "1.125rem" }], // 13 / 18
+        sm: ["0.9375rem", { lineHeight: "1.4375rem" }], // 15 / 23
+        base: ["1.0625rem", { lineHeight: "1.625rem" }], // 17 / 26
+        lg: ["1.1875rem", { lineHeight: "1.75rem" }], // 19 / 28
+        xl: ["1.375rem", { lineHeight: "1.875rem" }], // 22 / 30
+        "2xl": ["1.625rem", { lineHeight: "2.125rem" }], // 26 / 34
+        "3xl": ["1.875rem", { lineHeight: "2.375rem" }], // 30 / 38
+        "4xl": ["2.25rem", { lineHeight: "2.625rem" }], // 36 / 42
+        "5xl": ["2.75rem", { lineHeight: "3.125rem" }], // 44 / 50
+      },
+      fontFamily: {
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"SF Pro Text"',
+          '"Segoe UI"',
+          "Roboto",
+          '"Helvetica Neue"',
+          "Arial",
+          "sans-serif",
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -63,11 +87,25 @@ const config: Config = {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        // Money direction. `positive` = you are owed / gets back, `negative` =
+        // you owe. Tuned per theme for >= 4.5:1 contrast on cards.
+        positive: {
+          DEFAULT: "hsl(var(--positive))",
+          soft: "hsl(var(--positive-soft))",
+        },
+        negative: {
+          DEFAULT: "hsl(var(--negative))",
+          soft: "hsl(var(--negative-soft))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      spacing: {
+        // Height of the mobile tab bar, not counting the home-indicator inset.
+        tabbar: "4.25rem",
       },
       keyframes: {
         "accordion-down": {
@@ -89,7 +127,27 @@ const config: Config = {
   // Node 22.12+/24, where `require` is undefined — a `require()` here threw
   // "ReferenceError: require is not defined" and took the dev server down with
   // it, so no page (the login screen included) could render.
-  plugins: [tailwindcssAnimate],
+  plugins: [
+    tailwindcssAnimate,
+    // Min-width breakpoints (Tailwind's sm–2xl plus two phone widths, `xs`
+    // at 360px and `w400` at 400px, and `max-xs` below 360px). Normally plain
+    // media queries. When <html> carries `bb-phone-fix` — a phone in "Desktop
+    // site" mode, laid out 980px wide and scaled back to phone size — they
+    // follow the phone's real width instead, via the `bb-w<N>` classes the
+    // fix sets. `:where()` keeps specificity identical to core's variants.
+    plugin(({ addVariant }) => {
+      for (const [name, px] of Object.entries(BREAKPOINTS)) {
+        addVariant(name, [
+          `@media (min-width: ${px}px) { :where(:root:not(.bb-phone-fix)) & }`,
+          `:where(:root.bb-phone-fix.bb-w${px}) &`,
+        ]);
+      }
+      addVariant("max-xs", [
+        "@media (max-width: 359px) { :where(:root:not(.bb-phone-fix)) & }",
+        ":where(:root.bb-phone-fix:not(.bb-w360)) &",
+      ]);
+    }),
+  ],
 };
 
 export default config;

@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GuideShell } from "@/components/guide-shell";
+import {
+  ArticleCta,
+  ArticleHeader,
+  ArticleSection,
+  CalcList,
+  CalcRow,
+  GuideShell,
+  NumberedSections,
+  Paragraph,
+  proseLink,
+} from "@/components/guide-shell";
 import { FaqSection, faqJsonLd } from "@/components/faq-section";
 import { SITE_URL } from "@/lib/site";
 
@@ -88,88 +97,69 @@ const JSON_LD = {
 export default function SplitRentGuide() {
   return (
     <GuideShell slug={SLUG} jsonLd={JSON_LD}>
-      <p className="text-sm font-medium text-primary">Guide</p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-        How to split rent fairly between roommates
-      </h1>
-      <p className="mt-4 text-lg text-muted-foreground">
+      <ArticleHeader eyebrow="Guide" title="How to split rent fairly between roommates">
         Splitting rent right down the middle is easy — but it&apos;s only fair
         when every bedroom is equal, and they almost never are. One room has the
         en-suite, another is barely bigger than the bed, a third gets all the
         afternoon light. Here are five methods for splitting rent fairly, from
         simplest to most precise, with the math for each.
-      </p>
+      </ArticleHeader>
 
-      <div className="mt-10 space-y-8">
-        {METHODS.map((m, i) => (
-          <section key={m.name}>
-            <h2 className="flex items-baseline gap-2 text-xl font-bold">
-              <span className="text-primary">{i + 1}.</span> {m.name}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{m.text}</p>
-          </section>
-        ))}
-      </div>
+      <NumberedSections items={METHODS} className="mt-10" />
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">Worked example: splitting by square footage</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="Worked example: splitting by square footage">
+        <Paragraph>
           A three-bedroom apartment is <strong>$2,400/month</strong>. The
           private bedrooms measure 200, 150, and 130 sq ft — 480 sq ft total.
           Splitting the full rent in proportion to room size:
-        </p>
-        <ul className="mt-4 space-y-2 text-muted-foreground">
-          <li>• Master (200 sq ft): 200 ÷ 480 × $2,400 = <strong>$1,000</strong></li>
-          <li>• Middle (150 sq ft): 150 ÷ 480 × $2,400 = <strong>$750</strong></li>
-          <li>• Small (130 sq ft): 130 ÷ 480 × $2,400 = <strong>$650</strong></li>
-        </ul>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <CalcList>
+          <CalcRow label="Master (200 sq ft):">200 ÷ 480 × $2,400 = <strong>$1,000</strong></CalcRow>
+          <CalcRow label="Middle (150 sq ft):">150 ÷ 480 × $2,400 = <strong>$750</strong></CalcRow>
+          <CalcRow label="Small (130 sq ft):">130 ÷ 480 × $2,400 = <strong>$650</strong></CalcRow>
+        </CalcList>
+        <Paragraph>
           Prefer to credit the shared spaces equally? Carve out, say, 25% of
           rent ($600) as a flat charge everyone splits three ways ($200 each),
           then divide the remaining $1,800 by room size. The master now pays
           $200 + $750 = $950 — a little less lopsided, which many households
           find lands as the fairest of all.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12">
-        <h2 className="text-2xl font-bold">Worked example: splitting by income</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleSection title="Worked example: splitting by income">
+        <Paragraph>
           Two partners share a <strong>$2,000</strong> apartment. One takes home
           $4,000/month, the other $2,000 — a combined $6,000. Splitting rent in
           proportion to income:
-        </p>
-        <ul className="mt-4 space-y-2 text-muted-foreground">
-          <li>• Higher earner: 4,000 ÷ 6,000 × $2,000 = <strong>$1,333</strong></li>
-          <li>• Lower earner: 2,000 ÷ 6,000 × $2,000 = <strong>$667</strong></li>
-        </ul>
-        <p className="mt-4 text-muted-foreground">
+        </Paragraph>
+        <CalcList>
+          <CalcRow label="Higher earner:">4,000 ÷ 6,000 × $2,000 = <strong>$1,333</strong></CalcRow>
+          <CalcRow label="Lower earner:">2,000 ÷ 6,000 × $2,000 = <strong>$667</strong></CalcRow>
+        </CalcList>
+        <Paragraph>
           Each pays exactly one-third of their take-home pay, so the rent feels
           equally heavy for both. This only works when everyone opts in and is
           comfortable sharing rough numbers.
-        </p>
-      </section>
+        </Paragraph>
+      </ArticleSection>
 
-      <section className="mt-12 rounded-2xl border bg-card p-6">
-        <h2 className="text-xl font-bold">Once you&apos;ve agreed, track it automatically</h2>
-        <p className="mt-2 text-muted-foreground">
+      <ArticleCta
+        title={<>Once you&apos;ve agreed, track it automatically</>}
+        cta="Set up your household — free"
+      >
+        <Paragraph>
           However you divide it, rent is a recurring bill — so set it once and
           stop re-entering it. BillSpilt logs rent automatically every month
           with each person&apos;s exact share (equal, exact dollars, or
           percentage), rolls it into the same who-owes-what balance as everything
           else, and is free forever — no paywall, no credit card. You can also{" "}
-          <Link href="/split-calculator" className="font-medium text-primary hover:underline">
+          <Link href="/split-calculator" className={proseLink}>
             try the split calculator
           </Link>{" "}
           to sanity-check the numbers first.
-        </p>
-        <Link
-          href="/register"
-          className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-primary px-8 text-base font-semibold text-primary-foreground active:scale-95"
-        >
-          Set up your household — free <ArrowRight className="h-4 w-4" />
-        </Link>
-      </section>
+        </Paragraph>
+      </ArticleCta>
 
       <FaqSection faq={FAQ} />
     </GuideShell>
