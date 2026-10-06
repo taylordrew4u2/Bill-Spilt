@@ -57,7 +57,16 @@ function LoadingState() {
 }
 
 /** Nobody owes anything: a brand-new household, or everyone has settled. */
-function SquareState({ solo, onAdd }: { solo: boolean; onAdd: () => void }) {
+function SquareState({
+  solo,
+  personal,
+  onAdd,
+}: {
+  solo: boolean;
+  /** A member's view: only their own balances are known, not the house's. */
+  personal: boolean;
+  onAdd: () => void;
+}) {
   const Icon = solo ? Users : Receipt;
   return (
     <Card className="flex flex-col items-center px-6 py-8 text-center">
@@ -65,12 +74,18 @@ function SquareState({ solo, onAdd }: { solo: boolean; onAdd: () => void }) {
         <Icon className="h-7 w-7" aria-hidden />
       </span>
       <h2 className="mt-4 text-lg font-semibold">
-        {solo ? "It's just you so far" : "Nothing to settle"}
+        {solo
+          ? "It's just you so far"
+          : personal
+            ? "You're all square"
+            : "Nothing to settle"}
       </h2>
       <p className="mt-1 max-w-xs text-balance text-sm text-muted-foreground">
         {solo
           ? "Invite your roommates below, then add a bill to split it."
-          : "Everyone's square. Add a shared bill and we'll work out who owes whom."}
+          : personal
+            ? "You're square with everyone. Add a shared bill and we'll work out who owes whom."
+            : "Everyone's square. Add a shared bill and we'll work out who owes whom."}
       </p>
       <Button type="button" onClick={onAdd} className="mt-5 px-6">
         <Plus aria-hidden />
@@ -144,9 +159,13 @@ export default function HomePage() {
   const { currentUserId, household, members, version } = useAppData();
   const addExpense = useAddExpense();
   const { toast } = useToast();
-  const { data, loading, error, refetch } = useFetch<{ balances: Balance[] }>(
-    "/api/balances",
-  );
+  // The server decides what this user may see: the admin gets household-wide
+  // balances, everyone else gets what's between them and each roommate.
+  const { data, loading, error, refetch } = useFetch<{
+    scope: "household" | "personal";
+    balances: Balance[];
+    yourNet: number;
+  }>("/api/balances");
   const [copied, setCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -154,8 +173,14 @@ export default function HomePage() {
   }, [version, refetch]);
 
   const balances = data?.balances ?? [];
-  const mine = balances.find((b) => b.userId === currentUserId);
-  const everyoneSquare = balances.every((b) => Math.abs(b.net) <= 0.005);
+  const scope = data?.scope ?? "household";
+  const yourNet = data?.yourNet ?? 0;
+  // In "personal" scope the list is the viewer's roommates (never the viewer),
+  // so "square" means every pairwise balance and the viewer's own net are zero.
+  const everyoneSquare =
+    Math.abs(yourNet) <= 0.005 && balances.every((b) => Math.abs(b.net) <= 0.005);
+  const solo =
+    scope === "personal" ? balances.length === 0 : balances.length <= 1;
   const firstName = members
     .find((m) => m.id === currentUserId)
     ?.name.trim()
@@ -186,12 +211,18 @@ export default function HomePage() {
         ) : error && !data ? (
           <ErrorState onRetry={() => void refetch()} />
         ) : everyoneSquare ? (
-          <SquareState solo={balances.length <= 1} onAdd={addExpense} />
+          <SquareState
+            solo={solo}
+            personal={scope === "personal"}
+            onAdd={addExpense}
+          />
         ) : (
           <>
-            <NetSummary net={mine?.net ?? 0} />
+            <NetSummary net={yourNet} />
             <section aria-labelledby="home-balances">
-              <SectionLabel id="home-balances">Balances</SectionLabel>
+              <SectionLabel id="home-balances">
+                {scope === "personal" ? "You and your roommates" : "Balances"}
+              </SectionLabel>
               <Card>
                 <ul className="divide-y">
                   {balances.map((b) => (
@@ -199,10 +230,17 @@ export default function HomePage() {
                       key={b.userId}
                       balance={b}
                       isCurrentUser={b.userId === currentUserId}
+                      scope={scope}
                     />
                   ))}
                 </ul>
               </Card>
+              {scope === "personal" && (
+                <p className="mt-2 px-1 text-sm text-muted-foreground">
+                  What&apos;s between you and each roommate. Only the admin
+                  sees what the house spends overall.
+                </p>
+              )}
             </section>
           </>
         )}

@@ -75,7 +75,10 @@ export function ExpenseDetailSheet({
     ? CATEGORIES.find((c) => c.value === expense.category)
     : null;
   const CatIcon = cat?.icon ?? Package;
-  const amountText = expense ? money(expense.amount) : "";
+  // `amount` is null when the viewer may only see their own share.
+  const amountHidden = expense !== null && expense.amount === null;
+  const amountText =
+    expense && expense.amount !== null ? money(expense.amount) : "—";
 
   function confirmDelete(e: Expense) {
     if (!onDelete) return;
@@ -109,7 +112,13 @@ export function ExpenseDetailSheet({
               className={cn(
                 "mt-1 break-words font-bold tracking-tight tabular-nums",
                 heroSize(amountText),
+                amountHidden && "text-muted-foreground",
               )}
+              title={
+                amountHidden
+                  ? "The total is only shown to the household admin and the person who paid"
+                  : undefined
+              }
             >
               {amountText}
             </p>
@@ -138,7 +147,10 @@ export function ExpenseDetailSheet({
               </div>
             </dl>
 
-            {expense.createdBy !== null && expense.createdBy === currentUserId ? (
+            {/* The server only sends the full split to people allowed to see
+                it (the admin, the payer, whoever logged it). Everyone else
+                gets their own row, so show that instead. */}
+            {expense.amount !== null ? (
               <section className="mt-6">
                 <SectionLabel>
                   Split between {expense.splits.length}{" "}
@@ -196,7 +208,8 @@ export function ExpenseDetailSheet({
                   );
                 })()}
                 <p className="mt-2 px-1 text-sm text-muted-foreground">
-                  Only the person who added this expense sees the full split.
+                  What this came to in total is between the person who paid it
+                  and the household admin.
                 </p>
               </section>
             )}
@@ -247,9 +260,12 @@ export function ExpenseDetailSheet({
               </section>
             )}
 
-            {(onEdit || onDelete) && (
+            {((onEdit && expense.amount !== null) || onDelete) && (
               <div className="mt-8 space-y-2">
-                {onEdit && (
+                {/* Editing rewrites every figure, so it's offered only to
+                    those who can see them — the server enforces the same
+                    rule. */}
+                {onEdit && expense.amount !== null && (
                   <Button
                     variant="outline"
                     size="lg"

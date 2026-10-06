@@ -6,7 +6,7 @@ import { recurringChargeSchema } from "@/lib/validation";
 import { validateSplits } from "@/lib/settlement";
 import { invalidatePlan } from "@/lib/cache";
 import { logActivity } from "@/lib/activity";
-import { formatCurrency, roundMoney } from "@/lib/utils";
+import { roundMoney } from "@/lib/utils";
 import type { SplitInput } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -36,7 +36,7 @@ export async function POST(
 ) {
   return handle(async () => {
     const { id } = await params;
-    const { userId, householdId, currency } = await requireHousehold();
+    const { userId, householdId } = await requireHousehold();
 
     const body = await req.json();
     const parsed = recurringChargeSchema.safeParse(body);
@@ -83,7 +83,8 @@ export async function POST(
       householdId,
       userId,
       "recurring_charged",
-      `Logged “${bill.description}” at ${formatCurrency(amount, currency)}`,
+      `Logged “${bill.description}”`,
+      amount,
     );
     return NextResponse.json({ id: expenseId }, { status: 201 });
   });

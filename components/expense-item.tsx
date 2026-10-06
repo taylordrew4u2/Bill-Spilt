@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Trash2, Paperclip, Package } from "lucide-react";
+import { Amount } from "@/components/amount";
 import { useMoney } from "@/components/app-data";
 import { CATEGORIES, type Expense } from "@/lib/types";
 
@@ -135,8 +136,16 @@ export function ExpenseItem({
             <p className="line-clamp-2 min-w-0 grow basis-24 break-words text-base font-medium leading-snug">
               {expense.description}
             </p>
+            {/* The total is only sent to people allowed to see it; everyone
+                else gets their own share and nothing more. */}
             <p className="flex-shrink-0 whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
-              {money(expense.amount)}
+              {expense.amount !== null ? (
+                money(expense.amount)
+              ) : yourShare ? (
+                money(yourShare.amount)
+              ) : (
+                <Amount value={null} />
+              )}
             </p>
           </div>
 
@@ -150,14 +159,23 @@ export function ExpenseItem({
               </>
             )}
             {paidByYou ? "You" : expense.paidByName} paid
-            {yourShare && (
+            {expense.amount !== null ? (
+              yourShare && (
+                <>
+                  <span aria-hidden> · </span>
+                  <span className="whitespace-nowrap">
+                    your share{" "}
+                    <span className="font-medium tabular-nums text-foreground">
+                      {money(yourShare.amount)}
+                    </span>
+                  </span>
+                </>
+              )
+            ) : (
               <>
                 <span aria-hidden> · </span>
                 <span className="whitespace-nowrap">
-                  your share{" "}
-                  <span className="font-medium tabular-nums text-foreground">
-                    {money(yourShare.amount)}
-                  </span>
+                  {yourShare ? "your share" : "not your split"}
                 </span>
               </>
             )}

@@ -27,18 +27,10 @@ import { cn, formatDate } from "@/lib/utils";
 import {
   PAYMENT_METHODS,
   type Balance,
+  type SettlementRecord,
   type SettlementTransfer,
 } from "@/lib/types";
-
-interface SettlementRecord {
-  id: string;
-  from: string;
-  fromName: string;
-  to: string;
-  toName: string;
-  amount: number;
-  settledAt: string;
-}
+import { Amount } from "@/components/amount";
 
 const transferKey = (t: SettlementTransfer) => `${t.from}-${t.to}-${t.amount}`;
 
@@ -99,7 +91,6 @@ function TransferCard({
   /** Ways to pay the payee, when you're the one paying. */
   children?: React.ReactNode;
 }) {
-  const money = useMoney();
   const youPay = t.from === currentUserId;
   const owedToYou = t.to === currentUserId;
   const mine = youPay || owedToYou;
@@ -133,33 +124,41 @@ function TransferCard({
           owedToYou && "text-positive",
         )}
       >
-        {money(t.amount)}
+        <Amount value={t.amount} hiddenClassName="text-muted-foreground" />
       </p>
 
       {children}
 
-      {/* Side by side when both fit, stacked full-width on phones instead of
-          squeezing the labels. */}
-      <div className="mt-4 flex flex-wrap gap-2 [&>*]:min-w-[10rem] [&>*]:flex-1">
-        <Button
-          variant={mine ? "default" : "outline"}
-          onClick={onMarkPaid}
-          disabled={settling}
-        >
-          {settling ? (
-            <Loader2 className="animate-spin" aria-hidden />
-          ) : (
-            <Check aria-hidden />
-          )}
-          Mark as paid
-        </Button>
-        {owedToYou && (
-          <Button variant="outline" onClick={onRemind}>
-            <Bell aria-hidden />
-            Remind {firstName(t.fromName)}
+      {t.amount === null ? (
+        // Only the two people in a payment (and the admin) get its figure,
+        // and only they may record it — the API enforces the same rule.
+        <p className="mt-3 text-balance text-sm text-muted-foreground">
+          Between {t.fromName} and {t.toName}. The amount is theirs to see.
+        </p>
+      ) : (
+        // Side by side when both fit, stacked full-width on phones instead
+        // of squeezing the labels.
+        <div className="mt-4 flex flex-wrap gap-2 [&>*]:min-w-[10rem] [&>*]:flex-1">
+          <Button
+            variant={mine ? "default" : "outline"}
+            onClick={onMarkPaid}
+            disabled={settling}
+          >
+            {settling ? (
+              <Loader2 className="animate-spin" aria-hidden />
+            ) : (
+              <Check aria-hidden />
+            )}
+            Mark as paid
           </Button>
-        )}
-      </div>
+          {owedToYou && (
+            <Button variant="outline" onClick={onRemind}>
+              <Bell aria-hidden />
+              Remind {firstName(t.fromName)}
+            </Button>
+          )}
+        </div>
+      )}
     </Card>
   );
 }
@@ -335,6 +334,7 @@ export default function SettlePage() {
   }
 
   async function shareReminder(t: SettlementTransfer) {
+    if (t.amount === null) return;
     const me = members.find((m) => m.id === t.to);
     const myMethods = me?.paymentMethods ?? [];
     const ways = myMethods
@@ -380,6 +380,9 @@ export default function SettlePage() {
   }
 
   async function markPaid(t: SettlementTransfer) {
+    // Only the two people involved (and the admin) get the figure, and only
+    // they may record the payment — the API enforces the same rule.
+    if (t.amount === null) return;
     const key = transferKey(t);
     setSettling(key);
     try {
@@ -409,7 +412,9 @@ export default function SettlePage() {
     // When you're the payer, show the payee's ways to pay.
     const payee = members.find((m) => m.id === t.to);
     const showPay =
-      t.from === currentUserId && (payee?.paymentMethods?.length ?? 0) > 0;
+      t.from === currentUserId &&
+      t.amount !== null &&
+      (payee?.paymentMethods?.length ?? 0) > 0;
     const payerName = members.find((m) => m.id === t.from)?.name;
     return (
       <li key={key}>
@@ -420,7 +425,7 @@ export default function SettlePage() {
           onMarkPaid={() => markPaid(t)}
           onRemind={() => shareReminder(t)}
         >
-          {showPay && (
+          {showPay && t.amount !== null && (
             <div className="mt-4 border-t pt-3">
               <p className="text-sm font-semibold text-muted-foreground">
                 Pay {firstName(t.toName)} with
@@ -563,7 +568,8 @@ export default function SettlePage() {
                           {toYou ? "you" : s.toName}
                         </p>
                         <p className="mt-0.5 text-sm text-muted-foreground">
-                          <span
+                          <Amount
+                            value={s.amount}
                             className={cn(
                               "font-semibold tabular-nums",
                               fromYou
@@ -572,27 +578,31 @@ export default function SettlePage() {
                                   ? "text-positive"
                                   : "text-foreground",
                             )}
-                          >
-                            {money(s.amount)}
-                          </span>
+                            hiddenClassName="font-semibold text-muted-foreground"
+                          />
                           {" · "}
                           {formatDate(s.settledAt)}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => undoSettlement(s.id)}
-                        disabled={undoing === s.id}
-                        aria-label={`Undo settlement: ${fromYou ? "you" : s.fromName} paid ${toYou ? "you" : s.toName} ${money(s.amount)}`}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        {undoing === s.id ? (
-                          <Loader2 className="animate-spin" aria-hidden />
-                        ) : (
-                          <Undo2 aria-hidden />
-                        )}
-                      </Button>
+                      {/* Undoing re-opens a balance, so it stays with the two
+                          people in it (and the admin) — the only viewers who
+                          get the figure. */}
+                      {s.amount !== null && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => undoSettlement(s.id)}
+                          disabled={undoing === s.id}
+                          aria-label={`Undo settlement: ${fromYou ? "you" : s.fromName} paid ${toYou ? "you" : s.toName} ${money(s.amount)}`}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          {undoing === s.id ? (
+                            <Loader2 className="animate-spin" aria-hidden />
+                          ) : (
+                            <Undo2 aria-hidden />
+                          )}
+                        </Button>
+                      )}
                     </li>
                   );
                 })}

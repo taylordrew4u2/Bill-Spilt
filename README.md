@@ -50,14 +50,14 @@ It is built mobile-first (44px touch targets, bottom-sheet forms, swipe-to-delet
 ## Key features
 
 - **Flexible splits**: equal, exact-amount, or percentage, with remainder cents distributed so every split sums exactly to the total.
-- **Instant balances**: each member's net position plus pairwise "you owe X" amounts.
+- **Instant balances**: your own net position plus pairwise "you owe X" amounts; admins also see every member's net.
 - **Minimal settle-up**: debts collapse into a short "A pays B $X" plan, with settlement history and undo. Venmo and Cash App handles are shown with deep links when you owe someone.
 - **Recurring bills**: fixed bills (rent, subscriptions) are logged automatically by a daily cron job; variable bills (electric, internet) prompt for the real amount when due.
 - **Receipts**: attach a camera photo, library image, or PDF; images are downscaled to 1600px on the client before upload.
 - **Households with multiple admins**: rename the household, manage and promote members, regenerate invite codes, settle everyone at once, and review an activity log.
 - **One-tap invite links**: logged-in users join instantly from the native share sheet; new users are joined automatically on sign-up.
-- **Private split detail**: only the person who added an expense sees the full per-person breakdown; others see the total and their own share.
-- **Search, filter, and CSV export** of the full ledger.
+- **Private amounts**: admins see every figure; everyone else sees only money that is theirs (their share, their balances, payments they are part of). Hidden figures are redacted server-side in `lib/visibility.ts` before the JSON leaves the API.
+- **Search, filter, and CSV export**: the full ledger for admins, your own shares for everyone else.
 - **Offline-first PWA**: expenses added offline queue locally and sync on reconnect; installable, with dark mode and home-screen shortcuts.
 - **Accounts**: credentials sign-up and login with a self-serve email password reset.
 - **SEO-ready marketing site**: Open Graph and Twitter cards, a generated 1200x630 social image, JSON-LD structured data, sitemap, robots, and a set of long-form guides.
@@ -182,6 +182,7 @@ lib/
   db.ts                   Provider-agnostic SQL layer and schema bootstrap
   expenses.ts             Atomic expense + splits write
   queries.ts              Read models and balance aggregation
+  visibility.ts           Who may see which amount (server-side redaction)
   receipts.ts             Receipt storage, retrieval, and pruning
   offline-db.ts, sync.ts  IndexedDB queue and sync
 proxy.ts                  Auth gate and Content-Security-Policy

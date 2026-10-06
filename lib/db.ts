@@ -253,9 +253,13 @@ async function bootstrap(): Promise<void> {
       actor_name   TEXT NOT NULL,
       action       TEXT NOT NULL,
       detail       TEXT,
+      amount       NUMERIC(12,2),
       created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  // Amounts used to be formatted into `detail`. They live in their own column
+  // now so the log can be shown without money to people who may not see it.
+  await sql`ALTER TABLE activity_log ADD COLUMN IF NOT EXISTS amount NUMERIC(12,2)`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS ads (

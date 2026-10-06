@@ -11,6 +11,7 @@ import type {
   PaymentMethodType,
   PendingRecurringCharge,
   RecurringBill,
+  SettlementRecord,
   SettlementTransfer,
 } from "@/lib/types";
 
@@ -194,6 +195,56 @@ export async function getPairwiseBalance(
   return roundMoney(Number(rows[0].net));
 }
 
+/**
+ * Every other member's pairwise balance with `meId`, in one round-trip.
+ * Positive means that member owes `meId`; negative means `meId` owes them.
+ *
+ * This is what a member without the books sees in place of household-wide
+ * balances: only the money that is actually between them and each roommate.
+ */
+export async function getPairwiseBalances(
+  householdId: string,
+  meId: string,
+): Promise<Balance[]> {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT u.id, u.name,
+           COALESCE(a.v, 0) - COALESCE(b.v, 0)
+             - COALESCE(s1.v, 0) + COALESCE(s2.v, 0) AS net
+    FROM household_members m
+    JOIN users u ON u.id = m.user_id
+    LEFT JOIN (
+      SELECT s.user_id AS other, SUM(s.amount) AS v
+      FROM expense_splits s JOIN expenses e ON e.id = s.expense_id
+      WHERE e.household_id = ${householdId} AND e.paid_by = ${meId}
+      GROUP BY s.user_id
+    ) a ON a.other = m.user_id
+    LEFT JOIN (
+      SELECT e.paid_by AS other, SUM(s.amount) AS v
+      FROM expense_splits s JOIN expenses e ON e.id = s.expense_id
+      WHERE e.household_id = ${householdId} AND s.user_id = ${meId}
+      GROUP BY e.paid_by
+    ) b ON b.other = m.user_id
+    LEFT JOIN (
+      SELECT from_user AS other, SUM(amount) AS v FROM settlements
+      WHERE household_id = ${householdId} AND to_user = ${meId}
+      GROUP BY from_user
+    ) s1 ON s1.other = m.user_id
+    LEFT JOIN (
+      SELECT to_user AS other, SUM(amount) AS v FROM settlements
+      WHERE household_id = ${householdId} AND from_user = ${meId}
+      GROUP BY to_user
+    ) s2 ON s2.other = m.user_id
+    WHERE m.household_id = ${householdId} AND m.user_id <> ${meId}
+    ORDER BY m.joined_at ASC
+  `;
+  return rows.map((r) => ({
+    userId: r.id,
+    name: r.name,
+    net: roundMoney(Number(r.net)),
+  }));
+}
+
 export async function getExpenses(householdId: string): Promise<Expense[]> {
   await ensureSchema();
   const { rows } = await sql`
@@ -355,15 +406,7 @@ export async function getPendingRecurringCharges(
   }));
 }
 
-export interface SettlementRecord {
-  id: string;
-  from: string;
-  fromName: string;
-  to: string;
-  toName: string;
-  amount: number;
-  settledAt: string;
-}
+export type { SettlementRecord };
 
 /** Recorded "X paid Y" settlements, most recent first. */
 export async function getSettlements(

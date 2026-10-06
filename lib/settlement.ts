@@ -117,7 +117,9 @@ export function validateSplitShape(
  * largest creditor with the largest debtor. This produces at most N-1
  * transfers for N people and in practice a very short list.
  */
-export function minimizeTransfers(balances: Balance[]): SettlementTransfer[] {
+export function minimizeTransfers(
+  balances: Balance[],
+): (SettlementTransfer & { amount: number })[] {
   const EPS = 0.005; // half a cent
   const nameOf = new Map(balances.map((b) => [b.userId, b.name]));
 
@@ -131,7 +133,7 @@ export function minimizeTransfers(balances: Balance[]): SettlementTransfer[] {
   }
 
   // Max-heaps approximated with sort each iteration (N <= 12, trivial).
-  const transfers: SettlementTransfer[] = [];
+  const transfers: (SettlementTransfer & { amount: number })[] = [];
   while (creditors.length && debtors.length) {
     creditors.sort((a, b) => b.amt - a.amt);
     debtors.sort((a, b) => b.amt - a.amt);

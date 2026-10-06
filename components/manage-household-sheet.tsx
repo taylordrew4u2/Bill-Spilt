@@ -47,7 +47,7 @@ import { MemberAvatar } from "@/components/member-avatar";
 import { MemberDetailSheet } from "@/components/member-detail-sheet";
 import { useToast } from "@/components/ui/toaster";
 import { CURRENCIES, type Member } from "@/lib/types";
-import { useAppData } from "@/components/app-data";
+import { useAppData, useMoney } from "@/components/app-data";
 import { useFetch } from "@/lib/use-fetch";
 import { timeAgo, shareInvite } from "@/lib/utils";
 
@@ -56,6 +56,8 @@ interface ActivityEntry {
   actorName: string;
   action: string;
   detail: string | null;
+  /** `null` when the entry had no money, or when this viewer may not see it. */
+  amount: number | null;
   createdAt: string;
 }
 
@@ -100,6 +102,7 @@ export function ManageHouseholdSheet({
   const { household, members, currentUserId, isAdmin, version, refresh, mutate } =
     useAppData();
   const { toast } = useToast();
+  const money = useMoney();
 
   // Only fetch activity while the sheet is open.
   const activityQ = useFetch<{ activity: ActivityEntry[] }>(
@@ -555,6 +558,9 @@ export function ManageHouseholdSheet({
                           <div className="min-w-0 flex-1">
                             <p className="break-words text-base leading-snug">
                               {a.detail ?? a.action.replace(/_/g, " ")}
+                              {/* The figure is its own column, sent only to
+                                  people allowed to see it (null otherwise). */}
+                              {a.amount !== null && ` (${money(a.amount)})`}
                             </p>
                             <p className="mt-0.5 text-sm text-muted-foreground">
                               {a.actorName} · {timeAgo(a.createdAt)}

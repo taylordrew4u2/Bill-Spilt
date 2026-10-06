@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getUserHousehold } from "@/lib/queries";
+import { getUserHousehold, isOwner } from "@/lib/queries";
+import type { Viewer } from "@/lib/visibility";
 import { isSiteAdminEmail } from "@/lib/site-admin";
 
 export class ApiError extends Error {
@@ -42,6 +43,22 @@ export async function requireHousehold(): Promise<{
   const household = await getUserHousehold(userId);
   if (!household) throw new ApiError(404, "You are not in a household yet");
   return { userId, householdId: household.id, currency: household.currency };
+}
+
+/**
+ * Resolve the user's household plus whether they keep its books. Routes that
+ * return money use this and hand the viewer to lib/visibility's redactors, so
+ * figures the caller may not see never reach the response.
+ */
+export async function requireViewer(): Promise<{
+  userId: string;
+  householdId: string;
+  currency: string;
+  viewer: Viewer;
+}> {
+  const base = await requireHousehold();
+  const isAdmin = await isOwner(base.householdId, base.userId);
+  return { ...base, viewer: { userId: base.userId, isAdmin } };
 }
 
 /** Wrap a route handler with uniform error handling. */

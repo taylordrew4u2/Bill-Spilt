@@ -123,7 +123,12 @@ export interface Expense {
   id: string;
   householdId: string;
   description: string;
-  amount: number;
+  /**
+   * What the whole expense came to. `null` when the viewer isn't allowed to
+   * see it — only the household admin, the person who paid, and whoever
+   * logged it get the total (see lib/visibility.ts).
+   */
+  amount: number | null;
   category: ExpenseCategory;
   splitType: SplitType;
   paidBy: string;
@@ -131,6 +136,10 @@ export interface Expense {
   createdBy: string | null;
   receiptUrl: string | null;
   createdAt: string;
+  /**
+   * The split rows the viewer may see: every row for the admin, the payer and
+   * the person who logged it; otherwise just the viewer's own share.
+   */
   splits: ExpenseSplit[];
 }
 
@@ -146,7 +155,20 @@ export interface SettlementTransfer {
   fromName: string;
   to: string;
   toName: string;
-  amount: number;
+  /** `null` when the viewer is neither party nor the household admin. */
+  amount: number | null;
+}
+
+/** A recorded "X paid Y" settlement. */
+export interface SettlementRecord {
+  id: string;
+  from: string;
+  fromName: string;
+  to: string;
+  toName: string;
+  /** `null` when the viewer is neither party nor the household admin. */
+  amount: number | null;
+  settledAt: string;
 }
 
 export interface RecurringBill {
@@ -155,8 +177,9 @@ export interface RecurringBill {
   description: string;
   amountType: RecurringAmountType;
   /** For fixed bills, the charged amount. For variable bills, an optional
-   *  typical amount used to pre-fill the prompt (0 when not set). */
-  amount: number;
+   *  typical amount used to pre-fill the prompt (0 when not set).
+   *  `null` when the viewer isn't the household admin. */
+  amount: number | null;
   category: ExpenseCategory;
   splitType: SplitType;
   paidBy: string;
@@ -176,8 +199,9 @@ export interface PendingRecurringCharge {
   paidBy: string;
   paidByName: string;
   frequency: RecurringFrequency;
-  /** The bill's typical amount, to pre-fill the input (0 when not set). */
-  estimatedAmount: number;
+  /** The bill's typical amount, to pre-fill the input (0 when not set).
+   *  `null` when the viewer isn't the household admin. */
+  estimatedAmount: number | null;
   dueDate: string;
 }
 

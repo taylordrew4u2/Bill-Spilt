@@ -80,8 +80,12 @@ function PendingRow({
   const { toast } = useToast();
   const money = useMoney();
   const currency = useCurrency();
+  // The typical amount is a pre-fill hint and only reaches the admin; for
+  // everyone else it arrives as null and the field just starts empty.
   const [amount, setAmount] = React.useState(
-    charge.estimatedAmount > 0 ? charge.estimatedAmount.toFixed(2) : "",
+    charge.estimatedAmount && charge.estimatedAmount > 0
+      ? charge.estimatedAmount.toFixed(2)
+      : "",
   );
   const [receiptUrl, setReceiptUrl] = React.useState<string | null>(null);
   const [showReceipt, setShowReceipt] = React.useState(false);
@@ -191,7 +195,7 @@ function PendingRow({
             <FieldError id={hintId}>{error}</FieldError>
           ) : (
             <p id={hintId} className="text-sm text-muted-foreground">
-              {charge.estimatedAmount > 0
+              {charge.estimatedAmount !== null && charge.estimatedAmount > 0
                 ? `Usually about ${money(charge.estimatedAmount)} · ${splitHint}`
                 : `We'll log it ${splitHint}, as set up.`}
             </p>

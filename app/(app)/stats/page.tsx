@@ -109,12 +109,15 @@ function BarRow({
   amount,
   part,
   total,
+  of = "of all spending",
 }: {
   leading: React.ReactNode;
   label: React.ReactNode;
   amount: string;
   part: number;
   total: number;
+  /** Screen-reader tail for the percentage ("12% of all spending"). */
+  of?: string;
 }) {
   const pct = total > 0 ? (part / total) * 100 : 0;
   return (
@@ -139,7 +142,7 @@ function BarRow({
           </div>
           <span className="w-11 flex-shrink-0 text-right text-sm tabular-nums text-muted-foreground">
             {percentLabel(part, total)}
-            <span className="sr-only"> of all spending</span>
+            <span className="sr-only"> {of}</span>
           </span>
         </div>
       </div>
@@ -278,9 +281,18 @@ function RecurringRow({
             <span className="line-clamp-2 min-w-0 break-words text-base font-medium leading-snug">
               {bill.description}
             </span>
-            {variable && bill.amount <= 0 ? (
+            {/* `amount` is null for everyone but the admin: the bill still
+                shows, just not what it costs the house. */}
+            {variable && (bill.amount === null || bill.amount <= 0) ? (
               <span className="whitespace-nowrap text-base font-medium leading-snug text-muted-foreground">
                 Varies
+              </span>
+            ) : bill.amount === null ? (
+              <span
+                className="whitespace-nowrap text-base font-medium leading-snug text-muted-foreground"
+                title="Recurring bill amounts are only shown to the household admin"
+              >
+                —
               </span>
             ) : (
               <span className="whitespace-nowrap text-base font-semibold leading-snug tabular-nums">
@@ -356,9 +368,18 @@ function RecurringBillSheet({
             <>
               <p className="text-3xl font-bold tracking-tight">Amount varies</p>
               <p className="mt-1 text-balance text-sm text-muted-foreground">
-                {bill.amount > 0
+                {bill.amount !== null && bill.amount > 0
                   ? `Usually about ${money(bill.amount)} a ${per}`
                   : `Entered each ${per} when it comes due`}
+              </p>
+            </>
+          ) : bill.amount === null ? (
+            <>
+              <p className="text-4xl font-bold tracking-tight text-muted-foreground">
+                —
+              </p>
+              <p className="mt-1 text-balance text-sm text-muted-foreground">
+                Every {per}. What it costs stays with the admin.
               </p>
             </>
           ) : (
@@ -413,7 +434,7 @@ function RecurringBillSheet({
 }
 
 export default function StatsPage() {
-  const { version, mutate, currentUserId } = useAppData();
+  const { version, mutate, currentUserId, isAdmin } = useAppData();
   const money = useMoney();
   const addExpense = useAddExpense();
   const { toast } = useToast();
@@ -443,23 +464,35 @@ export default function StatsPage() {
   const bills = recurringQ.data?.bills ?? [];
   const pending = recurringQ.data?.pending ?? [];
 
+  /**
+   * The admin keeps the books, so they see what the house spent. Everyone
+   * else sees their own share — the number they are actually on the hook for —
+   * and, for the record of who is pulling their weight, how many expenses each
+   * person has paid for. No household totals either way for a member.
+   */
   const { total, yourShare, byCategory, byPayer } = React.useMemo(() => {
     let total = 0;
     let yourShare = 0;
     const byCategory: Record<string, number> = {};
-    const byPayer = new Map<string, { name: string; amount: number }>();
+    const byPayer = new Map<
+      string,
+      { name: string; count: number; amount: number }
+    >();
     for (const e of expenses) {
-      total += e.amount;
-      yourShare += e.splits.find((s) => s.userId === currentUserId)?.amount ?? 0;
-      byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
+      const mine = e.splits.find((s) => s.userId === currentUserId)?.amount ?? 0;
+      const value = isAdmin ? (e.amount ?? 0) : mine;
+      total += value;
+      yourShare += mine;
+      byCategory[e.category] = (byCategory[e.category] ?? 0) + value;
       const prev = byPayer.get(e.paidBy);
       byPayer.set(e.paidBy, {
         name: e.paidByName,
-        amount: (prev?.amount ?? 0) + e.amount,
+        count: (prev?.count ?? 0) + 1,
+        amount: (prev?.amount ?? 0) + (e.amount ?? 0),
       });
     }
     return { total, yourShare, byCategory, byPayer };
-  }, [expenses, currentUserId]);
+  }, [expenses, currentUserId, isAdmin]);
 
   const breakdown = CATEGORIES.map((c) => ({
     ...c,
@@ -470,15 +503,22 @@ export default function StatsPage() {
 
   const payers = Array.from(byPayer.entries())
     .map(([id, v]) => ({ id, ...v }))
-    .sort((a, b) => b.amount - a.amount);
+    .sort((a, b) => (isAdmin ? b.amount - a.amount : b.count - a.count));
 
   // What the fixed bills come to in a typical month (weekly ones × 52 / 12).
-  const fixedBills = bills.filter((b) => b.amountType !== "variable");
-  const hasWeekly = fixedBills.some((b) => b.frequency === "weekly");
-  const fixedMonthly = fixedBills.reduce(
-    (sum, b) => sum + (b.frequency === "weekly" ? (b.amount * 52) / 12 : b.amount),
-    0,
+  // Admin only: a member's bills arrive without amounts, so this stays 0.
+  const fixedBills = bills.filter(
+    (b): b is RecurringBill & { amount: number } =>
+      b.amountType !== "variable" && b.amount !== null,
   );
+  const hasWeekly = fixedBills.some((b) => b.frequency === "weekly");
+  const fixedMonthly = isAdmin
+    ? fixedBills.reduce(
+        (sum, b) =>
+          sum + (b.frequency === "weekly" ? (b.amount * 52) / 12 : b.amount),
+        0,
+      )
+    : 0;
 
   function openBill(bill: RecurringBill) {
     setViewing(bill);
@@ -507,7 +547,9 @@ export default function StatsPage() {
         title="Stats"
         subtitle={
           <span className="block text-balance">
-            Where the household&apos;s money goes.
+            {isAdmin
+              ? "Where the household's money goes."
+              : "Your own numbers. What the house spends overall stays with the admin."}
           </span>
         }
       />
@@ -544,7 +586,9 @@ export default function StatsPage() {
             <section aria-label="Summary">
               <Card>
                 <div className="p-4 pb-3">
-                  <p className="text-sm text-muted-foreground">Total spent</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isAdmin ? "Total spent" : "Your share"}
+                  </p>
                   {/* One notch smaller on a narrow phone so a six-figure
                       total still sits on one line. */}
                   <p className="mt-1 break-words text-3xl font-bold tabular-nums tracking-tight xs:text-4xl">
@@ -552,17 +596,25 @@ export default function StatsPage() {
                   </p>
                 </div>
                 <dl className="divide-y border-t">
-                  <SummaryRow label="Your share">{money(yourShare)}</SummaryRow>
+                  {/* Household figures (the total, the average) are the
+                      admin's; a member's hero is already their own share. */}
+                  {isAdmin && (
+                    <SummaryRow label="Your share">{money(yourShare)}</SummaryRow>
+                  )}
                   <SummaryRow label="Expenses">{expenses.length}</SummaryRow>
-                  <SummaryRow label="Average expense">
-                    {money(total / expenses.length)}
-                  </SummaryRow>
+                  {isAdmin && (
+                    <SummaryRow label="Average expense">
+                      {money(total / expenses.length)}
+                    </SummaryRow>
+                  )}
                 </dl>
               </Card>
             </section>
 
             <section aria-labelledby="stats-categories">
-              <SectionLabel id="stats-categories">Spending by category</SectionLabel>
+              <SectionLabel id="stats-categories">
+                {isAdmin ? "Spending by category" : "Your share by category"}
+              </SectionLabel>
               <Card>
                 <ul className="divide-y">
                   {breakdown.map((c) => (
@@ -573,6 +625,7 @@ export default function StatsPage() {
                       amount={money(c.amount)}
                       part={c.amount}
                       total={total}
+                      of={isAdmin ? "of all spending" : "of your share"}
                     />
                   ))}
                 </ul>
@@ -602,9 +655,16 @@ export default function StatsPage() {
                             )}
                           </>
                         }
-                        amount={money(p.amount)}
-                        part={p.amount}
-                        total={total}
+                        // Members see that everyone is covering bills, not
+                        // how much each of them has spent.
+                        amount={
+                          isAdmin
+                            ? money(p.amount)
+                            : `${p.count} ${p.count === 1 ? "expense" : "expenses"}`
+                        }
+                        part={isAdmin ? p.amount : p.count}
+                        total={isAdmin ? total : expenses.length}
+                        of={isAdmin ? "of all spending" : "of all expenses"}
                       />
                     ))}
                   </ul>
