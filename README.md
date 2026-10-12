@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="public/icons/icon-512.png" width="96" height="96" alt="BillSpilt icon" />
+<img src="docs/readme/hero.png" width="100%" alt="BillSpilt: split the bills, not the friendship. Three phones showing the add-expense sheet, the home balances screen, and the settle-up plan" />
 
-# BillSpilt
+<h1>BillSpilt</h1>
 
 **A shared-expense app for roommates that works offline, keeps each person's numbers private, and settles the house in the fewest possible payments.**
 
@@ -18,7 +18,7 @@
 
 <br/>
 
-<img src="docs/screenshots/demo.gif" width="300" alt="Recording: Jordan adds a $72 pizza night split four ways, his balance updates, he marks his payment to Maya as paid on the Settle tab, and the home screen shows him all square" />
+<img src="docs/readme/demo.gif" width="320" alt="Recording: Jordan adds a $72 pizza night split four ways, his balance updates, he marks his payment to Maya as paid on the Settle tab, and the home screen shows him all square" />
 <br/>
 <sub>Add an expense, watch balances update, settle up. Local build with sample data.</sub>
 
@@ -49,17 +49,11 @@ Shared households run on rent, utilities and groceries, and keeping track of who
 | **Households** | One-tap invite links · multiple admins · member management · activity log |
 | **App** | Installable PWA · offline queue · dark mode · home-screen shortcuts · email password reset |
 
-## Screenshots
+## How it works
 
-<table>
-<tr>
-<td align="center" width="20%"><img src="docs/screenshots/home-balances.png" width="160" alt="Home screen showing what you owe and each roommate's balance" /><br/><sub><b>Balances</b><br/>admin view</sub></td>
-<td align="center" width="20%"><img src="docs/screenshots/add-expense.png" width="160" alt="Add expense sheet with an equal four-way split" /><br/><sub><b>Add expense</b><br/>four-way equal split</sub></td>
-<td align="center" width="20%"><img src="docs/screenshots/expenses.png" width="160" alt="Expense list with search, category filters, and your share of each" /><br/><sub><b>Expenses</b><br/>search and filters</sub></td>
-<td align="center" width="20%"><img src="docs/screenshots/settle-up.png" width="160" alt="Settle-up plan with a Venmo link for the payment you owe" /><br/><sub><b>Settle up</b><br/>with Venmo link</sub></td>
-<td align="center" width="20%"><img src="docs/screenshots/stats.png" width="160" alt="Spending totals and breakdown by category" /><br/><sub><b>Stats</b><br/>admin view</sub></td>
-</tr>
-</table>
+<img src="docs/readme/how-it-works.png" width="100%" alt="Three steps: add an expense with an equal four-way split, see who owes whom on the home screen, and settle up with the fewest payments and a Venmo link" />
+
+<img src="docs/readme/features.png" width="100%" alt="Expense list with search, category filters and your share of each; stats screen with household total and spending by category" />
 
 ## Architecture
 
